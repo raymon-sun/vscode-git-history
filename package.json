@@ -1,5 +1,5 @@
 {
-  "name": "git-view",
+	"name": "git-view",
 	"displayName": "Git View",
 	"description": "",
 	"version": "0.0.1",
@@ -10,14 +10,15 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:git-view.helloWorld"
+		"onCommand:git-view.view"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "git-view.helloWorld",
-				"title": "Hello World"
+				"category": "Git View",
+				"command": "git-view.view",
+				"title": "View git log"
 			}
 		]
 	},

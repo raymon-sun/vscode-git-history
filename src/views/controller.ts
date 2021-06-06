@@ -30,6 +30,7 @@ export class ViewController {
 			</head>
 			<body>
 				${commits.map(({ message }) => `<p>${message}</p>`).join("")}
+				<div id="root"></div>
 			</body>
 			</html>`;
 	}

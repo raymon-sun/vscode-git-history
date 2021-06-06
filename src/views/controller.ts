@@ -1,9 +1,11 @@
-import { commands, window, ViewColumn } from "vscode";
-import { getBuiltInGitApi } from "./services";
-import { Commit } from "./types";
+import { join } from "path";
+import { Uri, ViewColumn, window } from "vscode";
+import { getCommits } from "../services/git";
 
-export const disposables = [
-	commands.registerCommand("git-view.view", async () => {
+export class ViewController {
+	constructor(private extensionPath: string) {}
+
+	async createWebviewPanel() {
 		const panel = window.createWebviewPanel(
 			"gitView", // Identifies the type of the webview. Used internally
 			"Git View", // Title of the panel displayed to the user
@@ -11,17 +13,15 @@ export const disposables = [
 			{} // Webview options. More on these later.
 		);
 
-		const gitApi = await getBuiltInGitApi();
-		const commits = await gitApi?.repositories[0].log();
-		panel.webview.html = getWebviewContent(commits);
-	}),
-	commands.registerCommand("git-view.quit", () => {
-		window.showInformationMessage("Quit");
-	}),
-];
+		panel.webview.html = await this.getWebviewContent();
+	}
 
-function getWebviewContent(commits: Commit[] = []) {
-	return `<!DOCTYPE html>
+	async getWebviewContent() {
+		const commits = (await getCommits()) || [];
+		const scriptPath = Uri.file(
+			join(this.extensionPath, "dist", "main.js")
+		);
+		return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
@@ -32,4 +32,5 @@ function getWebviewContent(commits: Commit[] = []) {
 				${commits.map(({ message }) => `<p>${message}</p>`).join("")}
 			</body>
 			</html>`;
+	}
 }

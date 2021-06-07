@@ -15,5 +15,5 @@
 		"jsx": "react-jsx" /** To support React 17's upcoming jsx and jsxs factory functions*/
 	},
 	"include": ["src"],
-	"exclude": ["node_modules", ".vscode-test"]
+	"exclude": ["node_modules", ".vscode-test", "src/test"]
 }

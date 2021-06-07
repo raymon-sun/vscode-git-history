@@ -11,8 +11,8 @@ export function activate(context: ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "git-view" is now active!');
 
-	const { extensionPath, subscriptions } = context;
-	const viewController = new ViewController(extensionPath);
+	const { extensionPath, extensionUri, subscriptions } = context;
+	const viewController = new ViewController(extensionPath, extensionUri);
 	const disposables = createDisposables(viewController);
 	subscriptions.push(...disposables);
 }

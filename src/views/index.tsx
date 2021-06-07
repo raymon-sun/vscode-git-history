@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 
 ReactDOM.render(
 	<StrictMode>
-		<span>React Application</span>
+		<span>React application run here!</span>
 	</StrictMode>,
 	document.getElementById("root")
 );

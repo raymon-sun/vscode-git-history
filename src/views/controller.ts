@@ -18,11 +18,13 @@ export class ViewController {
 		);
 
 		const { webview } = panel;
-		webview.html = await this.getWebviewContent(webview);
+		webview.html = await this.generateWebviewContent(webview);
+
+		const commits = (await getCommits()) || [];
+		webview.postMessage(commits);
 	}
 
-	async getWebviewContent(webview: Webview) {
-		const commits = (await getCommits()) || [];
+	async generateWebviewContent(webview: Webview) {
 		const scriptPath = Uri.file(
 			join(this.extensionPath, "dist", "view.js")
 		);
@@ -33,16 +35,11 @@ export class ViewController {
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${
-					webview.cspSource
-				}; img-src ${
-			webview.cspSource
-		} https:; script-src 'nonce-${nonce}';">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<title>Git View</title>
 			</head>
 			<body>
-				${commits.map(({ message }) => `<p>${message}</p>`).join("")}
 				<div id="root"></div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>

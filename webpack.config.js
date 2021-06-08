@@ -53,6 +53,49 @@ const viewConfig = {
 		path: path.resolve(__dirname, "dist"),
 		filename: "view.js",
 	},
+	module: {
+		rules: [
+			{
+				test: /\.scss$/,
+				exclude: /\.module\.scss$/,
+				use: [
+					{
+						loader: "style-loader",
+					},
+					{
+						loader: "css-loader",
+						options: {
+							importLoaders: 1,
+							modules: {
+								compileType: "icss",
+							},
+						},
+					},
+					{
+						loader: "sass-loader",
+					},
+				],
+			},
+			{
+				test: /\.module\.scss$/,
+				use: [
+					"style-loader",
+					{
+						loader: "css-loader",
+						options: {
+							importLoaders: 1,
+							modules: {
+								compileType: "module",
+							},
+						},
+					},
+					{
+						loader: "sass-loader",
+					},
+				],
+			},
+		],
+	},
 };
 
 module.exports = [

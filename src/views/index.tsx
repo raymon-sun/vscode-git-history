@@ -1,10 +1,16 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom";
+import { Commit } from "../types";
 import App from "./App";
 
-ReactDOM.render(
-	<StrictMode>
-		<App />
-	</StrictMode>,
-	document.getElementById("root")
-);
+function render(event: MessageEvent<Commit[]>) {
+	const commits = event.data;
+	ReactDOM.render(
+		<StrictMode>
+			<App commits={commits} />
+		</StrictMode>,
+		document.getElementById("root")
+	);
+}
+
+window.addEventListener("message", render);

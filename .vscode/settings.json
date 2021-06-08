@@ -16,5 +16,6 @@
         "submodules",
         "treeish",
         "unshallow"
-    ]
+    ],
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

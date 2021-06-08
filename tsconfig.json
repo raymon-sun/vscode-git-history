@@ -12,7 +12,12 @@
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
 		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
 		"esModuleInterop": true /** To support default import from react */,
-		"jsx": "react-jsx" /** To support React 17's upcoming jsx and jsxs factory functions*/
+		"jsx": "react-jsx" /** To support React 17's upcoming jsx and jsxs factory functions*/,
+		"plugins": [
+			{
+				"name": "typescript-plugin-css-modules"
+			}
+		]
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test", "src/test"]

@@ -1,0 +1,12 @@
+.container {
+	display: flex;
+	flex-direction: column;
+}
+
+.code-container {
+	flex: 1;
+}
+
+.commits-container {
+	flex: 1;
+}

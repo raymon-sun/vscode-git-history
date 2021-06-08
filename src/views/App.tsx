@@ -1,22 +1,22 @@
-import { useEffect, useState } from "react";
 import { Commit } from "../types";
+import style from "./App.module.scss";
 
-function App() {
-	const [commits, setCommits] = useState<Commit[]>([]);
+type Props = {
+	commits: Commit[];
+};
 
-	useEffect(() => {
-		window.addEventListener("message", (event) => {
-			console.log(event.data);
-			setCommits(event.data);
-		});
-	}, []);
+function App(props: Props) {
+	const { commits } = props;
 
 	return (
-		<div>
-			<p>Commits:</p>
-			{commits.map((commit) => (
-				<p>{commit.message}</p>
-			))}
+		<div className={style.container}>
+			<div className={style["code-container"]}>Code Area</div>
+			<div className={style["commits-container"]}>
+				<p>Commits:</p>
+				{commits.map((commit) => (
+					<p>{commit.message}</p>
+				))}
+			</div>
 		</div>
 	);
 }

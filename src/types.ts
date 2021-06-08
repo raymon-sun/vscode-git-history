@@ -36,7 +36,10 @@ export interface Commit {
 	readonly hash: string;
 	readonly message: string;
 	readonly parents: string[];
-	readonly authorEmail?: string | undefined;
+	readonly commitDate: string;
+	readonly authorEmail: string;
+	readonly authorName: string;
+	readonly authorDate: string;
 }
 
 export interface Submodule {

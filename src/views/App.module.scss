@@ -1,12 +1,53 @@
 .container {
 	display: flex;
 	flex-direction: column;
+	height: 100%;
 }
 
-.code-container {
-	flex: 1;
+.operations-bar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 40px;
+	.filter-container {
+		display: flex;
+		> div:not(:last-child) {
+			margin-right: 12px;
+		}
+	}
+	.search-container {
+		> input {
+			background-color: rgba(0, 0, 0, 0.2);
+		}
+	}
 }
 
 .commits-container {
 	flex: 1;
+
+	.commit {
+		display: flex;
+
+		> span {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.hash {
+			width: 60px;
+		}
+
+		.message {
+			flex: 1;
+		}
+
+		.author-name {
+			width: 64px;
+		}
+
+		.commit-date {
+			width: 120px;
+		}
+	}
 }

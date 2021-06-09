@@ -29,7 +29,7 @@ function App(props: Props) {
 					<div>User:All</div>
 					<div>Date:All</div>
 				</div>
-				<div className={style["search-container"]}>
+				<div>
 					<input />
 				</div>
 			</div>

@@ -24,9 +24,15 @@
 
 .commits-container {
 	flex: 1;
+	user-select: none;
 
 	.commit {
 		display: flex;
+		line-height: 22px;
+
+		&.selected {
+			background-color: var(--vscode-list-highlightForeground);
+		}
 
 		> span {
 			white-space: nowrap;
@@ -47,7 +53,7 @@
 		}
 
 		.commit-date {
-			width: 120px;
+			width: 140px;
 		}
 	}
 }

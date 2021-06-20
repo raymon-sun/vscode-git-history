@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Commit } from "../types";
 import style from "./App.module.scss";
 
@@ -28,6 +28,7 @@ function App(props: Props) {
 					<div>Branch:master</div>
 					<div>User:All</div>
 					<div>Date:All</div>
+					<div>Diff</div>
 				</div>
 				<div>
 					<input />

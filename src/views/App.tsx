@@ -1,13 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { request } from "./utils/message";
 import { Commit } from "../types";
 import style from "./App.module.scss";
 
-type Props = {
-	commits: Commit[];
-};
-
-function App(props: Props) {
-	const { commits } = props;
+function App() {
+	const [commits, setCommits] = useState<Commit[]>([]);
 	const [selectedCommits, setSelectedCommits] = useState<{
 		[hash: string]: true;
 	}>({});
@@ -20,6 +17,14 @@ function App(props: Props) {
 		}
 		setSelectedCommits({ ...selectedCommits, [hash]: true });
 	}
+
+	useEffect(() => {
+		async function requestCommits() {
+			const commits = await request("commits");
+			setCommits(commits);
+		}
+		requestCommits();
+	}, []);
 
 	return (
 		<div className={style.container}>

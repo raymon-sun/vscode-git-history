@@ -1,8 +1,10 @@
 import { join } from "path";
 import { Uri, ViewColumn, Webview, window } from "vscode";
-import { getCommits } from "../services/git";
+import { REQUEST_HANDLER_MAP } from "../services/request-handlers";
 
 export class ViewController {
+	private webview?: Webview;
+
 	constructor(private extensionPath: string, private extensionUri: Uri) {}
 
 	async createWebviewPanel() {
@@ -17,11 +19,9 @@ export class ViewController {
 			} // Webview options. More on these later.
 		);
 
-		const { webview } = panel;
-		webview.html = await this.generateWebviewContent(webview);
-
-		const commits = (await getCommits()) || [];
-		webview.postMessage(commits);
+		this.webview = panel.webview;
+		this.webview.html = await this.generateWebviewContent(this.webview);
+		this.registerRequestHandlers(this.webview);
 	}
 
 	async generateWebviewContent(webview: Webview) {
@@ -57,5 +57,21 @@ export class ViewController {
 			);
 		}
 		return text;
+	}
+
+	private registerRequestHandlers(webview: Webview) {
+		webview.onDidReceiveMessage(async (message) => {
+			const {
+				id,
+				content: { what, params },
+			} = message;
+			if (id === undefined) {
+				return;
+			}
+
+			const handler = REQUEST_HANDLER_MAP[what];
+			const result = await handler(params);
+			webview.postMessage({ id: message.id, result });
+		});
 	}
 }

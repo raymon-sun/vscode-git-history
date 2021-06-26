@@ -22,3 +22,8 @@ export async function getCommits() {
 	const gitApi = await getBuiltInGitApi();
 	return await gitApi?.repositories[0].log();
 }
+
+export async function diffBetween(ref1: string, ref2: string) {
+	const gitApi = await getBuiltInGitApi();
+	return await gitApi?.repositories[0].diffBetween(ref1, ref2);
+}

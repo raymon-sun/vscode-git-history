@@ -1,6 +1,18 @@
 declare const acquireVsCodeApi: () => any;
 
 const vscode = acquireVsCodeApi();
+export interface IMessage {
+	id: number;
+}
+
+export interface IRequestMessage<T = any> extends IMessage {
+	what: string;
+	params: T;
+}
+
+export interface IResponseMessage<T = any> extends IMessage {
+	result: T;
+}
 
 /** auto-increment id */
 let messageId = 0;
@@ -13,10 +25,13 @@ window.addEventListener("message", (event: MessageEvent<{ id: number }>) => {
 	delete responseHandles[id];
 });
 
-export async function sendMessage(message: any, timeout = 5000) {
-	return new Promise((resolve, reject) => {
+export async function sendMessage<T extends IMessage>(
+	message: any,
+	timeout = 5000
+) {
+	return new Promise<T>((resolve, reject) => {
 		const id = messageId++;
-		vscode.postMessage({ id, content: message });
+		vscode.postMessage({ id, ...message });
 
 		let isReSolved = false;
 		responseHandles[id] = (res) => {
@@ -32,7 +47,7 @@ export async function sendMessage(message: any, timeout = 5000) {
 	});
 }
 
-export async function request(what: string, params?: any) {
-	const response = await sendMessage({ what, params });
-	return (response as any).result;
+export async function request<T>(what: string, params?: any) {
+	const response = await sendMessage<IResponseMessage<T>>({ what, params });
+	return response.result;
 }

@@ -1,6 +1,7 @@
 import { join } from "path";
 import { Uri, ViewColumn, Webview, window } from "vscode";
 import { REQUEST_HANDLER_MAP } from "../services/request-handlers";
+import { IRequestMessage } from "./utils/message";
 
 export class ViewController {
 	private webview?: Webview;
@@ -60,11 +61,8 @@ export class ViewController {
 	}
 
 	private registerRequestHandlers(webview: Webview) {
-		webview.onDidReceiveMessage(async (message) => {
-			const {
-				id,
-				content: { what, params },
-			} = message;
+		webview.onDidReceiveMessage(async (message: IRequestMessage) => {
+			const { id, what, params } = message;
 			if (id === undefined) {
 				return;
 			}

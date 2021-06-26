@@ -20,7 +20,7 @@ function App() {
 
 	useEffect(() => {
 		async function requestCommits() {
-			const commits = await request("commits");
+			const commits = await request<Commit[]>("commits");
 			setCommits(commits);
 		}
 		requestCommits();

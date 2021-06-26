@@ -1,5 +1,5 @@
 import { Extension, extensions } from "vscode";
-import { GitExtension } from "../types";
+import { GitExtension } from "../typings/git-extension";
 
 export async function getBuiltInGitApi() {
 	try {

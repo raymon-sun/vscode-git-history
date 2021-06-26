@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { request } from "./utils/message";
-import { Commit } from "../types";
+import { Commit } from "../typings/git-extension";
 import style from "./App.module.scss";
 
 function App() {

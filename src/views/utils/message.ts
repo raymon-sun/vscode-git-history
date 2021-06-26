@@ -13,7 +13,7 @@ window.addEventListener("message", (event: MessageEvent<{ id: number }>) => {
 	delete responseHandles[id];
 });
 
-export async function send(message: any, timeout = 5000) {
+export async function sendMessage(message: any, timeout = 5000) {
 	return new Promise((resolve, reject) => {
 		const id = messageId++;
 		vscode.postMessage({ id, content: message });
@@ -33,6 +33,6 @@ export async function send(message: any, timeout = 5000) {
 }
 
 export async function request(what: string, params?: any) {
-	const backMessage = await send({ what, params });
-	return (backMessage as any).result;
+	const response = await sendMessage({ what, params });
+	return (response as any).result;
 }

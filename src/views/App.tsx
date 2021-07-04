@@ -9,6 +9,11 @@ function App() {
 		[hash: string]: true;
 	}>({});
 
+	function diff() {
+		const [ref1, ref2] = Object.keys(selectedCommits);
+		request<any>("diff", { ref1, ref2 });
+	}
+
 	function selectCommit(hash: string) {
 		if (selectedCommits[hash]) {
 			delete selectedCommits[hash];
@@ -33,7 +38,7 @@ function App() {
 					<div>Branch:master</div>
 					<div>User:All</div>
 					<div>Date:All</div>
-					<div>Diff</div>
+					<div onClick={diff}>Diff</div>
 				</div>
 				<div>
 					<input />

@@ -1,4 +1,4 @@
-import { diffBetween, getCommits } from "./git";
+import { diffBetween, getCommits } from "../git/service";
 
 export const REQUEST_HANDLER_MAP: {
 	[request: string]: (params?: any) => Promise<any>;

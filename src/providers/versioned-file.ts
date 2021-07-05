@@ -1,5 +1,5 @@
 import { Disposable, TextDocumentContentProvider, Uri } from "vscode";
-import { show } from "../services/git";
+import { show } from "../git/service";
 
 export class VersionedFileProvider
 	extends Disposable

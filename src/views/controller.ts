@@ -1,6 +1,6 @@
 import { join } from "path";
 import { Uri, ViewColumn, Webview, window } from "vscode";
-import { REQUEST_HANDLER_MAP } from "../services/request-handlers";
+import { REQUEST_HANDLER_MAP } from "../message/request-handlers";
 import { IRequestMessage } from "./utils/message";
 
 export class ViewController {

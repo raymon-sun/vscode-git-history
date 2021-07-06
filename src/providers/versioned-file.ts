@@ -1,18 +1,15 @@
-import { Disposable, TextDocumentContentProvider, Uri } from "vscode";
-import { show } from "../git/service";
+import { injectable } from "inversify";
+import { TextDocumentContentProvider, Uri } from "vscode";
+import { GitService } from "../git/service";
 
-export class VersionedFileProvider
-	extends Disposable
-	implements TextDocumentContentProvider
-{
+@injectable()
+export class VersionedFileProvider implements TextDocumentContentProvider {
 	static scheme = "git-view";
 
-	constructor() {
-		super(() => {});
-	}
+	constructor(private git: GitService) {}
 
 	async provideTextDocumentContent(uri: Uri) {
 		const commitHash = uri.query;
-		return await show(commitHash, uri.fsPath);
+		return await this.git.show(commitHash, uri.fsPath);
 	}
 }

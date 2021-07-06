@@ -1,48 +1,43 @@
-import { Extension, extensions, commands } from "vscode";
-import { GitExtension } from "../typings/git-extension";
+import { injectable } from "inversify";
+import { commands } from "vscode";
+import { getBuiltInGitApi } from "./api";
+import { API } from "../typings/git-extension";
 
-export async function getBuiltInGitApi() {
-	try {
-		const extension = extensions.getExtension(
-			"vscode.git"
-		) as Extension<GitExtension>;
-		if (extension !== undefined) {
-			const gitExtension = extension.isActive
-				? extension.exports
-				: await extension.activate();
+@injectable()
+export class GitService {
+	private gitApi?: API;
 
-			return gitExtension.getAPI(1);
-		}
-	} catch {}
+	constructor() {
+		this.initializeGitApi();
+	}
 
-	return undefined;
-}
+	private async initializeGitApi() {
+		this.gitApi = (await getBuiltInGitApi())!;
+	}
 
-export async function getCommits() {
-	const gitApi = await getBuiltInGitApi();
-	return await gitApi?.repositories[0].log();
-}
+	async show(commitHash: string, filePath: string) {
+		return await this.gitApi?.repositories[0].show(commitHash, filePath);
+	}
 
-export async function show(commitHash: string, filePath: string) {
-	const gitApi = await getBuiltInGitApi();
-	return await gitApi?.repositories[0].show(commitHash, filePath);
-}
+	async getCommits() {
+		return await this.gitApi?.repositories[0].log();
+	}
 
-export async function diffBetween(params: { ref1: string; ref2: string }) {
-	const { ref1, ref2 } = params;
-	const gitApi = await getBuiltInGitApi();
-	const repository = gitApi?.repositories[0];
-	const result = await repository!.diffBetween(ref1, ref2);
+	async diffBetween(params: { ref1: string; ref2: string }) {
+		const { ref1, ref2 } = params;
+		const repository = this.gitApi?.repositories[0];
+		const result = await repository!.diffBetween(ref1, ref2);
 
-	const [change] = result!;
-	const uri1 = change.originalUri.with({
-		scheme: "git-view",
-		query: ref1,
-	});
-	const uri2 = change.originalUri.with({
-		scheme: "git-view",
-		query: ref2,
-	});
-	await commands.executeCommand("vscode.diff", uri1, uri2);
-	return result;
+		const [change] = result!;
+		const uri1 = change.originalUri.with({
+			scheme: "git-view",
+			query: ref1,
+		});
+		const uri2 = change.originalUri.with({
+			scheme: "git-view",
+			query: ref2,
+		});
+		await commands.executeCommand("vscode.diff", uri1, uri2);
+		return result;
+	}
 }

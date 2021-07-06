@@ -4,6 +4,7 @@
 		"target": "es6",
 		"outDir": "out",
 		"lib": ["es6", "DOM"],
+		"types": ["reflect-metadata"],
 		"sourceMap": true,
 		"rootDir": "src",
 		"strict": true /* enable all strict type-checking options */,
@@ -17,7 +18,9 @@
 			{
 				"name": "typescript-plugin-css-modules"
 			}
-		]
+		],
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"]

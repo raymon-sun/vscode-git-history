@@ -14,6 +14,25 @@
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "file-explorer",
+					"title": "Files Explorer",
+					"icon": "assets/icons/files.svg"
+				}
+			]
+		},
+		"views": {
+			"file-explorer": [
+				{
+					"id": "changedFiles",
+					"name": "Changed Files",
+					"icon": "assets/icons/files.svg",
+					"contextualTitle": "Files Explorer"
+				}
+			]
+		},
 		"commands": [
 			{
 				"category": "Git View",

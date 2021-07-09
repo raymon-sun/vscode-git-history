@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"module": "commonjs",
 		"target": "es6",
-		"outDir": "out",
+		"outDir": "dist",
 		"lib": ["es6", "DOM"],
 		"types": ["reflect-metadata"],
 		"sourceMap": true,

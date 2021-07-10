@@ -9,7 +9,12 @@ export class VersionedFileProvider implements TextDocumentContentProvider {
 	constructor(private git: GitService) {}
 
 	async provideTextDocumentContent(uri: Uri) {
-		const commitHash = uri.query;
-		return await this.git.show(commitHash, uri.fsPath);
+		const { ref, isFileExist } = JSON.parse(uri.query);
+		if (!isFileExist) {
+			return "";
+		}
+
+		const content = await this.git.show(ref, uri.fsPath);
+		return content;
 	}
 }

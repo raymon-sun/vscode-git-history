@@ -1,10 +1,10 @@
-import { notStrictEqual } from "assert";
+import { deepStrictEqual } from "assert";
 import { getSortedRefs } from "./commit";
 
 suite("Commit utils", () => {
 	test("should return empty array when given empty object", () => {
 		const mockSelectedCommits = {};
-		notStrictEqual(getSortedRefs(mockSelectedCommits), []);
+		deepStrictEqual(getSortedRefs(mockSelectedCommits), []);
 	});
 
 	test("should return commit hashes sorted by date", () => {
@@ -29,9 +29,9 @@ suite("Commit utils", () => {
 			},
 		};
 
-		notStrictEqual(getSortedRefs(mockSelectedCommits), [
-			"9145fb",
+		deepStrictEqual(getSortedRefs(mockSelectedCommits), [
 			"997e42",
+			"9145fb",
 		]);
 	});
 });

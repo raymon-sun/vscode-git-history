@@ -1,26 +1,27 @@
 import { useEffect, useState } from "react";
+import { getSortedRefs } from "./utils/commit";
 import { request } from "./utils/message";
 import { Commit } from "../typings/git-extension";
 import style from "./App.module.scss";
 
-function App() {
+export default function App() {
 	const [commits, setCommits] = useState<Commit[]>([]);
 	const [selectedCommits, setSelectedCommits] = useState<{
-		[hash: string]: true;
+		[hash: string]: Commit;
 	}>({});
 
 	function diff() {
-		const [ref1, ref2] = Object.keys(selectedCommits);
-		request<any>("diff", { ref1, ref2 });
+		request<void>("diff", getSortedRefs(selectedCommits));
 	}
 
-	function selectCommit(hash: string) {
+	function selectCommit(commit: Commit) {
+		const { hash } = commit;
 		if (selectedCommits[hash]) {
 			delete selectedCommits[hash];
 			setSelectedCommits({ ...selectedCommits });
 			return;
 		}
-		setSelectedCommits({ ...selectedCommits, [hash]: true });
+		setSelectedCommits({ ...selectedCommits, [hash]: commit });
 	}
 
 	useEffect(() => {
@@ -45,20 +46,22 @@ function App() {
 				</div>
 			</div>
 			<div className={style["commits-container"]}>
-				{commits.map(({ hash, message, authorName, commitDate }) => (
+				{commits.map((commit) => (
 					<div
 						className={`${style.commit} ${
-							selectedCommits[hash] ? style.selected : ""
+							selectedCommits[commit.hash] ? style.selected : ""
 						}`}
-						onClick={() => selectCommit(hash)}
+						onClick={() => selectCommit(commit)}
 					>
-						<span className={style.hash}>{hash.slice(0, 6)}</span>
-						<span className={style.message}>{message}</span>
+						<span className={style.hash}>
+							{commit.hash.slice(0, 6)}
+						</span>
+						<span className={style.message}>{commit.message}</span>
 						<span className={style["author-name"]}>
-							{authorName}
+							{commit.authorName}
 						</span>
 						<span className={style["commit-date"]}>
-							{commitDate}
+							{commit.commitDate}
 						</span>
 					</div>
 				))}
@@ -66,5 +69,3 @@ function App() {
 		</div>
 	);
 }
-
-export default App;

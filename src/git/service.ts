@@ -23,12 +23,12 @@ export class GitService {
 		return await this.gitApi?.repositories[0].log();
 	}
 
-	async diffBetween(params: { ref1: string; ref2: string }) {
-		const { ref1, ref2 } = params;
+	async diffBetween(refs: string[]) {
+		const [ref1, ref2] = refs;
 		const repository = this.gitApi?.repositories[0];
-		const result = await repository!.diffBetween(ref1, ref2);
+		const changes = await repository!.diffBetween(ref1, ref2);
 
-		const [change] = result!;
+		const [change] = changes!;
 		const uri1 = change.originalUri.with({
 			scheme: "git-view",
 			query: ref1,
@@ -38,6 +38,6 @@ export class GitService {
 			query: ref2,
 		});
 		await commands.executeCommand("vscode.diff", uri1, uri2);
-		return result;
+		return changes;
 	}
 }

@@ -3,6 +3,7 @@ import {
 	TreeItem,
 	TreeItemCollapsibleState,
 	window,
+	ThemeIcon,
 } from "vscode";
 import { readFileSync, accessSync } from "fs";
 import { join } from "path";
@@ -110,15 +111,5 @@ class Dependency extends TreeItem {
 		this.description = this.version;
 	}
 
-	iconPath = {
-		light: join(
-			__filename,
-			"..",
-			"..",
-			"assets",
-			"icons",
-			"dependency.svg"
-		),
-		dark: join(__filename, "..", "..", "assets", "icons", "dependency.svg"),
-	};
+	iconPath = ThemeIcon.File;
 }

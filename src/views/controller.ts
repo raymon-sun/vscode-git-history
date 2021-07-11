@@ -1,6 +1,7 @@
 import { inject, injectable } from "inversify";
 import { join } from "path";
-import { Uri, ViewColumn, Webview, window } from "vscode";
+import { ExtensionContext, Uri, ViewColumn, Webview, window } from "vscode";
+import { TYPES } from "../container/types";
 import { GitService } from "../git/service";
 import { IRequestMessage } from "./utils/message";
 
@@ -15,12 +16,12 @@ export class ViewController {
 	};
 
 	constructor(
-		@inject("extensionPath") private extensionPath: string,
-		@inject("extensionUri") private extensionUri: Uri,
+		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
 		private git: GitService
 	) {}
 
 	async createWebviewPanel() {
+		const { extensionUri } = this.context;
 		const panel = window.createWebviewPanel(
 			"gitView", // Identifies the type of the webview. Used internally
 			"Git View", // Title of the panel displayed to the user
@@ -28,7 +29,7 @@ export class ViewController {
 			{
 				// Enable scripts in the webview
 				enableScripts: true,
-				localResourceRoots: [Uri.joinPath(this.extensionUri, "dist")],
+				localResourceRoots: [Uri.joinPath(extensionUri, "dist")],
 			} // Webview options. More on these later.
 		);
 
@@ -38,9 +39,8 @@ export class ViewController {
 	}
 
 	async generateWebviewContent(webview: Webview) {
-		const scriptPath = Uri.file(
-			join(this.extensionPath, "dist", "view.js")
-		);
+		const { extensionPath } = this.context;
+		const scriptPath = Uri.file(join(extensionPath, "dist", "view.js"));
 		const scriptUri = webview.asWebviewUri(scriptPath);
 		// const scriptUri = scriptPath.with({ scheme: "vscode-resource" });
 		const nonce = this.getNonce();

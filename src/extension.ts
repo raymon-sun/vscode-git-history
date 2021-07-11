@@ -3,7 +3,6 @@
 import { ExtensionContext } from "vscode";
 import { initializeContainer } from "./container/inversify.config";
 import { createDisposables } from "./disposables";
-import { ViewController } from "./views/controller";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -12,9 +11,8 @@ export function activate(context: ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "git-view" is now active!');
 
-	const { extensionPath, extensionUri, subscriptions } = context;
-	initializeContainer(extensionPath, extensionUri);
-
+	initializeContainer(context);
+	const { subscriptions } = context;
 	const disposables = createDisposables();
 	subscriptions.push(...disposables);
 }

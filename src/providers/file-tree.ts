@@ -4,12 +4,17 @@ import {
 	TreeItemCollapsibleState,
 	window,
 	ThemeIcon,
+	workspace,
 } from "vscode";
 import { readFileSync, accessSync } from "fs";
 import { join } from "path";
+import { injectable } from "inversify";
 
+@injectable()
 export class FileTreeProvider implements TreeDataProvider<Dependency> {
-	constructor(private workspaceRoot: string) {}
+	private workspaceRoot = workspace.workspaceFolders![0].uri.path;
+
+	constructor() {}
 
 	getTreeItem(element: Dependency): TreeItem {
 		return element;

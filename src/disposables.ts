@@ -18,7 +18,7 @@ export function createDisposables() {
 		),
 		window.registerTreeDataProvider(
 			"changedFiles",
-			new FileTreeProvider(workspace.workspaceFolders![0].uri.path)
+			container.get(FileTreeProvider)
 		),
 	];
 }

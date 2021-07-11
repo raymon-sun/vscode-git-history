@@ -3,6 +3,7 @@ import { ExtensionContext } from "vscode";
 import { Container } from "inversify";
 
 import { GitService } from "../git/service";
+import { FileTreeProvider } from "../providers/file-tree";
 import { VersionedFileProvider } from "../providers/versioned-file";
 import { ViewController } from "../views/controller";
 import { TYPES } from "./types";
@@ -16,6 +17,7 @@ function initializeContainer(context: ExtensionContext) {
 
 	container.bind<ViewController>(ViewController).toSelf();
 	container.bind<GitService>(GitService).toSelf();
+	container.bind<FileTreeProvider>(FileTreeProvider).toSelf();
 	container.bind<VersionedFileProvider>(VersionedFileProvider).toSelf();
 }
 

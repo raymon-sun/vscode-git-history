@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { ExtensionContext } from "vscode";
+import { initializeContainer } from "./container/inversify.config";
 import { createDisposables } from "./disposables";
 import { ViewController } from "./views/controller";
 
@@ -12,8 +13,9 @@ export function activate(context: ExtensionContext) {
 	console.log('Congratulations, your extension "git-view" is now active!');
 
 	const { extensionPath, extensionUri, subscriptions } = context;
-	const viewController = new ViewController(extensionPath, extensionUri);
-	const disposables = createDisposables(viewController);
+	initializeContainer(extensionPath, extensionUri);
+
+	const disposables = createDisposables();
 	subscriptions.push(...disposables);
 }
 

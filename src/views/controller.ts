@@ -1,12 +1,24 @@
+import { inject, injectable } from "inversify";
 import { join } from "path";
 import { Uri, ViewColumn, Webview, window } from "vscode";
-import { REQUEST_HANDLER_MAP } from "../message/request-handlers";
+import { GitService } from "../git/service";
 import { IRequestMessage } from "./utils/message";
 
+@injectable()
 export class ViewController {
 	private webview?: Webview;
+	private readonly REQUEST_HANDLER_MAP: {
+		[request: string]: (params?: any) => Promise<any>;
+	} = {
+		commits: () => this.git.getCommits(),
+		diff: (args: any) => this.git.diffBetween(args),
+	};
 
-	constructor(private extensionPath: string, private extensionUri: Uri) {}
+	constructor(
+		@inject("extensionPath") private extensionPath: string,
+		@inject("extensionUri") private extensionUri: Uri,
+		private git: GitService
+	) {}
 
 	async createWebviewPanel() {
 		const panel = window.createWebviewPanel(
@@ -67,7 +79,7 @@ export class ViewController {
 				return;
 			}
 
-			const handler = REQUEST_HANDLER_MAP[what];
+			const handler = this.REQUEST_HANDLER_MAP[what];
 			const result = await handler(params);
 			webview.postMessage({ id: message.id, result });
 		});

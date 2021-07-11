@@ -2,7 +2,7 @@ import { commands, window, workspace } from "vscode";
 import { container } from "./container/inversify.config";
 import type { ViewController } from "./views/controller";
 import { VersionedFileProvider } from "./providers/versioned-file";
-import { NodeDependenciesProvider } from "./providers/file-tree";
+import { FileTreeProvider } from "./providers/file-tree";
 
 export function createDisposables(viewController: ViewController) {
 	return [
@@ -18,9 +18,7 @@ export function createDisposables(viewController: ViewController) {
 		),
 		window.registerTreeDataProvider(
 			"changedFiles",
-			new NodeDependenciesProvider(
-				workspace.workspaceFolders![0].uri.path
-			)
+			new FileTreeProvider(workspace.workspaceFolders![0].uri.path)
 		),
 	];
 }

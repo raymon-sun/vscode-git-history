@@ -8,7 +8,7 @@ import {
 import { readFileSync, accessSync } from "fs";
 import { join } from "path";
 
-export class NodeDependenciesProvider implements TreeDataProvider<Dependency> {
+export class FileTreeProvider implements TreeDataProvider<Dependency> {
 	constructor(private workspaceRoot: string) {}
 
 	getTreeItem(element: Dependency): TreeItem {

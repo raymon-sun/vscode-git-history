@@ -3,7 +3,7 @@ import { Change, Status } from "../typings/git-extension";
 
 export function createChangeFileTree(
 	changes: Change[],
-	workspaceRootPath?: string
+	workspaceRootPath = ""
 ) {
 	let fileTree: PathNode = {};
 	changes.forEach((change) => {

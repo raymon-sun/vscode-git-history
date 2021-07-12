@@ -1,8 +1,17 @@
 import { inject, injectable } from "inversify";
 import { join } from "path";
-import { ExtensionContext, Uri, ViewColumn, Webview, window } from "vscode";
+import {
+	ExtensionContext,
+	Uri,
+	ViewColumn,
+	Webview,
+	window,
+	workspace,
+} from "vscode";
 import { TYPES } from "../container/types";
 import { GitService } from "../git/service";
+import { createChangeFileTree } from "../git/utils";
+import { Change } from "../typings/git-extension";
 import { IRequestMessage } from "./utils/message";
 
 @injectable()
@@ -12,7 +21,10 @@ export class ViewController {
 		[request: string]: (params?: any) => Promise<any>;
 	} = {
 		commits: () => this.git.getCommits(),
-		diff: (args: any) => this.git.diffBetween(args),
+		diff: async (args: any) => {
+			const changes = await this.git.diffBetween(args);
+			this.updateTreeView(changes);
+		},
 	};
 
 	constructor(
@@ -83,5 +95,13 @@ export class ViewController {
 			const result = await handler(params);
 			webview.postMessage({ id: message.id, result });
 		});
+	}
+
+	private updateTreeView(changes: Change[]) {
+		const fileTree = createChangeFileTree(
+			changes,
+			workspace.workspaceFolders![0].uri.path
+		);
+		this.context.globalState.update("changedFileTree", fileTree);
 	}
 }

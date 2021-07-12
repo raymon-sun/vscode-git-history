@@ -11,6 +11,7 @@ export function activate(context: ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "git-view" is now active!');
 
+	context.globalState.update("changedFileTree", {});
 	initializeContainer(context);
 	const { subscriptions } = context;
 	const disposables = createDisposables();

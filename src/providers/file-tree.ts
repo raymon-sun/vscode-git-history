@@ -1,120 +1,75 @@
 import {
 	TreeDataProvider,
 	TreeItem,
-	TreeItemCollapsibleState,
-	window,
 	ThemeIcon,
-	workspace,
+	ExtensionContext,
+	TreeItemCollapsibleState,
 } from "vscode";
-import { readFileSync, accessSync } from "fs";
-import { join } from "path";
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
+import { TYPES } from "../container/types";
+import { PathNode } from "../git/utils";
 
 @injectable()
-export class FileTreeProvider implements TreeDataProvider<Dependency> {
-	private workspaceRoot = workspace.workspaceFolders![0].uri.path;
+export class FileTreeProvider implements TreeDataProvider<TreeItem> {
+	private treeData =
+		this.context.globalState.get<PathNode>("changedFileTree")!;
+	private _treeData = {
+		assets: { beans: { status: 1, checkIsFile: () => true } },
+		src: {
+			actions: {
+				["throw.ts"]: {
+					status: 1,
+					checkIsFile: () => true,
+				},
+			},
+		},
+	};
 
-	constructor() {}
+	constructor(
+		@inject(TYPES.ExtensionContext) private context: ExtensionContext
+	) {}
 
-	getTreeItem(element: Dependency): TreeItem {
+	getTreeItem(element: Path): Path {
 		return element;
 	}
 
-	getChildren(element?: Dependency): Thenable<Dependency[]> {
-		if (!this.workspaceRoot) {
-			window.showInformationMessage("No dependency in empty workspace");
-			return Promise.resolve([]);
-		}
+	getChildren(element?: Path): Thenable<Path[]> {
+		return Promise.resolve(
+			Object.entries(element ? element.children! : this._treeData).map(
+				([path, children]) => {
+					if (
+						isFunction(children.checkIsFile) &&
+						children.checkIsFile()
+					) {
+						return new Path(path, TreeItemCollapsibleState.None);
+					}
 
-		if (element) {
-			return Promise.resolve(
-				this.getDepsInPackageJson(
-					join(
-						this.workspaceRoot,
-						"node_modules",
-						element.label,
-						"package.json"
-					)
-				)
-			);
-		} else {
-			const packageJsonPath = join(this.workspaceRoot, "package.json");
-			if (this.pathExists(packageJsonPath)) {
-				return Promise.resolve(
-					this.getDepsInPackageJson(packageJsonPath)
-				);
-			} else {
-				window.showInformationMessage("Workspace has no package.json");
-				return Promise.resolve([]);
-			}
-		}
-	}
-
-	/**
-	 * Given the path to package.json, read all its dependencies and devDependencies.
-	 */
-	private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
-		if (this.pathExists(packageJsonPath)) {
-			const packageJson = JSON.parse(
-				readFileSync(packageJsonPath, "utf-8")
-			);
-
-			const toDep = (moduleName: string, version: string): Dependency => {
-				if (
-					this.pathExists(
-						join(this.workspaceRoot, "node_modules", moduleName)
-					)
-				) {
-					return new Dependency(
-						moduleName,
-						version,
-						TreeItemCollapsibleState.Collapsed
-					);
-				} else {
-					return new Dependency(
-						moduleName,
-						version,
-						TreeItemCollapsibleState.None
+					return new Path(
+						path,
+						TreeItemCollapsibleState.Expanded,
+						children as PathNode
 					);
 				}
-			};
-
-			const deps = packageJson.dependencies
-				? Object.keys(packageJson.dependencies).map((dep) =>
-						toDep(dep, packageJson.dependencies[dep])
-				  )
-				: [];
-			const devDeps = packageJson.devDependencies
-				? Object.keys(packageJson.devDependencies).map((dep) =>
-						toDep(dep, packageJson.devDependencies[dep])
-				  )
-				: [];
-			return deps.concat(devDeps);
-		} else {
-			return [];
-		}
-	}
-
-	private pathExists(p: string): boolean {
-		try {
-			accessSync(p);
-		} catch (err) {
-			return false;
-		}
-		return true;
+			)
+		);
 	}
 }
 
-class Dependency extends TreeItem {
+class Path extends TreeItem {
 	constructor(
-		public readonly label: string,
-		private version: string,
-		public readonly collapsibleState: TreeItemCollapsibleState
+		public label: string,
+		public readonly collapsibleState: TreeItemCollapsibleState,
+		public children?: PathNode
 	) {
-		super(label, collapsibleState);
-		this.tooltip = `${this.label}-${this.version}`;
-		this.description = this.version;
+		super(label);
 	}
 
 	iconPath = ThemeIcon.File;
+}
+
+function isFunction(functionToCheck: unknown) {
+	return (
+		functionToCheck &&
+		{}.toString.call(functionToCheck) === "[object Function]"
+	);
 }

@@ -38,11 +38,11 @@ suite("Git utils", () => {
 		deepStrictEqual<PathCollection>(tree, {
 			src: {
 				type: PathType.FOLDER,
-				path: "",
+				path: "/projects/public/sword-practice/src",
 				children: {
 					actions: {
 						type: PathType.FOLDER,
-						path: "",
+						path: "/projects/public/sword-practice/src/actions",
 						children: {
 							["throw.ts"]: {
 								type: PathType.FILE,
@@ -64,7 +64,7 @@ suite("Git utils", () => {
 			},
 			assets: {
 				type: PathType.FOLDER,
-				path: "",
+				path: "/projects/public/sword-practice/assets",
 				children: {
 					beans: {
 						type: PathType.FILE,

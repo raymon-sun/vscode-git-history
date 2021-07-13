@@ -15,21 +15,23 @@ export function createChangeFileTree(
 		const dirSegments = workspaceDir.split(sep);
 
 		let fileNode = fileTree;
-		dirSegments.forEach((dirSegment) => {
+		dirSegments.reduce((prePath, dirSegment) => {
 			if (!dirSegment) {
-				return;
+				return prePath;
 			}
 
+			const currentPath = `${prePath}${sep}${dirSegment}`;
 			if (!fileNode[dirSegment]) {
 				fileNode[dirSegment] = {
 					type: PathType.FOLDER,
-					path: "",
+					path: currentPath,
 					children: {},
 				};
 			}
 
 			fileNode = (fileNode[dirSegment] as FolderNode).children;
-		});
+			return currentPath;
+		}, workspaceRootPath);
 
 		fileNode[base] = {
 			type: PathType.FILE,

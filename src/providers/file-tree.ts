@@ -76,21 +76,7 @@ export class FileTreeProvider implements TreeDataProvider<TreeItem> {
 			Object.entries(
 				element ? (element.children as PathCollection)! : this._treeData
 			).map(([name, props]) => {
-				if (props.type === PathType.FILE) {
-					return new Path(
-						name,
-						TreeItemCollapsibleState.None,
-						PathType.FILE,
-						props
-					);
-				}
-
-				return new Path(
-					name,
-					TreeItemCollapsibleState.Expanded,
-					PathType.FOLDER,
-					props
-				);
+				return new Path(name, props.type, props);
 			})
 		);
 	}
@@ -100,10 +86,10 @@ class Path extends TreeItem {
 	children?: PathCollection = (this.props as FolderNode).children;
 	iconPath = ThemeIcon[this.pathType];
 	resourceUri = this.getResourceUri(this.pathType);
+	collapsibleState = this.getCollapsibleState(this.pathType);
 
 	constructor(
 		public label: string,
-		public readonly collapsibleState: TreeItemCollapsibleState,
 		public pathType: PathType,
 		public props: FolderNode | FileNode
 	) {
@@ -111,11 +97,20 @@ class Path extends TreeItem {
 	}
 
 	private getResourceUri(pathType: PathType) {
-		const MAP = {
+		const URI_MAP = {
 			[PathType.FOLDER]: () => Uri.file(this.label),
-			[PathType.FILE]: () => Uri.file((this.props as FileNode).uri.path),
+			[PathType.FILE]: () => (this.props as FileNode).uri,
 		};
 
-		return MAP[pathType]();
+		return URI_MAP[pathType]();
+	}
+
+	private getCollapsibleState(pathType: PathType) {
+		const STATE_MAP = {
+			[PathType.FOLDER]: TreeItemCollapsibleState.Expanded,
+			[PathType.FILE]: TreeItemCollapsibleState.None,
+		};
+
+		return STATE_MAP[pathType];
 	}
 }

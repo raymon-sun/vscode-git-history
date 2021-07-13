@@ -1,5 +1,6 @@
-import { strictEqual } from "assert";
-import { createChangeFileTree } from "./utils";
+import { deepStrictEqual } from "assert";
+import { Uri } from "vscode";
+import { createChangeFileTree, PathCollection, PathType } from "./utils";
 
 suite("Git utils", () => {
 	test("should create a file tree when given change list", () => {
@@ -29,21 +30,58 @@ suite("Git utils", () => {
 				},
 			},
 		];
-		const tree: any = createChangeFileTree(
+		const tree = createChangeFileTree(
 			mockChanges as any[],
 			"/projects/public/sword-practice"
 		);
 
-		strictEqual(tree["README.md"].status, 1);
-		strictEqual(tree["README.md"].checkIsFile(), true);
-
-		strictEqual(tree.assets.beans.status, 2);
-		strictEqual(tree.assets.beans.checkIsFile(), true);
-
-		strictEqual(tree.src["hands-up.ts"].status, 5);
-		strictEqual(tree.src["hands-up.ts"].checkIsFile(), true);
-
-		strictEqual(tree.src.actions["throw.ts"].status, 3);
-		strictEqual(tree.src.actions["throw.ts"].checkIsFile(), true);
+		deepStrictEqual<PathCollection>(tree, {
+			src: {
+				type: PathType.FOLDER,
+				path: "",
+				children: {
+					actions: {
+						type: PathType.FOLDER,
+						path: "",
+						children: {
+							["throw.ts"]: {
+								type: PathType.FILE,
+								status: 3,
+								uri: {
+									path: "/projects/public/sword-practice/src/actions/throw.ts",
+								} as Uri,
+							},
+						},
+					},
+					["hands-up.ts"]: {
+						type: PathType.FILE,
+						status: 5,
+						uri: {
+							path: "/projects/public/sword-practice/src/hands-up.ts",
+						} as Uri,
+					},
+				},
+			},
+			assets: {
+				type: PathType.FOLDER,
+				path: "",
+				children: {
+					beans: {
+						type: PathType.FILE,
+						status: 2,
+						uri: {
+							path: "/projects/public/sword-practice/assets/beans",
+						} as Uri,
+					},
+				},
+			},
+			["README.md"]: {
+				type: PathType.FILE,
+				status: 1,
+				uri: {
+					path: "/projects/public/sword-practice/README.md",
+				} as Uri,
+			},
+		});
 	});
 });

@@ -1,13 +1,15 @@
 import { sep, parse, normalize } from "path";
+import { Uri } from "vscode";
 import { Change, Status } from "../typings/git-extension";
 
 export function createChangeFileTree(
 	changes: Change[],
 	workspaceRootPath = ""
 ) {
-	let fileTree: PathNode = {};
+	let fileTree: PathCollection = {};
 	changes.forEach((change) => {
-		const { path } = change.uri;
+		const { uri } = change;
+		const { path } = uri;
 		const { dir, base } = parse(path);
 		const workspaceDir = dir.substring(normalize(workspaceRootPath).length);
 		const dirSegments = workspaceDir.split(sep);
@@ -19,26 +21,43 @@ export function createChangeFileTree(
 			}
 
 			if (!fileNode[dirSegment]) {
-				fileNode[dirSegment] = {};
+				fileNode[dirSegment] = {
+					type: PathType.FOLDER,
+					path: "",
+					children: {},
+				};
 			}
 
-			fileNode = fileNode[dirSegment] as PathNode;
+			fileNode = (fileNode[dirSegment] as FolderNode).children;
 		});
 
 		fileNode[base] = {
+			type: PathType.FILE,
 			status: change.status,
-			checkIsFile: () => true,
+			uri,
 		};
 	});
 
 	return fileTree;
 }
 
-export type PathNode = {
-	[dirOrFile: string]: FileNode | PathNode;
-};
+export interface PathCollection {
+	[folderOrFile: string]: FolderNode | FileNode;
+}
 
-export type FileNode = {
+export interface FolderNode {
+	type: PathType.FOLDER;
+	path: string;
+	children: PathCollection;
+}
+
+export interface FileNode {
+	type: PathType.FILE;
 	status: Status;
-	checkIsFile: () => true;
-};
+	uri: Uri;
+}
+
+export enum PathType {
+	FOLDER = "Folder",
+	FILE = "File",
+}

@@ -1,8 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { ExtensionContext } from "vscode";
-import { initializeContainer } from "./container/inversify.config";
-import { createDisposables } from "./disposables";
+import { container, initializeContainer } from "./container/inversify.config";
+import { DisposableController } from "./disposables";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -14,7 +14,8 @@ export function activate(context: ExtensionContext) {
 	context.globalState.update("changedFileTree", {});
 	initializeContainer(context);
 	const { subscriptions } = context;
-	const disposables = createDisposables();
+	const disposableController = container.get(DisposableController);
+	const disposables = disposableController.createDisposables();
 	subscriptions.push(...disposables);
 }
 

@@ -11,6 +11,7 @@ import {
 import { TYPES } from "../container/types";
 import { GitService } from "../git/service";
 import { createChangeFileTree } from "../git/utils";
+import { FileTreeProvider } from "../providers/file-tree";
 import { Change } from "../typings/git-extension";
 import { IRequestMessage } from "./utils/message";
 
@@ -29,7 +30,8 @@ export class ViewController {
 
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
-		private git: GitService
+		private git: GitService,
+		private fileTreeProvider: FileTreeProvider
 	) {}
 
 	async createWebviewPanel() {
@@ -103,5 +105,6 @@ export class ViewController {
 			workspace.workspaceFolders![0].uri.path
 		);
 		this.context.globalState.update("changedFileTree", fileTree);
+		this.fileTreeProvider.refresh();
 	}
 }

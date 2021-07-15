@@ -1,6 +1,6 @@
 {
-	"name": "git-view",
-	"displayName": "Git View",
+	"name": "vscode-git-diff-plus",
+	"displayName": "Git Diff Plus",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {

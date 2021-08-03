@@ -18,7 +18,7 @@ export class FileTreeProvider implements TreeDataProvider<TreeItem> {
 
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext
-	) {}
+	) { }
 
 	getTreeItem(element: Path): Path {
 		return element;

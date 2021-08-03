@@ -4,7 +4,7 @@ import { GitService } from "../git/service";
 
 @injectable()
 export class VersionedFileProvider implements TextDocumentContentProvider {
-	static scheme = "git-view";
+	static scheme = "git-diff-plus";
 
 	constructor(private git: GitService) {}
 

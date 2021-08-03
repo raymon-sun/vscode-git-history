@@ -37,8 +37,8 @@ export class ViewController {
 	async createWebviewPanel() {
 		const { extensionUri } = this.context;
 		const panel = window.createWebviewPanel(
-			"gitView", // Identifies the type of the webview. Used internally
-			"Git View", // Title of the panel displayed to the user
+			"gitDiffPlus", // Identifies the type of the webview. Used internally
+			"Git Diff Picker", // Title of the panel displayed to the user
 			ViewColumn.One, // Editor column to show the new webview panel in.
 			{
 				// Enable scripts in the webview
@@ -65,7 +65,7 @@ export class ViewController {
 				<meta charset="UTF-8">
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>Git View</title>
+				<title>Git Diff Picker</title>
 			</head>
 			<body>
 				<div id="root"></div>

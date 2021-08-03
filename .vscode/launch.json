@@ -14,7 +14,7 @@
 			"preLaunchTask": "npm: watch",
 			"sourceMaps": true,
 			"sourceMapPathOverrides": {
-				"webpack://git-view/./src/*": "${workspaceRoot}/src/*"
+				"webpack://vscode-git-diff-plus/./src/*": "${workspaceRoot}/src/*"
 			}
 		},
 		{

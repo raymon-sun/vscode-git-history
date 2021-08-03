@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:git-view.view"
+		"onCommand:git-diff-plus.view"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -35,8 +35,8 @@
 		},
 		"commands": [
 			{
-				"category": "Git View",
-				"command": "git-view.view",
+				"category": "GDP",
+				"command": "git-diff-plus.view",
 				"title": "View git log"
 			}
 		]

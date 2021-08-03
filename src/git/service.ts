@@ -41,11 +41,11 @@ export class GitService {
 		};
 
 		const uri1 = change.originalUri.with({
-			scheme: "git-view",
+			scheme: "git-diff-plus",
 			query: JSON.stringify(query1),
 		});
 		const uri2 = change.originalUri.with({
-			scheme: "git-view",
+			scheme: "git-diff-plus",
 			query: JSON.stringify(query2),
 		});
 		await commands.executeCommand("vscode.diff", uri1, uri2);

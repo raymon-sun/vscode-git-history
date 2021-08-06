@@ -9,7 +9,13 @@ import {
 } from "vscode";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../container/types";
-import { FileNode, FolderNode, PathCollection, PathType } from "../git/utils";
+import {
+	compareFileTreeNode,
+	FileNode,
+	FolderNode,
+	PathCollection,
+	PathType,
+} from "../git/utils";
 
 @injectable()
 export class FileTreeProvider implements TreeDataProvider<TreeItem> {
@@ -18,7 +24,7 @@ export class FileTreeProvider implements TreeDataProvider<TreeItem> {
 
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext
-	) { }
+	) {}
 
 	getTreeItem(element: Path): Path {
 		return element;
@@ -31,9 +37,11 @@ export class FileTreeProvider implements TreeDataProvider<TreeItem> {
 		return Promise.resolve(
 			Object.entries(
 				element ? (element.children as PathCollection)! : treeData
-			).map(([name, props]) => {
-				return new Path(name, props.type, props);
-			})
+			)
+				.sort(compareFileTreeNode)
+				.map(([name, props]) => {
+					return new Path(name, props.type, props);
+				})
 		);
 	}
 

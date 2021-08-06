@@ -1,6 +1,13 @@
 import { deepStrictEqual } from "assert";
 import { Uri } from "vscode";
-import { createChangeFileTree, PathCollection, PathType } from "./utils";
+import {
+	createChangeFileTree,
+	PathCollection,
+	PathType,
+	compareFileTreeNode,
+	FileNode,
+	FolderNode,
+} from "./utils";
 
 suite("Git utils", () => {
 	test("should create a file tree when given change list", () => {
@@ -83,5 +90,79 @@ suite("Git utils", () => {
 				} as Uri,
 			},
 		});
+	});
+
+	test("should sort the given file nodes", () => {
+		deepStrictEqual(
+			compareFileTreeNode(
+				[
+					"utils",
+					{
+						type: PathType.FOLDER,
+					} as FolderNode,
+				],
+				[
+					"utils",
+					{
+						type: PathType.FILE,
+					} as FileNode,
+				]
+			),
+			-1
+		);
+
+		deepStrictEqual(
+			compareFileTreeNode(
+				[
+					"tests",
+					{
+						type: PathType.FILE,
+					} as FileNode,
+				],
+				[
+					"tests",
+					{
+						type: PathType.FOLDER,
+					} as FolderNode,
+				]
+			),
+			1
+		);
+
+		deepStrictEqual(
+			compareFileTreeNode(
+				[
+					"state",
+					{
+						type: PathType.FILE,
+					} as FileNode,
+				],
+				[
+					"tsconfig.json",
+					{
+						type: PathType.FILE,
+					} as FileNode,
+				]
+			),
+			-1
+		);
+
+		deepStrictEqual(
+			compareFileTreeNode(
+				[
+					".gitignore",
+					{
+						type: PathType.FILE,
+					} as FileNode,
+				],
+				[
+					".editorconfig",
+					{
+						type: PathType.FILE,
+					} as FileNode,
+				]
+			),
+			1
+		);
 	});
 });

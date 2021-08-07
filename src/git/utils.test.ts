@@ -1,5 +1,4 @@
 import { deepStrictEqual } from "assert";
-import { Uri } from "vscode";
 import {
 	createChangeFileTree,
 	PathCollection,
@@ -53,20 +52,30 @@ suite("Git utils", () => {
 						children: {
 							["throw.ts"]: {
 								type: PathType.FILE,
-								status: 3,
 								uri: {
 									path: "/projects/public/sword-practice/src/actions/throw.ts",
-								} as Uri,
-							},
+								},
+								change: {
+									status: 3,
+									uri: {
+										path: "/projects/public/sword-practice/src/actions/throw.ts",
+									},
+								},
+							} as FileNode,
 						},
 					},
 					["hands-up.ts"]: {
 						type: PathType.FILE,
-						status: 5,
 						uri: {
 							path: "/projects/public/sword-practice/src/hands-up.ts",
-						} as Uri,
-					},
+						},
+						change: {
+							status: 5,
+							uri: {
+								path: "/projects/public/sword-practice/src/hands-up.ts",
+							},
+						},
+					} as FileNode,
 				},
 			},
 			assets: {
@@ -75,20 +84,30 @@ suite("Git utils", () => {
 				children: {
 					beans: {
 						type: PathType.FILE,
-						status: 2,
 						uri: {
 							path: "/projects/public/sword-practice/assets/beans",
-						} as Uri,
-					},
+						},
+						change: {
+							status: 2,
+							uri: {
+								path: "/projects/public/sword-practice/assets/beans",
+							},
+						},
+					} as FileNode,
 				},
 			},
 			["README.md"]: {
 				type: PathType.FILE,
-				status: 1,
 				uri: {
 					path: "/projects/public/sword-practice/README.md",
-				} as Uri,
-			},
+				},
+				change: {
+					status: 1,
+					uri: {
+						path: "/projects/public/sword-practice/README.md",
+					},
+				},
+			} as FileNode,
 		});
 	});
 

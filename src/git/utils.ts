@@ -1,6 +1,6 @@
 import { sep, parse, normalize } from "path";
 import { Uri } from "vscode";
-import { Change, Status } from "../typings/git-extension";
+import { Change } from "../typings/git-extension";
 
 export function createChangeFileTree(
 	changes: Change[],
@@ -35,8 +35,8 @@ export function createChangeFileTree(
 
 		fileNode[base] = {
 			type: PathType.FILE,
-			status: change.status,
 			uri,
+			change,
 		};
 	});
 
@@ -89,8 +89,8 @@ export interface FolderNode {
 
 export interface FileNode {
 	type: PathType.FILE;
-	status: Status;
 	uri: Uri;
+	change: Change;
 }
 
 export enum PathType {

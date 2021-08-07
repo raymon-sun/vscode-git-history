@@ -6,6 +6,7 @@ import {
 	TreeItemCollapsibleState,
 	Uri,
 	EventEmitter,
+	Command,
 } from "vscode";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../container/types";
@@ -55,6 +56,12 @@ class Path extends TreeItem {
 	iconPath = ThemeIcon[this.pathType];
 	resourceUri = this.getResourceUri(this.pathType);
 	collapsibleState = this.getCollapsibleState(this.pathType);
+
+	readonly command: Command = {
+		title: "diff",
+		command: "vscode.diff",
+		arguments: [],
+	};
 
 	constructor(
 		public label: string,

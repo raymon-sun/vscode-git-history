@@ -74,7 +74,7 @@ class Path extends TreeItem {
 	private getResourceUri(pathType: PathType) {
 		const URI_MAP = {
 			[PathType.FOLDER]: () => Uri.file(this.label),
-			[PathType.FILE]: () => (this.props as FileNode).uri,
+			[PathType.FILE]: () => (this.props as FileNode).change.uri,
 		};
 
 		return URI_MAP[pathType]();

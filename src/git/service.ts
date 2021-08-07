@@ -44,7 +44,7 @@ export class GitService {
 			scheme: "git-diff-plus",
 			query: JSON.stringify(query1),
 		});
-		const uri2 = change.originalUri.with({
+		const uri2 = (change.renameUri || change.originalUri).with({
 			scheme: "git-diff-plus",
 			query: JSON.stringify(query2),
 		});

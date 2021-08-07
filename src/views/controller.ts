@@ -22,9 +22,9 @@ export class ViewController {
 		[request: string]: (params?: any) => Promise<any>;
 	} = {
 		commits: () => this.git.getCommits(),
-		diff: async (args: any) => {
-			const changes = await this.git.diffBetween(args);
-			this.updateTreeView(changes);
+		diff: async (refs: string[]) => {
+			const changes = await this.git.diffBetween(refs);
+			this.updateTreeView(refs, changes);
 		},
 	};
 
@@ -99,8 +99,9 @@ export class ViewController {
 		});
 	}
 
-	private updateTreeView(changes: Change[]) {
+	private updateTreeView(refs: string[], changes: Change[]) {
 		const fileTree = createChangeFileTree(
+			refs,
 			changes,
 			workspace.workspaceFolders![0].uri.path
 		);

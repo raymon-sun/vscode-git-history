@@ -14,6 +14,7 @@ import {
 	compareFileTreeNode,
 	FileNode,
 	FolderNode,
+	getDiffUris,
 	PathCollection,
 	PathType,
 } from "../git/utils";
@@ -56,12 +57,7 @@ class Path extends TreeItem {
 	iconPath = ThemeIcon[this.pathType];
 	resourceUri = this.getResourceUri(this.pathType);
 	collapsibleState = this.getCollapsibleState(this.pathType);
-
-	readonly command: Command = {
-		title: "diff",
-		command: "vscode.diff",
-		arguments: [],
-	};
+	readonly command?: Command = this.getCommand();
 
 	constructor(
 		public label: string,
@@ -87,5 +83,16 @@ class Path extends TreeItem {
 		};
 
 		return STATE_MAP[pathType];
+	}
+
+	private getCommand() {
+		if (this.props.type === PathType.FILE) {
+			const { refs, change } = this.props;
+			return {
+				title: "diff",
+				command: "vscode.diff",
+				arguments: getDiffUris(refs, change),
+			};
+		}
 	}
 }

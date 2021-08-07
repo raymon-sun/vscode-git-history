@@ -1,7 +1,8 @@
 import { sep, parse, normalize } from "path";
-import { Change } from "../typings/git-extension";
+import { Change, Status } from "../typings/git-extension";
 
 export function createChangeFileTree(
+	refs: string[],
 	changes: Change[],
 	workspaceRootPath = ""
 ) {
@@ -35,10 +36,35 @@ export function createChangeFileTree(
 		fileNode[base] = {
 			type: PathType.FILE,
 			change,
+			refs,
 		};
 	});
 
 	return fileTree;
+}
+
+export function getDiffUris(refs: string[], change: Change) {
+	const [ref1, ref2] = refs;
+	const query1 = {
+		isFileExist: change.status !== Status.INDEX_ADDED,
+		ref: ref1,
+	};
+
+	const query2 = {
+		isFileExist: change.status !== Status.DELETED,
+		ref: ref2,
+	};
+
+	const uri1 = change.originalUri.with({
+		scheme: "git-diff-plus",
+		query: JSON.stringify(query1),
+	});
+	const uri2 = (change.renameUri || change.originalUri).with({
+		scheme: "git-diff-plus",
+		query: JSON.stringify(query2),
+	});
+
+	return [uri1, uri2];
 }
 
 // TODO: take functions below to another directory
@@ -88,6 +114,7 @@ export interface FolderNode {
 export interface FileNode {
 	type: PathType.FILE;
 	change: Change;
+	refs: string[];
 }
 
 export enum PathType {

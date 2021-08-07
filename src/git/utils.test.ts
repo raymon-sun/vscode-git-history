@@ -37,6 +37,7 @@ suite("Git utils", () => {
 			},
 		];
 		const tree = createChangeFileTree(
+			["1", "2"],
 			mockChanges as any[],
 			"/projects/public/sword-practice"
 		);
@@ -52,6 +53,7 @@ suite("Git utils", () => {
 						children: {
 							["throw.ts"]: {
 								type: PathType.FILE,
+								refs: ["1", "2"],
 								change: {
 									status: 3,
 									uri: {
@@ -63,6 +65,7 @@ suite("Git utils", () => {
 					},
 					["hands-up.ts"]: {
 						type: PathType.FILE,
+						refs: ["1", "2"],
 						change: {
 							status: 5,
 							uri: {
@@ -78,6 +81,7 @@ suite("Git utils", () => {
 				children: {
 					beans: {
 						type: PathType.FILE,
+						refs: ["1", "2"],
 						change: {
 							status: 2,
 							uri: {
@@ -89,6 +93,7 @@ suite("Git utils", () => {
 			},
 			["README.md"]: {
 				type: PathType.FILE,
+				refs: ["1", "2"],
 				change: {
 					status: 1,
 					uri: {

@@ -1,7 +1,6 @@
 import { injectable } from "inversify";
-import { commands } from "vscode";
 import { getBuiltInGitApi } from "./api";
-import { API, Status } from "../typings/git-extension";
+import { API } from "../typings/git-extension";
 
 @injectable()
 export class GitService {

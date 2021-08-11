@@ -18,6 +18,7 @@ import {
 	PathCollection,
 	PathType,
 } from "../git/utils";
+import { EXTENSION_SCHEME } from "../constants";
 
 @injectable()
 export class FileTreeProvider implements TreeDataProvider<TreeItem> {
@@ -42,7 +43,7 @@ export class FileTreeProvider implements TreeDataProvider<TreeItem> {
 			)
 				.sort(compareFileTreeNode)
 				.map(([name, props]) => {
-					return new Path(name, props.type, props);
+					return new Path(name, props);
 				})
 		);
 	}
@@ -54,35 +55,36 @@ export class FileTreeProvider implements TreeDataProvider<TreeItem> {
 
 class Path extends TreeItem {
 	children?: PathCollection = (this.props as FolderNode).children;
-	iconPath = ThemeIcon[this.pathType];
-	resourceUri = this.getResourceUri(this.pathType);
-	collapsibleState = this.getCollapsibleState(this.pathType);
+	iconPath = ThemeIcon[this.props.type];
+	resourceUri = this.getResourceUri();
+	collapsibleState = this.getCollapsibleState();
 	readonly command?: Command = this.getCommand();
 
-	constructor(
-		public label: string,
-		public pathType: PathType,
-		public props: FolderNode | FileNode
-	) {
+	constructor(public label: string, public props: FolderNode | FileNode) {
 		super(label);
 	}
 
-	private getResourceUri(pathType: PathType) {
-		const URI_MAP = {
-			[PathType.FOLDER]: () => Uri.file(this.label),
-			[PathType.FILE]: () => (this.props as FileNode).change.uri,
-		};
+	private getResourceUri() {
+		if (this.props.type === PathType.FILE) {
+			return this.props.change.uri.with({
+				scheme: EXTENSION_SCHEME,
+				query: JSON.stringify({ status: this.props.change.status }),
+			});
+		}
 
-		return URI_MAP[pathType]();
+		if (this.props.type === PathType.FOLDER) {
+			return Uri.file(this.label);
+		}
 	}
 
-	private getCollapsibleState(pathType: PathType) {
+	private getCollapsibleState() {
+		const { type } = this.props;
 		const STATE_MAP = {
 			[PathType.FOLDER]: TreeItemCollapsibleState.Expanded,
 			[PathType.FILE]: TreeItemCollapsibleState.None,
 		};
 
-		return STATE_MAP[pathType];
+		return STATE_MAP[type];
 	}
 
 	private getCommand() {

@@ -1,4 +1,5 @@
 import { sep, parse, normalize } from "path";
+import { EXTENSION_SCHEME } from "../constants";
 import { Change, Status } from "../typings/git-extension";
 
 export function createChangeFileTree(
@@ -56,11 +57,11 @@ export function getDiffUris(refs: string[], change: Change) {
 	};
 
 	const uri1 = change.originalUri.with({
-		scheme: "git-diff-plus",
+		scheme: EXTENSION_SCHEME,
 		query: JSON.stringify(query1),
 	});
 	const uri2 = (change.renameUri || change.originalUri).with({
-		scheme: "git-diff-plus",
+		scheme: EXTENSION_SCHEME,
 		query: JSON.stringify(query2),
 	});
 

@@ -8,6 +8,7 @@ import { VersionedFileProvider } from "../providers/versioned-file";
 import { ViewController } from "../views/controller";
 import { TYPES } from "./types";
 import { DisposableController } from "../disposables";
+import { GitStatusDecorationProvider } from "../providers/decoration";
 
 const container = new Container();
 
@@ -20,6 +21,7 @@ function initializeContainer(context: ExtensionContext) {
 	container.bind<GitService>(GitService).toSelf().inSingletonScope();
 	container.bind<FileTreeProvider>(FileTreeProvider).toSelf().inSingletonScope();
 	container.bind<VersionedFileProvider>(VersionedFileProvider).toSelf().inSingletonScope();
+	container.bind<GitStatusDecorationProvider>(GitStatusDecorationProvider).toSelf().inSingletonScope();
 	container.bind<DisposableController>(DisposableController).toSelf().inSingletonScope();
 }
 

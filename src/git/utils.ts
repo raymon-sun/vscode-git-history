@@ -2,6 +2,63 @@ import { sep, parse, normalize } from "path";
 import { EXTENSION_SCHEME } from "../constants";
 import { Change, Status } from "../typings/git-extension";
 
+export type ChangesCollection = { ref: string; changes: Change[] }[];
+
+export function resolveChangesCollection(
+	changesCollection: ChangesCollection,
+	workspaceRootPath = ""
+) {
+	let fileTree: PathCollection = {};
+
+	const pathMap: Record<string, FileNode> = {};
+	changesCollection.forEach(({ ref, changes }) => {
+		changes.forEach((change) => {
+			const {
+				uri: { path },
+			} = change;
+			if (pathMap[path]) {
+				pathMap[path].earliestRef = ref;
+				return;
+			}
+
+			const { dir, base } = parse(path);
+			const workspaceDir = dir.substring(
+				normalize(workspaceRootPath).length
+			);
+			const dirSegments = workspaceDir.split(sep);
+
+			let fileNode = fileTree;
+			dirSegments.reduce((prePath, dirSegment) => {
+				if (!dirSegment) {
+					return prePath;
+				}
+
+				const currentPath = `${prePath}${sep}${dirSegment}`;
+				if (!fileNode[dirSegment]) {
+					fileNode[dirSegment] = {
+						type: PathType.FOLDER,
+						path: currentPath,
+						children: {},
+					};
+				}
+
+				fileNode = (fileNode[dirSegment] as FolderNode).children;
+				return currentPath;
+			}, workspaceRootPath);
+
+			pathMap[path] = {
+				type: PathType.FILE,
+				change,
+				latestRef: ref,
+			};
+
+			fileNode[base] = pathMap[path];
+		});
+	});
+
+	return fileTree;
+}
+
 export function createChangeFileTree(
 	refs: string[],
 	changes: Change[],
@@ -115,7 +172,9 @@ export interface FolderNode {
 export interface FileNode {
 	type: PathType.FILE;
 	change: Change;
-	refs: string[];
+	refs?: string[];
+	latestRef?: string;
+	earliestRef?: string;
 }
 
 export enum PathType {

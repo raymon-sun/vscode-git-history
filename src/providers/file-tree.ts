@@ -93,7 +93,7 @@ class Path extends TreeItem {
 			return {
 				title: "diff",
 				command: "vscode.diff",
-				arguments: getDiffUris(refs, change),
+				arguments: getDiffUris(refs!, change),
 			};
 		}
 	}

@@ -6,7 +6,7 @@ export function getSortedRefs(selectedCommits: { [hash: string]: Commit }) {
 	return Object.values(selectedCommits)
 		.sort(
 			({ commitDate: preDate }, { commitDate: nextDate }) =>
-				dayjs(preDate).unix() - dayjs(nextDate).unix()
+				dayjs(nextDate).unix() - dayjs(preDate).unix()
 		)
 		.map(({ hash }) => hash);
 }

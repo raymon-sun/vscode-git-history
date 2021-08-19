@@ -89,11 +89,11 @@ class Path extends TreeItem {
 
 	private getCommand() {
 		if (this.props.type === PathType.FILE) {
-			const { refs, change } = this.props;
+			const { latestRef, earliestRef, change } = this.props;
 			return {
 				title: "diff",
 				command: "vscode.diff",
-				arguments: getDiffUris(refs!, change),
+				arguments: getDiffUris([latestRef!, earliestRef], change),
 			};
 		}
 	}

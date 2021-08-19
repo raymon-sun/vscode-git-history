@@ -10,9 +10,11 @@ import {
 } from "vscode";
 import { TYPES } from "../container/types";
 import { GitService } from "../git/service";
-import { createChangeFileTree } from "../git/utils";
+import {
+	PathCollection,
+	resolveChangesCollection,
+} from "../git/utils";
 import { FileTreeProvider } from "../providers/file-tree";
-import { Change } from "../typings/git-extension";
 import { IRequestMessage } from "./utils/message";
 
 @injectable()
@@ -23,8 +25,12 @@ export class ViewController {
 	} = {
 		commits: () => this.git.getCommits(),
 		diff: async (refs: string[]) => {
-			const changes = await this.git.diffBetween(refs);
-			this.updateTreeView(refs, changes);
+			const changesCollection = await this.git.getChangesCollection(refs);
+			const newFileTree = resolveChangesCollection(
+				changesCollection,
+				workspace.workspaceFolders![0].uri.path
+			);
+			this.updateTreeView(newFileTree);
 		},
 	};
 
@@ -99,12 +105,7 @@ export class ViewController {
 		});
 	}
 
-	private updateTreeView(refs: string[], changes: Change[]) {
-		const fileTree = createChangeFileTree(
-			refs,
-			changes,
-			workspace.workspaceFolders![0].uri.path
-		);
+	private updateTreeView(fileTree: PathCollection) {
 		this.context.globalState.update("changedFileTree", fileTree);
 		this.fileTreeProvider.refresh();
 	}

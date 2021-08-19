@@ -1,6 +1,5 @@
 import { deepStrictEqual } from "assert";
 import {
-	createChangeFileTree,
 	PathCollection,
 	PathType,
 	compareFileTreeNode,
@@ -11,101 +10,6 @@ import {
 } from "./utils";
 
 suite("Git utils", () => {
-	test("should create a file tree when given change list", () => {
-		const mockChanges = [
-			{
-				status: 1,
-				uri: {
-					path: "/projects/public/sword-practice/README.md",
-				},
-			},
-			{
-				status: 5,
-				uri: {
-					path: "/projects/public/sword-practice/src/hands-up.ts",
-				},
-			},
-			{
-				status: 2,
-				uri: {
-					path: "/projects/public/sword-practice/assets/beans",
-				},
-			},
-			{
-				status: 3,
-				uri: {
-					path: "/projects/public/sword-practice/src/actions/throw.ts",
-				},
-			},
-		];
-		const tree = createChangeFileTree(
-			["1", "2"],
-			mockChanges as any[],
-			"/projects/public/sword-practice"
-		);
-
-		deepStrictEqual<PathCollection>(tree, {
-			src: {
-				type: PathType.FOLDER,
-				path: "/projects/public/sword-practice/src",
-				children: {
-					actions: {
-						type: PathType.FOLDER,
-						path: "/projects/public/sword-practice/src/actions",
-						children: {
-							["throw.ts"]: {
-								type: PathType.FILE,
-								refs: ["1", "2"],
-								change: {
-									status: 3,
-									uri: {
-										path: "/projects/public/sword-practice/src/actions/throw.ts",
-									},
-								},
-							} as FileNode,
-						},
-					},
-					["hands-up.ts"]: {
-						type: PathType.FILE,
-						refs: ["1", "2"],
-						change: {
-							status: 5,
-							uri: {
-								path: "/projects/public/sword-practice/src/hands-up.ts",
-							},
-						},
-					} as FileNode,
-				},
-			},
-			assets: {
-				type: PathType.FOLDER,
-				path: "/projects/public/sword-practice/assets",
-				children: {
-					beans: {
-						type: PathType.FILE,
-						refs: ["1", "2"],
-						change: {
-							status: 2,
-							uri: {
-								path: "/projects/public/sword-practice/assets/beans",
-							},
-						},
-					} as FileNode,
-				},
-			},
-			["README.md"]: {
-				type: PathType.FILE,
-				refs: ["1", "2"],
-				change: {
-					status: 1,
-					uri: {
-						path: "/projects/public/sword-practice/README.md",
-					},
-				},
-			} as FileNode,
-		});
-	});
-
 	test("should create a file tree when given changes collection", () => {
 		const mockChangesCollection = [
 			{

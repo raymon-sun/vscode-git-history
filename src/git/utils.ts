@@ -59,58 +59,18 @@ export function resolveChangesCollection(
 	return fileTree;
 }
 
-export function createChangeFileTree(
-	refs: string[],
-	changes: Change[],
-	workspaceRootPath = ""
+export function getDiffUris(
+	[latestRef, earliestRef]: [string, string?],
+	change: Change
 ) {
-	let fileTree: PathCollection = {};
-	changes.forEach((change) => {
-		const { uri } = change;
-		const { path } = uri;
-		const { dir, base } = parse(path);
-		const workspaceDir = dir.substring(normalize(workspaceRootPath).length);
-		const dirSegments = workspaceDir.split(sep);
-
-		let fileNode = fileTree;
-		dirSegments.reduce((prePath, dirSegment) => {
-			if (!dirSegment) {
-				return prePath;
-			}
-
-			const currentPath = `${prePath}${sep}${dirSegment}`;
-			if (!fileNode[dirSegment]) {
-				fileNode[dirSegment] = {
-					type: PathType.FOLDER,
-					path: currentPath,
-					children: {},
-				};
-			}
-
-			fileNode = (fileNode[dirSegment] as FolderNode).children;
-			return currentPath;
-		}, workspaceRootPath);
-
-		fileNode[base] = {
-			type: PathType.FILE,
-			change,
-			refs,
-		};
-	});
-
-	return fileTree;
-}
-
-export function getDiffUris(refs: string[], change: Change) {
-	const [ref1, ref2] = refs;
 	const query1 = {
 		isFileExist: change.status !== Status.INDEX_ADDED,
-		ref: ref1,
+		ref: earliestRef || `${latestRef}~`,
 	};
 
 	const query2 = {
 		isFileExist: change.status !== Status.DELETED,
-		ref: ref2,
+		ref: latestRef,
 	};
 
 	const uri1 = change.originalUri.with({
@@ -173,7 +133,7 @@ export interface FileNode {
 	type: PathType.FILE;
 	change: Change;
 	refs?: string[];
-	latestRef?: string;
+	latestRef: string;
 	earliestRef?: string;
 }
 

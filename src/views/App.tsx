@@ -11,7 +11,8 @@ export default function App() {
 	}>({});
 
 	function diff() {
-		request<void>("diff", getSortedRefs(selectedCommits));
+		const sortedRefs = getSortedRefs(selectedCommits);
+		request<void>("diff", sortedRefs);
 	}
 
 	function selectCommit(commit: Commit) {
@@ -48,6 +49,7 @@ export default function App() {
 			<div className={style["commits-container"]}>
 				{commits.map((commit) => (
 					<div
+						key={commit.hash}
 						className={`${style.commit} ${
 							selectedCommits[commit.hash] ? style.selected : ""
 						}`}

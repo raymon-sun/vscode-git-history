@@ -1,6 +1,7 @@
 import { inject, injectable } from "inversify";
 import { join } from "path";
 import {
+	commands,
 	ExtensionContext,
 	Uri,
 	ViewColumn,
@@ -10,10 +11,7 @@ import {
 } from "vscode";
 import { TYPES } from "../container/types";
 import { GitService } from "../git/service";
-import {
-	PathCollection,
-	resolveChangesCollection,
-} from "../git/utils";
+import { PathCollection, resolveChangesCollection } from "../git/utils";
 import { FileTreeProvider } from "../providers/file-tree";
 import { IRequestMessage } from "./utils/message";
 
@@ -42,10 +40,11 @@ export class ViewController {
 
 	async createWebviewPanel() {
 		const { extensionUri } = this.context;
+		commands.executeCommand("workbench.action.editorLayoutTwoRows");
 		const panel = window.createWebviewPanel(
 			"gitDiffPlus", // Identifies the type of the webview. Used internally
 			"Git Diff Picker", // Title of the panel displayed to the user
-			ViewColumn.One, // Editor column to show the new webview panel in.
+			ViewColumn.Beside, // Editor column to show the new webview panel in.
 			{
 				// Enable scripts in the webview
 				enableScripts: true,

@@ -85,6 +85,16 @@ export function getDiffUris(
 	return [uri1, uri2];
 }
 
+export function assign<T>(destination: T, ...sources: any[]): T {
+	for (const source of sources) {
+		Object.keys(source).forEach(
+			(key) => ((destination as any)[key] = source[key])
+		);
+	}
+
+	return destination;
+}
+
 // TODO: take functions below to another directory
 export function compareFileTreeNode(
 	[name, node]: [string, FolderNode | FileNode],

@@ -59,6 +59,7 @@
 		"@types/react": "^17.0.9",
 		"@types/react-dom": "^17.0.6",
 		"@types/vscode": "^1.56.0",
+		"@types/which": "^2.0.1",
 		"@typescript-eslint/eslint-plugin": "^4.14.1",
 		"@typescript-eslint/parser": "^4.14.1",
 		"css-loader": "^5.2.6",
@@ -76,9 +77,11 @@
 	},
 	"dependencies": {
 		"dayjs": "^1.10.6",
+		"iconv-lite-umd": "^0.6.8",
 		"inversify": "^5.1.1",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
-		"reflect-metadata": "^0.1.13"
+		"reflect-metadata": "^0.1.13",
+		"which": "^2.0.2"
 	}
 }

@@ -1,6 +1,6 @@
 import { sep, parse, normalize } from "path";
 import { EXTENSION_SCHEME } from "../constants";
-import { Change, Status } from "../typings/git-extension";
+import { Change, Status } from "./types";
 
 export type ChangesCollection = { ref: string; changes: Change[] }[];
 
@@ -93,6 +93,13 @@ export function assign<T>(destination: T, ...sources: any[]): T {
 	}
 
 	return destination;
+}
+
+export function sanitizePath(path: string): string {
+	return path.replace(
+		/^([a-z]):\\/i,
+		(_, letter) => `${letter.toUpperCase()}:\\`
+	);
 }
 
 // TODO: take functions below to another directory

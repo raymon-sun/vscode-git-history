@@ -1,5 +1,5 @@
 import cp from "child_process";
-import { CancellationToken, Uri } from "vscode";
+import { CancellationToken, ThemeColor, Uri } from "vscode";
 
 export interface SpawnOptions extends cp.SpawnOptions {
 	input?: string;
@@ -47,4 +47,43 @@ export const enum Status {
 	BOTH_ADDED,
 	BOTH_DELETED,
 	BOTH_MODIFIED,
+}
+
+export function getColor(status: Status): ThemeColor {
+	switch (status) {
+		case Status.INDEX_MODIFIED:
+			return new ThemeColor(
+				"gitDecoration.stageModifiedResourceForeground"
+			);
+		case Status.MODIFIED:
+			return new ThemeColor("gitDecoration.modifiedResourceForeground");
+		case Status.INDEX_DELETED:
+			return new ThemeColor(
+				"gitDecoration.stageDeletedResourceForeground"
+			);
+		case Status.DELETED:
+			return new ThemeColor("gitDecoration.deletedResourceForeground");
+		case Status.INDEX_ADDED:
+		case Status.INTENT_TO_ADD:
+			return new ThemeColor("gitDecoration.addedResourceForeground");
+		case Status.INDEX_COPIED:
+		case Status.INDEX_RENAMED:
+			return new ThemeColor("gitDecoration.renamedResourceForeground");
+		case Status.UNTRACKED:
+			return new ThemeColor("gitDecoration.untrackedResourceForeground");
+		case Status.IGNORED:
+			return new ThemeColor("gitDecoration.ignoredResourceForeground");
+		case Status.BOTH_DELETED:
+		case Status.ADDED_BY_US:
+		case Status.DELETED_BY_THEM:
+		case Status.ADDED_BY_THEM:
+		case Status.DELETED_BY_US:
+		case Status.BOTH_ADDED:
+		case Status.BOTH_MODIFIED:
+			return new ThemeColor(
+				"gitDecoration.conflictingResourceForeground"
+			);
+		default:
+			throw new Error("Unknown git status: " + status);
+	}
 }

@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { FileDecorationProvider, Uri } from "vscode";
 import { EXTENSION_SCHEME } from "../constants";
-import { Status } from "../git/types";
+import { getColor, Status } from "../git/types";
 
 @injectable()
 export class GitStatusDecorationProvider implements FileDecorationProvider {
@@ -17,6 +17,7 @@ export class GitStatusDecorationProvider implements FileDecorationProvider {
 			const { status } = JSON.parse(uri.query);
 			return {
 				badge: this.STATUS_BADGE_MAP[status as Status],
+				color: getColor(status),
 			};
 		}
 	}

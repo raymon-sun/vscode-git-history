@@ -1,0 +1,7 @@
+.item {
+	width: 100%;
+
+	&.picked {
+		background-color: var(--vscode-list-highlightForeground);
+	}
+}

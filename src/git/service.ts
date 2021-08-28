@@ -27,12 +27,6 @@ export class GitService {
 		return await this.gitApi?.repositories[0].log();
 	}
 
-	async diffBetween(refs: string[]) {
-		const [ref1, ref2] = refs;
-		const repository = this.gitApi?.repositories[0];
-		return await repository!.diffBetween(ref1, ref2);
-	}
-
 	async getChangesCollection(refs: string[]) {
 		return await Promise.all(
 			refs.map((ref) =>

@@ -1,4 +1,4 @@
-import { FC, ReactNode, useMemo, useRef, useState } from "react";
+import { FC, ReactNode, useRef, useState } from "react";
 import { useDrag } from "@use-gesture/react";
 import { sortedIndex } from "lodash";
 import classNames from "classnames";
@@ -6,7 +6,7 @@ import { isNumberBetween } from "./utils";
 
 import style from "./index.module.scss";
 
-type Id = string | number;
+type Id = string;
 
 interface Props {
 	list?: { id: Id; content: string | ReactNode }[];
@@ -15,42 +15,41 @@ interface Props {
 
 const PickableList: FC<Props> = ({ list, onPick }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const containerRect = useMemo<DOMRect | undefined>(
-		() => containerRef.current?.getBoundingClientRect() || undefined,
-		[containerRef.current]
-	);
-	const itemYs = useMemo(
-		() =>
-			Array.from(containerRef.current?.children || []).map(
-				(element) => element.getBoundingClientRect().y
-			),
-		[containerRef.current]
-	);
+	const [containerRect, setContainerRect] = useState<DOMRect | undefined>();
+	const [itemYs, setItemYs] = useState<number[]>([]);
 	const [dragStartIndex, setDragStartIndex] = useState<number>(-1);
 	const [dragCurrentIndex, setDragCurrentIndex] = useState<number>(-1);
 
 	const bind = useDrag(({ type, values }) => {
-		if (!containerRect) {
-			return;
-		}
-
 		const [x, y] = values;
 
 		if (type === "pointerdown") {
-			const dragStartIndex = sortedIndex(itemYs, y) - 1;
+			const realTimeContainerRect =
+				containerRef.current?.getBoundingClientRect();
+			const realTimeItemYs = Array.from(
+				containerRef.current?.children || []
+			).map((element) => element.getBoundingClientRect().y);
+
+			const dragStartIndex = sortedIndex(realTimeItemYs, y) - 1;
+			setContainerRect(realTimeContainerRect);
+			setItemYs(realTimeItemYs);
 			setDragStartIndex(dragStartIndex);
-			setDragCurrentIndex(-1);
+			setDragCurrentIndex(dragStartIndex);
 			return;
 		}
 
 		if (type === "pointerup") {
-			const pickedList = list?.slice(dragStartIndex, dragCurrentIndex);
+			const pickedList = list?.slice(
+				Math.min(dragStartIndex, dragCurrentIndex),
+				Math.max(dragStartIndex, dragCurrentIndex) + 1
+			);
 			const ids = pickedList?.map(({ id }) => id);
 			onPick && onPick(ids!);
 			return;
 		}
 
 		if (
+			containerRect &&
 			x > containerRect.x &&
 			x < containerRect.x + containerRect.width &&
 			y > containerRect.y &&
@@ -62,7 +61,7 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 	});
 
 	return (
-		<div ref={containerRef} {...bind()}>
+		<div ref={containerRef} {...bind()} className={style.container}>
 			{list?.map(({ id, content }, index) => (
 				<div
 					key={id}

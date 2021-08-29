@@ -1,28 +1,14 @@
 import { useEffect, useState } from "react";
-import { getSortedRefs } from "./utils/commit";
 import { request } from "./utils/message";
 import { Commit } from "../typings/git-extension";
+import PickableList from "./components/PickableList";
 import style from "./App.module.scss";
 
 export default function App() {
 	const [commits, setCommits] = useState<Commit[]>([]);
-	const [selectedCommits, setSelectedCommits] = useState<{
-		[hash: string]: Commit;
-	}>({});
 
-	function diff() {
-		const sortedRefs = getSortedRefs(selectedCommits);
+	function diff(sortedRefs: string[]) {
 		request<void>("diff", sortedRefs);
-	}
-
-	function selectCommit(commit: Commit) {
-		const { hash } = commit;
-		if (selectedCommits[hash]) {
-			delete selectedCommits[hash];
-			setSelectedCommits({ ...selectedCommits });
-			return;
-		}
-		setSelectedCommits({ ...selectedCommits, [hash]: commit });
 	}
 
 	useEffect(() => {
@@ -33,6 +19,26 @@ export default function App() {
 		requestCommits();
 	}, []);
 
+	const getCommitList = () => {
+		return commits.map((commit) => ({
+			id: commit.hash,
+			content: (
+				<div className={style.commit}>
+					<span className={style.hash}>
+						{commit.hash.slice(0, 6)}
+					</span>
+					<span className={style.message}>{commit.message}</span>
+					<span className={style["author-name"]}>
+						{commit.authorName}
+					</span>
+					<span className={style["commit-date"]}>
+						{commit.commitDate}
+					</span>
+				</div>
+			),
+		}));
+	};
+
 	return (
 		<div className={style.container}>
 			<div className={style["operations-bar"]}>
@@ -40,34 +46,12 @@ export default function App() {
 					<div>Branch:master</div>
 					<div>User:All</div>
 					<div>Date:All</div>
-					<div onClick={diff}>Diff</div>
 				</div>
 				<div>
 					<input />
 				</div>
 			</div>
-			<div className={style["commits-container"]}>
-				{commits.map((commit) => (
-					<div
-						key={commit.hash}
-						className={`${style.commit} ${
-							selectedCommits[commit.hash] ? style.selected : ""
-						}`}
-						onClick={() => selectCommit(commit)}
-					>
-						<span className={style.hash}>
-							{commit.hash.slice(0, 6)}
-						</span>
-						<span className={style.message}>{commit.message}</span>
-						<span className={style["author-name"]}>
-							{commit.authorName}
-						</span>
-						<span className={style["commit-date"]}>
-							{commit.commitDate}
-						</span>
-					</div>
-				))}
-			</div>
+			<PickableList list={getCommitList()} onPick={(ids) => diff(ids)} />
 		</div>
 	);
 }

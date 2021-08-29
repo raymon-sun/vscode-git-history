@@ -17,38 +17,33 @@
 	}
 }
 
-.commits-container {
-	flex: 1;
-	user-select: none;
+.commit {
+	display: flex;
+	line-height: 22px;
 
-	.commit {
-		display: flex;
-		line-height: 22px;
+	&.selected {
+		background-color: var(--vscode-list-highlightForeground);
+	}
 
-		&.selected {
-			background-color: var(--vscode-list-highlightForeground);
-		}
+	> span {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
-		> span {
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
+	.hash {
+		width: 60px;
+	}
 
-		.hash {
-			width: 60px;
-		}
+	.message {
+		flex: 1;
+	}
 
-		.message {
-			flex: 1;
-		}
+	.author-name {
+		width: 64px;
+	}
 
-		.author-name {
-			width: 64px;
-		}
-
-		.commit-date {
-			width: 140px;
-		}
+	.commit-date {
+		width: 140px;
 	}
 }

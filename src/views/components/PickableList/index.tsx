@@ -15,12 +15,11 @@ interface Props {
 
 const PickableList: FC<Props> = ({ list, onPick }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const [pickedItems, setPickedItems] = useState<Record<Id, true>>();
+	const [pickedItems, setPickedItems] = useState<Record<Id, number>>({});
 
 	const [containerRect, setContainerRect] = useState<DOMRect | undefined>();
 	const [itemYs, setItemYs] = useState<number[]>([]);
 	const [dragStartIndex, setDragStartIndex] = useState<number>(-1);
-	const [dragCurrentIndex, setDragCurrentIndex] = useState<number>(-1);
 	const { checkKeyIsPressed } = useIsKeyPressed();
 
 	const dragBind = useDrag(({ type, values }) => {
@@ -38,17 +37,21 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 			setContainerRect(realTimeContainerRect);
 			setItemYs(realTimeItemYs);
 			setDragStartIndex(dragStartIndex);
-			setDragCurrentIndex(dragStartIndex);
 
 			setPickedItems({
 				...existedItems,
-				[list![dragStartIndex].id]: true,
+				[list![dragStartIndex].id]: dragStartIndex,
 			});
 			return;
 		}
 
 		if (type === "pointerup") {
-			onPick && onPick(Object.keys(pickedItems!));
+			onPick &&
+				onPick(
+					Object.keys(pickedItems!).sort(
+						(id1, id2) => pickedItems[id1] - pickedItems[id2]
+					)
+				);
 			return;
 		}
 
@@ -60,27 +63,29 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 			y < containerRect.y + containerRect.height
 		) {
 			const currentIndex = sortedIndex(itemYs, y) - 1;
-			setDragCurrentIndex(currentIndex);
+			const currentItems = { ...existedItems };
+			for (
+				let index = Math.min(dragStartIndex, currentIndex);
+				index <= Math.max(dragStartIndex, currentIndex);
+				index++
+			) {
+				const { id } = list![index];
+				if (!currentItems.hasOwnProperty(id)) {
+					currentItems[id] = index;
+				}
+			}
 
-			const pickedList = list?.slice(
-				Math.min(dragStartIndex, dragCurrentIndex),
-				Math.max(dragStartIndex, dragCurrentIndex) + 1
-			);
-			const currentPickedItems = pickedList!.reduce<Record<Id, true>>(
-				(acc, item) => ((acc[item.id] = true), acc),
-				{}
-			);
-			setPickedItems({ ...existedItems, ...currentPickedItems });
+			setPickedItems(currentItems);
 		}
 	});
 
 	return (
 		<div ref={containerRef} {...dragBind()} className={style.container}>
-			{list?.map(({ id, content }, index) => (
+			{list?.map(({ id, content }) => (
 				<div
 					key={id}
 					className={classNames(style.item, {
-						[style.picked]: pickedItems?.[id],
+						[style.picked]: pickedItems?.hasOwnProperty(id),
 					})}
 				>
 					{content}

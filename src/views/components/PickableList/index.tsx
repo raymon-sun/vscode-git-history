@@ -2,7 +2,7 @@ import { FC, ReactNode, useRef, useState } from "react";
 import { useDrag } from "@use-gesture/react";
 import { sortedIndex } from "lodash";
 import classNames from "classnames";
-import { isNumberBetween } from "./utils";
+import { useIsKeyPressed } from "./event";
 
 import style from "./index.module.scss";
 
@@ -15,14 +15,18 @@ interface Props {
 
 const PickableList: FC<Props> = ({ list, onPick }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
+	const [pickedItems, setPickedItems] = useState<Record<Id, true>>();
+
 	const [containerRect, setContainerRect] = useState<DOMRect | undefined>();
 	const [itemYs, setItemYs] = useState<number[]>([]);
 	const [dragStartIndex, setDragStartIndex] = useState<number>(-1);
 	const [dragCurrentIndex, setDragCurrentIndex] = useState<number>(-1);
+	const { checkKeyIsPressed } = useIsKeyPressed();
 
-	const bind = useDrag(({ type, values }) => {
+	const dragBind = useDrag(({ type, values }) => {
 		const [x, y] = values;
 
+		const existedItems = checkKeyIsPressed("Meta") ? pickedItems : {};
 		if (type === "pointerdown") {
 			const realTimeContainerRect =
 				containerRef.current?.getBoundingClientRect();
@@ -35,16 +39,16 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 			setItemYs(realTimeItemYs);
 			setDragStartIndex(dragStartIndex);
 			setDragCurrentIndex(dragStartIndex);
+
+			setPickedItems({
+				...existedItems,
+				[list![dragStartIndex].id]: true,
+			});
 			return;
 		}
 
 		if (type === "pointerup") {
-			const pickedList = list?.slice(
-				Math.min(dragStartIndex, dragCurrentIndex),
-				Math.max(dragStartIndex, dragCurrentIndex) + 1
-			);
-			const ids = pickedList?.map(({ id }) => id);
-			onPick && onPick(ids!);
+			onPick && onPick(Object.keys(pickedItems!));
 			return;
 		}
 
@@ -57,19 +61,26 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 		) {
 			const currentIndex = sortedIndex(itemYs, y) - 1;
 			setDragCurrentIndex(currentIndex);
+
+			const pickedList = list?.slice(
+				Math.min(dragStartIndex, dragCurrentIndex),
+				Math.max(dragStartIndex, dragCurrentIndex) + 1
+			);
+			const currentPickedItems = pickedList!.reduce<Record<Id, true>>(
+				(acc, item) => ((acc[item.id] = true), acc),
+				{}
+			);
+			setPickedItems({ ...existedItems, ...currentPickedItems });
 		}
 	});
 
 	return (
-		<div ref={containerRef} {...bind()} className={style.container}>
+		<div ref={containerRef} {...dragBind()} className={style.container}>
 			{list?.map(({ id, content }, index) => (
 				<div
 					key={id}
 					className={classNames(style.item, {
-						[style.picked]: isNumberBetween(index, [
-							dragStartIndex,
-							dragCurrentIndex,
-						]),
+						[style.picked]: pickedItems?.[id],
 					})}
 				>
 					{content}

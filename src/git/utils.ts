@@ -8,55 +8,77 @@ export function resolveChangesCollection(
 	changesCollection: ChangesCollection,
 	workspaceRootPath = ""
 ) {
-	let fileTree: PathCollection = {};
+	const pathMap = transChangeCollectionToMap(changesCollection);
 
+	let fileTree: PathCollection = {};
+	Object.entries(pathMap).forEach(([path, node]) => {
+		attachFileNode(fileTree, path, workspaceRootPath, node);
+	});
+	return fileTree;
+}
+
+function transChangeCollectionToMap(changesCollection: ChangesCollection) {
 	const pathMap: Record<string, FileNode> = {};
 	changesCollection.forEach(({ ref, changes }) => {
 		changes.forEach((change) => {
 			const {
 				uri: { path },
 			} = change;
-			if (pathMap[path]) {
-				pathMap[path].earliestRef = ref;
+			const existedPathItem = pathMap[path];
+			if (existedPathItem) {
+				existedPathItem.earliestRef = ref;
+				if (change.status === Status.INDEX_ADDED) {
+					if (existedPathItem.change.status === Status.DELETED) {
+						delete pathMap[path];
+					}
+
+					if (existedPathItem.change.status === Status.MODIFIED) {
+						existedPathItem.change = change;
+					}
+				}
 				return;
 			}
-
-			const { dir, base } = parse(path);
-			const workspaceDir = dir.substring(
-				normalize(workspaceRootPath).length
-			);
-			const dirSegments = workspaceDir.split(sep);
-
-			let fileNode = fileTree;
-			dirSegments.reduce((prePath, dirSegment) => {
-				if (!dirSegment) {
-					return prePath;
-				}
-
-				const currentPath = `${prePath}${sep}${dirSegment}`;
-				if (!fileNode[dirSegment]) {
-					fileNode[dirSegment] = {
-						type: PathType.FOLDER,
-						path: currentPath,
-						children: {},
-					};
-				}
-
-				fileNode = (fileNode[dirSegment] as FolderNode).children;
-				return currentPath;
-			}, workspaceRootPath);
 
 			pathMap[path] = {
 				type: PathType.FILE,
 				change,
 				latestRef: ref,
 			};
-
-			fileNode[base] = pathMap[path];
 		});
 	});
+	return pathMap;
+}
 
-	return fileTree;
+function attachFileNode(
+	fileTree: PathCollection,
+	path: string,
+	workspaceRootPath: string,
+	node: FileNode
+) {
+	const { dir, base } = parse(path);
+	const workspaceDir = dir.substring(normalize(workspaceRootPath).length);
+	const dirSegments = workspaceDir.split(sep);
+
+	let fileNode = fileTree;
+	dirSegments.reduce((prePath, dirSegment) => {
+		if (!dirSegment) {
+			return prePath;
+		}
+
+		const currentPath = `${prePath}${sep}${dirSegment}`;
+		if (!fileNode[dirSegment]) {
+			fileNode[dirSegment] = {
+				type: PathType.FOLDER,
+				path: currentPath,
+				children: {},
+			};
+		}
+
+		fileNode = (fileNode[dirSegment] as FolderNode).children;
+		return currentPath;
+	}, workspaceRootPath);
+
+	fileNode[base] = node;
 }
 
 export function getDiffUris(

@@ -19,22 +19,38 @@ export function resolveChangesCollection(
 
 function transChangeCollectionToMap(changesCollection: ChangesCollection) {
 	const pathMap: Record<string, FileNode> = {};
-	changesCollection.forEach(({ ref, changes }) => {
+	changesCollection.reverse().forEach(({ ref, changes }) => {
 		changes.forEach((change) => {
 			const {
 				uri: { path },
+				originalUri: { path: originalPath },
 			} = change;
+			if (
+				change.status === Status.INDEX_RENAMED &&
+				pathMap[originalPath]
+			) {
+				delete pathMap[originalPath];
+				pathMap[path] = {
+					type: PathType.FILE,
+					change: {
+						...change,
+						status: Status.INDEX_ADDED,
+					},
+					earliestRef: ref,
+				};
+				return;
+			}
+
 			const existedPathItem = pathMap[path];
 			if (existedPathItem) {
-				existedPathItem.earliestRef = ref;
-				if (change.status === Status.INDEX_ADDED) {
-					if (existedPathItem.change.status === Status.DELETED) {
+				existedPathItem.latestRef = ref;
+				if (existedPathItem.change.status === Status.INDEX_ADDED) {
+					if (change.status === Status.DELETED) {
 						delete pathMap[path];
 					}
-
-					if (existedPathItem.change.status === Status.MODIFIED) {
-						existedPathItem.change = change;
-					}
+				} else {
+					existedPathItem.change = change;
+					existedPathItem.latestRef = ref;
 				}
 				return;
 			}
@@ -42,7 +58,7 @@ function transChangeCollectionToMap(changesCollection: ChangesCollection) {
 			pathMap[path] = {
 				type: PathType.FILE,
 				change,
-				latestRef: ref,
+				earliestRef: ref,
 			};
 		});
 	});
@@ -82,17 +98,17 @@ function attachFileNode(
 }
 
 export function getDiffUris(
-	[latestRef, earliestRef]: [string, string?],
+	[earliestRef, latestRef]: [string, string?],
 	change: Change
 ) {
 	const query1 = {
 		isFileExist: change.status !== Status.INDEX_ADDED,
-		ref: earliestRef || `${latestRef}~`,
+		ref: `${earliestRef}~`,
 	};
 
 	const query2 = {
 		isFileExist: change.status !== Status.DELETED,
-		ref: latestRef,
+		ref: latestRef || earliestRef,
 	};
 
 	const uri1 = change.originalUri.with({
@@ -172,8 +188,8 @@ export interface FileNode {
 	type: PathType.FILE;
 	change: Change;
 	refs?: string[];
-	latestRef: string;
-	earliestRef?: string;
+	latestRef?: string;
+	earliestRef: string;
 }
 
 export enum PathType {

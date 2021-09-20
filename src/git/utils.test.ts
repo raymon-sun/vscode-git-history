@@ -110,7 +110,7 @@ suite("Git utils", () => {
 			["README.md"]: {
 				type: PathType.FILE,
 				change: {
-					status: 5,
+					status: 1,
 					uri: {
 						path: "/projects/public/sword-practice/README.md",
 					},

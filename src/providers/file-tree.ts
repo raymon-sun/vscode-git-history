@@ -68,7 +68,7 @@ class Path extends TreeItem {
 		if (this.props.type === PathType.FILE) {
 			return this.props.change.uri.with({
 				scheme: EXTENSION_SCHEME,
-				query: JSON.stringify({ status: this.props.change.status }),
+				query: JSON.stringify({ status: this.props.status }),
 			});
 		}
 
@@ -89,11 +89,17 @@ class Path extends TreeItem {
 
 	private getCommand() {
 		if (this.props.type === PathType.FILE) {
-			const { earliestRef, latestRef, change } = this.props;
+			const { changeStack, change } = this.props;
 			return {
 				title: "diff",
 				command: "vscode.diff",
-				arguments: getDiffUris([earliestRef, latestRef], change),
+				arguments: getDiffUris(
+					[
+						changeStack![0].ref,
+						changeStack![changeStack!.length - 1].ref,
+					],
+					change
+				),
 			};
 		}
 	}

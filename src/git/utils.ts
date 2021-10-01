@@ -8,61 +8,147 @@ export function resolveChangesCollection(
 	changesCollection: ChangesCollection,
 	workspaceRootPath = ""
 ) {
-	const pathMap = transChangeCollectionToMap(changesCollection);
+	const pathMap = getPathMap(changesCollection);
 
 	let fileTree: PathCollection = {};
 	Object.entries(pathMap).forEach(([path, node]) => {
+		const mergedStatus = mergeStatus(node.changeStack!);
+		if (!mergedStatus) {
+			delete pathMap[path];
+			return;
+		}
+
+		node.status = mergedStatus;
 		attachFileNode(fileTree, path, workspaceRootPath, node);
 	});
 	return fileTree;
 }
 
-function transChangeCollectionToMap(changesCollection: ChangesCollection) {
+export function getPathMap(changesCollection: ChangesCollection) {
 	const pathMap: Record<string, FileNode> = {};
+	const renamedPaths: string[] = [];
 	changesCollection.reverse().forEach(({ ref, changes }) => {
 		changes.forEach((change) => {
 			const {
+				status,
 				uri: { path },
 				originalUri: { path: originalPath },
 			} = change;
-			if (
-				change.status === Status.INDEX_RENAMED &&
-				pathMap[originalPath]
-			) {
-				delete pathMap[originalPath];
-				pathMap[path] = {
-					type: PathType.FILE,
-					change: {
-						...change,
-						status: Status.INDEX_ADDED,
-					},
-					earliestRef: ref,
-				};
-				return;
+			if (status === Status.INDEX_RENAMED) {
+				if (!pathMap[path]) {
+					renamedPaths.push(path);
+				}
+
+				if (pathMap[originalPath]) {
+					pathMap[originalPath].changeStack?.push({
+						ref,
+						isDeletedByRename: true,
+					});
+				} else {
+					pathMap[originalPath] = {
+						type: PathType.FILE,
+						change,
+						changeStack: [{ ref, isDeletedByRename: true }],
+						earliestRef: ref,
+					};
+				}
 			}
 
-			const existedPathItem = pathMap[path];
-			if (existedPathItem) {
-				existedPathItem.latestRef = ref;
-				if (existedPathItem.change.status === Status.INDEX_ADDED) {
-					if (change.status === Status.DELETED) {
-						delete pathMap[path];
-					}
-				} else {
-					existedPathItem.change = change;
-					existedPathItem.latestRef = ref;
-				}
+			if (pathMap[path]) {
+				pathMap[path].changeStack?.push({ ref, change });
 				return;
 			}
 
 			pathMap[path] = {
 				type: PathType.FILE,
 				change,
+				changeStack: [{ ref, change }],
 				earliestRef: ref,
 			};
 		});
 	});
+
+	renamedPaths.forEach((renamedPath) => {
+		const renamedChangeStack = pathMap[renamedPath].changeStack!;
+		updateOriginalChange(pathMap, renamedChangeStack);
+	});
+
 	return pathMap;
+}
+
+function updateOriginalChange(
+	pathMap: Record<string, FileNode>,
+	renamedChangeStack: ChangeItem[]
+) {
+	const lastChange =
+		renamedChangeStack![renamedChangeStack!.length - 1].change!;
+	const renamedChange = renamedChangeStack![0].change!;
+	const originalChangeStack =
+		pathMap[renamedChange.originalUri.path]?.changeStack;
+	if (lastChange.status === Status.DELETED) {
+		delete pathMap[renamedChange.uri.path];
+		if (!originalChangeStack) {
+			return;
+		}
+
+		const lastOriginalChangeItem =
+			originalChangeStack[originalChangeStack.length - 1];
+		if (lastOriginalChangeItem.isDeletedByRename) {
+			lastOriginalChangeItem.isDeletedByRename = false;
+			if (
+				originalChangeStack[0].change?.status === Status.INDEX_RENAMED
+			) {
+				updateOriginalChange(pathMap, originalChangeStack);
+			}
+		}
+	}
+}
+
+function mergeStatus(changeStack: ChangeItem[]) {
+	const firstChangeItem = changeStack[0];
+	const lastChangeItem = changeStack[changeStack.length - 1];
+
+	const { status: firstStatus = Status.DELETED } =
+		firstChangeItem.change || {};
+	const { status: lastStatus = Status.DELETED } = lastChangeItem.change || {};
+
+	const firstFileExistStatus = getFileExistStatus(firstStatus);
+	const lastFileExistStatus = getFileExistStatus(lastStatus);
+
+	if (
+		firstFileExistStatus?.isExistBefore &&
+		lastFileExistStatus?.isExistAfter
+	) {
+		return Status.MODIFIED;
+	}
+
+	if (
+		!firstFileExistStatus?.isExistBefore &&
+		lastFileExistStatus?.isExistAfter
+	) {
+		return firstStatus;
+	}
+
+	if (
+		firstFileExistStatus?.isExistBefore &&
+		!lastFileExistStatus?.isExistAfter
+	) {
+		return Status.DELETED;
+	}
+}
+
+function getFileExistStatus(status: Status) {
+	if ([Status.INDEX_ADDED, Status.INDEX_RENAMED].includes(status)) {
+		return { isExistBefore: false, isExistAfter: true };
+	}
+
+	if (status === Status.DELETED) {
+		return { isExistBefore: true, isExistAfter: false };
+	}
+
+	if (status === Status.MODIFIED) {
+		return { isExistBefore: true, isExistAfter: true };
+	}
 }
 
 function attachFileNode(
@@ -187,9 +273,17 @@ export interface FolderNode {
 export interface FileNode {
 	type: PathType.FILE;
 	change: Change;
+	status?: Status;
+	changeStack?: ChangeItem[];
 	refs?: string[];
 	latestRef?: string;
 	earliestRef: string;
+}
+
+export interface ChangeItem {
+	ref: string;
+	change?: Change;
+	isDeletedByRename?: boolean;
 }
 
 export enum PathType {

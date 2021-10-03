@@ -1,4 +1,5 @@
 import { sep, parse, normalize } from "path";
+import { Uri } from "vscode";
 import { EXTENSION_SCHEME } from "../constants";
 import { Change, Status } from "./types";
 
@@ -12,7 +13,7 @@ export function resolveChangesCollection(
 
 	let fileTree: PathCollection = {};
 	Object.entries(pathMap).forEach(([path, node]) => {
-		const mergedStatus = mergeStatus(node.changeStack!);
+		const mergedStatus = mergeStatus(node.changeStack);
 		if (!mergedStatus) {
 			delete pathMap[path];
 			return;
@@ -29,84 +30,94 @@ export function getPathMap(changesCollection: ChangesCollection) {
 	const renamedPaths: string[] = [];
 	changesCollection.reverse().forEach(({ ref, changes }) => {
 		changes.forEach((change) => {
-			const {
-				status,
-				uri: { path },
-				originalUri: { path: originalPath },
-			} = change;
+			const { status, uri, originalUri } = change;
+			const { path } = uri;
+			const { path: originalPath } = originalUri;
 			if (status === Status.INDEX_RENAMED) {
 				if (!pathMap[path]) {
 					renamedPaths.push(path);
 				}
 
 				if (pathMap[originalPath]) {
-					pathMap[originalPath].changeStack?.push({
+					pathMap[originalPath].changeStack.push({
 						ref,
 						isDeletedByRename: true,
 					});
 				} else {
 					pathMap[originalPath] = {
 						type: PathType.FILE,
-						change,
+						uri: originalUri,
 						changeStack: [{ ref, isDeletedByRename: true }],
-						earliestRef: ref,
 					};
 				}
 			}
 
 			if (pathMap[path]) {
-				pathMap[path].changeStack?.push({ ref, change });
+				pathMap[path].changeStack.push({ ref, change });
 				return;
 			}
 
 			pathMap[path] = {
 				type: PathType.FILE,
-				change,
+				uri,
 				changeStack: [{ ref, change }],
-				earliestRef: ref,
 			};
 		});
 	});
 
-	renamedPaths.forEach((renamedPath) => {
-		const renamedChangeStack = pathMap[renamedPath].changeStack!;
-		updateOriginalChange(pathMap, renamedChangeStack);
+	renamedPaths.reverse().forEach((renamedPath) => {
+		const renamedChangeStack = pathMap[renamedPath].changeStack;
+		pathMap[renamedPath].originalChangeStack =
+			getOriginalChangeStackAndUpdateChange(pathMap, renamedChangeStack);
 	});
 
 	return pathMap;
 }
 
-function updateOriginalChange(
+function getOriginalChangeStackAndUpdateChange(
 	pathMap: Record<string, FileNode>,
 	renamedChangeStack: ChangeItem[]
-) {
-	const lastChange =
-		renamedChangeStack![renamedChangeStack!.length - 1].change!;
-	const renamedChange = renamedChangeStack![0].change!;
+): ChangeItem[] {
+	const lastChangeItem = renamedChangeStack[renamedChangeStack.length - 1];
+	const renamedChange = renamedChangeStack[0].change!;
 	const originalChangeStack =
 		pathMap[renamedChange.originalUri.path]?.changeStack;
-	if (lastChange.status === Status.DELETED) {
-		delete pathMap[renamedChange.uri.path];
-		if (!originalChangeStack) {
-			return;
-		}
-
-		const lastOriginalChangeItem =
-			originalChangeStack[originalChangeStack.length - 1];
-		if (lastOriginalChangeItem.isDeletedByRename) {
-			lastOriginalChangeItem.isDeletedByRename = false;
-			if (
-				originalChangeStack[0].change?.status === Status.INDEX_RENAMED
-			) {
-				updateOriginalChange(pathMap, originalChangeStack);
-			}
-		}
+	if (!originalChangeStack) {
+		return [];
 	}
+
+	const lastOriginalChangeItem =
+		originalChangeStack[originalChangeStack.length - 1];
+	if (!lastOriginalChangeItem.isDeletedByRename) {
+		return [];
+	}
+
+	if (
+		lastChangeItem.isDeletedByRename === false ||
+		lastChangeItem.change?.status === Status.DELETED
+	) {
+		lastOriginalChangeItem.isDeletedByRename = false;
+	}
+
+	if (originalChangeStack[0].change?.status === Status.INDEX_RENAMED) {
+		return [
+			...getOriginalChangeStackAndUpdateChange(
+				pathMap,
+				originalChangeStack
+			),
+			...originalChangeStack,
+		];
+	}
+
+	return originalChangeStack;
 }
 
 function mergeStatus(changeStack: ChangeItem[]) {
 	const firstChangeItem = changeStack[0];
 	const lastChangeItem = changeStack[changeStack.length - 1];
+	if (lastChangeItem.isDeletedByRename) {
+		return;
+	}
 
 	const { status: firstStatus = Status.DELETED } =
 		firstChangeItem.change || {};
@@ -183,30 +194,37 @@ function attachFileNode(
 	fileNode[base] = node;
 }
 
-export function getDiffUris(
-	[earliestRef, latestRef]: [string, string?],
-	change: Change
-) {
-	const query1 = {
-		isFileExist: change.status !== Status.INDEX_ADDED,
-		ref: `${earliestRef}~`,
+export function getDiffUriPair(node: FileNode) {
+	const { uri, status, originalChangeStack, changeStack } = node;
+	const originalChangeItem = originalChangeStack?.find(
+		({ change }) => change
+	);
+
+	const { change: preChange, ref: preRef } =
+		originalChangeItem || changeStack[0];
+	const { change: curChange, ref: curRef } =
+		changeStack[changeStack.length - 1];
+
+	const preQuery = {
+		isFileExist: status !== Status.INDEX_ADDED,
+		ref: `${preRef}~`,
 	};
 
-	const query2 = {
-		isFileExist: change.status !== Status.DELETED,
-		ref: latestRef || earliestRef,
+	const curQuery = {
+		isFileExist: status !== Status.DELETED,
+		ref: curRef,
 	};
 
-	const uri1 = change.originalUri.with({
-		scheme: EXTENSION_SCHEME,
-		query: JSON.stringify(query1),
-	});
-	const uri2 = (change.renameUri || change.originalUri).with({
-		scheme: EXTENSION_SCHEME,
-		query: JSON.stringify(query2),
-	});
-
-	return [uri1, uri2];
+	return [
+		preChange!.originalUri.with({
+			scheme: EXTENSION_SCHEME,
+			query: JSON.stringify(preQuery),
+		}),
+		uri.with({
+			scheme: EXTENSION_SCHEME,
+			query: JSON.stringify(curQuery),
+		}),
+	];
 }
 
 export function assign<T>(destination: T, ...sources: any[]): T {
@@ -272,12 +290,10 @@ export interface FolderNode {
 
 export interface FileNode {
 	type: PathType.FILE;
-	change: Change;
+	uri: Uri;
 	status?: Status;
-	changeStack?: ChangeItem[];
-	refs?: string[];
-	latestRef?: string;
-	earliestRef: string;
+	changeStack: ChangeItem[];
+	originalChangeStack?: ChangeItem[];
 }
 
 export interface ChangeItem {

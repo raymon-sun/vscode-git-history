@@ -14,7 +14,7 @@ import {
 	compareFileTreeNode,
 	FileNode,
 	FolderNode,
-	getDiffUris,
+	getDiffUriPair,
 	PathCollection,
 	PathType,
 } from "../git/utils";
@@ -66,7 +66,8 @@ class Path extends TreeItem {
 
 	private getResourceUri() {
 		if (this.props.type === PathType.FILE) {
-			return this.props.change.uri.with({
+			const { uri } = this.props;
+			return uri.with({
 				scheme: EXTENSION_SCHEME,
 				query: JSON.stringify({ status: this.props.status }),
 			});
@@ -89,17 +90,10 @@ class Path extends TreeItem {
 
 	private getCommand() {
 		if (this.props.type === PathType.FILE) {
-			const { changeStack, change } = this.props;
 			return {
 				title: "diff",
 				command: "vscode.diff",
-				arguments: getDiffUris(
-					[
-						changeStack![0].ref,
-						changeStack![changeStack!.length - 1].ref,
-					],
-					change
-				),
+				arguments: getDiffUriPair(this.props),
 			};
 		}
 	}

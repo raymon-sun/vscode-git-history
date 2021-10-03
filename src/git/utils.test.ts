@@ -85,25 +85,11 @@ suite("Git utils", () => {
 						children: {
 							["throw.ts"]: {
 								type: PathType.FILE,
-								change: {
-									status: 3,
-									uri: {
-										path: "/projects/public/sword-practice/src/actions/throw.ts",
-									},
-								},
-								latestRef: "456",
 							} as FileNode,
 						},
 					},
 					["hands-up.ts"]: {
 						type: PathType.FILE,
-						change: {
-							status: 5,
-							uri: {
-								path: "/projects/public/sword-practice/src/hands-up.ts",
-							},
-						},
-						latestRef: "123",
 					} as FileNode,
 				},
 			},
@@ -113,26 +99,11 @@ suite("Git utils", () => {
 				children: {
 					beans: {
 						type: PathType.FILE,
-						change: {
-							status: 2,
-							uri: {
-								path: "/projects/public/sword-practice/assets/beans",
-							},
-						},
-						latestRef: "123",
 					} as FileNode,
 				},
 			},
 			["README.md"]: {
 				type: PathType.FILE,
-				change: {
-					status: 1,
-					uri: {
-						path: "/projects/public/sword-practice/README.md",
-					},
-				},
-				latestRef: "123",
-				earliestRef: "456",
 			} as FileNode,
 		});
 	});

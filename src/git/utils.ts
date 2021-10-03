@@ -38,16 +38,29 @@ export function getPathMap(changesCollection: ChangesCollection) {
 					renamedPaths.push(path);
 				}
 
+				const deleteChange = {
+					status: Status.DELETED,
+					uri: originalUri,
+					originalUri,
+					renameUri: originalUri,
+				};
 				if (pathMap[originalPath]) {
 					pathMap[originalPath].changeStack.push({
 						ref,
+						change: deleteChange,
 						isDeletedByRename: true,
 					});
 				} else {
 					pathMap[originalPath] = {
 						type: PathType.FILE,
 						uri: originalUri,
-						changeStack: [{ ref, isDeletedByRename: true }],
+						changeStack: [
+							{
+								ref,
+								change: deleteChange,
+								isDeletedByRename: true,
+							},
+						],
 					};
 				}
 			}
@@ -92,14 +105,11 @@ function getOriginalChangeStackAndUpdateChange(
 		return [];
 	}
 
-	if (
-		lastChangeItem.isDeletedByRename === false ||
-		lastChangeItem.change?.status === Status.DELETED
-	) {
+	if (lastChangeItem.change.status === Status.DELETED) {
 		lastOriginalChangeItem.isDeletedByRename = false;
 	}
 
-	if (originalChangeStack[0].change?.status === Status.INDEX_RENAMED) {
+	if (originalChangeStack[0].change.status === Status.INDEX_RENAMED) {
 		return [
 			...getOriginalChangeStackAndUpdateChange(
 				pathMap,
@@ -202,8 +212,7 @@ export function getDiffUriPair(node: FileNode) {
 
 	const { change: preChange, ref: preRef } =
 		originalChangeItem || changeStack[0];
-	const { change: curChange, ref: curRef } =
-		changeStack[changeStack.length - 1];
+	const { ref: curRef } = changeStack[changeStack.length - 1];
 
 	const preQuery = {
 		isFileExist: status !== Status.INDEX_ADDED,
@@ -298,7 +307,7 @@ export interface FileNode {
 
 export interface ChangeItem {
 	ref: string;
-	change?: Change;
+	change: Change;
 	isDeletedByRename?: boolean;
 }
 

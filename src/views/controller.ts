@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { join } from "path";
+import { join, parse } from "path";
 import {
 	commands,
 	ExtensionContext,
@@ -14,13 +14,25 @@ import { GitService } from "../git/service";
 import { PathCollection, resolveChangesCollection } from "../git/utils";
 import { FileTreeProvider } from "../providers/file-tree";
 import { IRequestMessage } from "./utils/message";
+import { Source } from "./data/source";
 
 @injectable()
 export class ViewController {
 	private webview?: Webview;
 	private readonly REQUEST_HANDLER_MAP: {
-		[request: string]: (params?: any) => Promise<any>;
+		[request: string]: (params?: any) => Promise<any> | any;
 	} = {
+		initialize: () =>
+			Object.entries(this.source).map(([name, func]) => {
+				// TODO: exclude private key
+				this.REQUEST_HANDLER_MAP[name] = func;
+				return name;
+			}),
+		repositories: () =>
+			this.git.getRepositories()?.map(({ rootUri }) => ({
+				repoName: parse(rootUri.path).base,
+				rootUri,
+			})),
 		commits: () => this.git.getCommits(),
 		diff: async (refs: string[]) => {
 			const changesCollection = await this.git.getChangesCollection(refs);
@@ -35,6 +47,7 @@ export class ViewController {
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
 		private git: GitService,
+		private source: Source,
 		private fileTreeProvider: FileTreeProvider
 	) {}
 
@@ -98,8 +111,9 @@ export class ViewController {
 				return;
 			}
 
-			const handler = this.REQUEST_HANDLER_MAP[what];
-			const result = await handler(params);
+			const response = this.REQUEST_HANDLER_MAP[what](params);
+			const result =
+				response instanceof Promise ? await response : response;
 			webview.postMessage({ id: message.id, result });
 		});
 	}

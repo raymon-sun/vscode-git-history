@@ -1,10 +1,17 @@
-import { useEffect, useState } from "react";
+import { Uri } from "vscode";
+import { useContext, useEffect, useState } from "react";
+import Select from "react-select";
 import { request } from "./utils/message";
 import { Commit } from "../typings/git-extension";
 import PickableList from "./components/PickableList";
 import style from "./App.module.scss";
+import { ChannelContext } from "./data/channel";
 
 export default function App() {
+	const channel = useContext(ChannelContext)!;
+	const [repos, setRepos] = useState<{ repoName: string; rootUri: Uri }[]>(
+		[]
+	);
 	const [commits, setCommits] = useState<Commit[]>([]);
 
 	function diff(sortedRefs: string[]) {
@@ -12,10 +19,19 @@ export default function App() {
 	}
 
 	useEffect(() => {
-		async function requestCommits() {
-			const commits = await request<Commit[]>("commits");
-			setCommits(commits);
+		async function requestRepos() {
+			const repos = await request<{ repoName: string; rootUri: Uri }[]>(
+				"repositories"
+			);
+			setRepos(repos);
 		}
+
+		async function requestCommits() {
+			const commits = await channel.getCommits();
+			setCommits(commits || []);
+		}
+
+		requestRepos();
 		requestCommits();
 	}, []);
 
@@ -43,6 +59,14 @@ export default function App() {
 		<div className={style.container}>
 			<div className={style["operations-bar"]}>
 				<div className={style["filter-container"]}>
+					<Select
+						options={repos.map(
+							({ repoName, rootUri: { path } }) => ({
+								value: path,
+								label: repoName,
+							})
+						)}
+					/>
 					<div>Branch:master</div>
 					<div>User:All</div>
 					<div>Date:All</div>

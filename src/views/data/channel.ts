@@ -12,7 +12,7 @@ export async function initializeChannel() {
 	funcNames.forEach(
 		(funcName) =>
 			(channel[funcName] = async (...params: Parameters<Func>) =>
-				await request(funcName, params))
+				await request(funcName, ...params))
 	);
 	return channel as Source;
 }

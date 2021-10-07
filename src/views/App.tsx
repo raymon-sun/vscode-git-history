@@ -15,7 +15,7 @@ export default function App() {
 	const [commits, setCommits] = useState<Commit[]>([]);
 
 	function diff(sortedRefs: string[]) {
-		request<void>("diff", sortedRefs);
+		channel.viewChanges(sortedRefs);
 	}
 
 	useEffect(() => {

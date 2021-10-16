@@ -15,16 +15,6 @@ import { Source } from "./data/source";
 @injectable()
 export class ViewController {
 	private webview?: Webview;
-	private readonly REQUEST_HANDLER_MAP: {
-		[request: string]: (params?: any) => Promise<any> | any;
-	} = {
-		initialize: () =>
-			Object.entries(this.source).map(([name, func]) => {
-				// TODO: exclude private key
-				this.REQUEST_HANDLER_MAP[name] = func;
-				return name;
-			}),
-	};
 
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,

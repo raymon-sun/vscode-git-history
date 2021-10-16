@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { join, parse } from "path";
+import { join } from "path";
 import {
 	commands,
 	ExtensionContext,
@@ -7,12 +7,8 @@ import {
 	ViewColumn,
 	Webview,
 	window,
-	workspace,
 } from "vscode";
 import { TYPES } from "../container/types";
-import { GitService } from "../git/service";
-import { PathCollection, resolveChangesCollection } from "../git/utils";
-import { FileTreeProvider } from "../providers/file-tree";
 import { IRequestMessage } from "./utils/message";
 import { Source } from "./data/source";
 
@@ -28,27 +24,11 @@ export class ViewController {
 				this.REQUEST_HANDLER_MAP[name] = func;
 				return name;
 			}),
-		repositories: () =>
-			this.git.getRepositories()?.map(({ rootUri }) => ({
-				repoName: parse(rootUri.path).base,
-				rootUri,
-			})),
-		commits: () => this.git.getCommits(),
-		diff: async (refs: string[]) => {
-			const changesCollection = await this.git.getChangesCollection(refs);
-			const newFileTree = resolveChangesCollection(
-				changesCollection,
-				workspace.workspaceFolders![0].uri.path
-			);
-			this.updateTreeView(newFileTree);
-		},
 	};
 
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
-		private git: GitService,
-		private source: Source,
-		private fileTreeProvider: FileTreeProvider
+		private source: Source
 	) {}
 
 	async createWebviewPanel() {
@@ -105,21 +85,27 @@ export class ViewController {
 	}
 
 	private registerRequestHandlers(webview: Webview) {
+		const REQUEST_HANDLER_MAP: {
+			[request: string]: (params?: any) => Promise<any> | any;
+		} = {
+			initialize: () =>
+				Object.entries(this.source).map(([name, func]) => {
+					// TODO: exclude private key
+					REQUEST_HANDLER_MAP[name] = func;
+					return name;
+				}),
+		};
+
 		webview.onDidReceiveMessage(async (message: IRequestMessage) => {
 			const { id, what, params } = message;
 			if (id === undefined) {
 				return;
 			}
 
-			const response = this.REQUEST_HANDLER_MAP[what](params);
+			const response = REQUEST_HANDLER_MAP[what](params);
 			const result =
 				response instanceof Promise ? await response : response;
 			webview.postMessage({ id: message.id, result });
 		});
-	}
-
-	private updateTreeView(fileTree: PathCollection) {
-		this.context.globalState.update("changedFileTree", fileTree);
-		this.fileTreeProvider.refresh();
 	}
 }

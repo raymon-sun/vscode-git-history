@@ -1,7 +1,6 @@
 import { Uri } from "vscode";
 import { useContext, useEffect, useState } from "react";
 import Select from "react-select";
-import { request } from "./utils/message";
 import { Commit } from "../typings/git-extension";
 import PickableList from "./components/PickableList";
 import style from "./App.module.scss";
@@ -12,6 +11,8 @@ export default function App() {
 	const [repos, setRepos] = useState<{ repoName: string; rootUri: Uri }[]>(
 		[]
 	);
+	const [users, setUsers] = useState<{ name: string; email: string }[]>([]);
+	const [branches, setBranches] = useState<string[]>([]);
 	const [commits, setCommits] = useState<Commit[]>([]);
 
 	function diff(sortedRefs: string[]) {
@@ -20,10 +21,18 @@ export default function App() {
 
 	useEffect(() => {
 		async function requestRepos() {
-			const repos = await request<{ repoName: string; rootUri: Uri }[]>(
-				"repositories"
-			);
+			const repos = await channel.getRepositories();
 			setRepos(repos);
+		}
+
+		async function requestUsers() {
+			const users = await channel.getAuthors();
+			setUsers(users!);
+		}
+
+		async function requestBranches() {
+			const branches = await channel.getBranches();
+			setBranches(branches!);
 		}
 
 		async function requestCommits() {
@@ -32,6 +41,8 @@ export default function App() {
 		}
 
 		requestRepos();
+		requestUsers();
+		requestBranches();
 		requestCommits();
 	}, []);
 
@@ -59,6 +70,7 @@ export default function App() {
 		<div className={style.container}>
 			<div className={style["operations-bar"]}>
 				<div className={style["filter-container"]}>
+					<div>Repo:</div>
 					<Select
 						options={repos.map(
 							({ repoName, rootUri: { path } }) => ({
@@ -67,9 +79,20 @@ export default function App() {
 							})
 						)}
 					/>
-					<div>Branch:master</div>
-					<div>User:All</div>
-					<div>Date:All</div>
+					<div>Branch:</div>
+					<Select
+						options={branches.map((branch) => ({
+							value: branch,
+							label: branch,
+						}))}
+					/>
+					<div>User:</div>
+					<Select
+						options={users.map(({ name, email }) => ({
+							value: email,
+							label: name,
+						}))}
+					/>
 				</div>
 				<div>
 					<input />

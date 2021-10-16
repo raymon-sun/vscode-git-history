@@ -1,4 +1,5 @@
 import { inject, injectable } from "inversify";
+import { parse } from "path";
 import { ExtensionContext, workspace } from "vscode";
 import { TYPES } from "../../container/types";
 import { GitService } from "../../git/service";
@@ -13,9 +14,21 @@ export class Source {
 		private fileTreeProvider: FileTreeProvider
 	) {}
 
-	getCommits = () => {
-		return this.git.getCommits();
+	getRepositories = () => {
+		const repositories = (this.git.getRepositories() || []).map(
+			({ rootUri }) => ({
+				repoName: parse(rootUri.path).base,
+				rootUri,
+			})
+		);
+		return Promise.resolve(repositories);
 	};
+
+	getBranches = () => this.git.getBranches();
+
+	getAuthors = () => this.git.getAuthors();
+
+	getCommits = () => this.git.getCommits();
 
 	viewChanges = async (refs: string[]) => {
 		const changesCollection = await this.git.getChangesCollection(refs);

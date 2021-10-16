@@ -253,6 +253,14 @@ export function sanitizePath(path: string): string {
 	);
 }
 
+export function getUser(shortLog: string) {
+	const matches = shortLog.match(/ *[0-9]+\t(.+) +<(.*)>/);
+	return {
+		name: matches?.[1] || "",
+		email: matches?.[2] || "",
+	};
+}
+
 // TODO: take functions below to another directory
 export function compareFileTreeNode(
 	[name, node]: [string, FolderNode | FileNode],

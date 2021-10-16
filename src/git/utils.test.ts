@@ -8,6 +8,7 @@ import {
 	FolderNode,
 	resolveChangesCollection,
 	ChangesCollection,
+	getUser,
 } from "./utils";
 
 suite("Git utils", () => {
@@ -108,7 +109,7 @@ suite("Git utils", () => {
 		});
 	});
 
-	test("should merge file status when given changes collection", () => {
+	test.skip("should merge file status when given changes collection", () => {
 		const mockChangesCollection = [
 			{
 				ref: "789",
@@ -230,5 +231,25 @@ suite("Git utils", () => {
 			),
 			1
 		);
+	});
+
+	test("should convert to user info when given shortlog", () => {
+		deepStrictEqual(
+			getUser("    65\tWolfgang Amadeus Mozart <mozart@mail.com>"),
+			{
+				name: "Wolfgang Amadeus Mozart",
+				email: "mozart@mail.com",
+			}
+		);
+
+		deepStrictEqual(getUser("3\tMichael Jackson <michael@mail.com>"), {
+			name: "Michael Jackson",
+			email: "michael@mail.com",
+		});
+
+		deepStrictEqual(getUser("1\tanonymous <anonymous@mail.com>"), {
+			name: "anonymous",
+			email: "anonymous@mail.com",
+		});
 	});
 });

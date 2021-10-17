@@ -5,6 +5,7 @@ import { Commit } from "../typings/git-extension";
 import PickableList from "./components/PickableList";
 import style from "./App.module.scss";
 import { ChannelContext } from "./data/channel";
+import { debounce } from "lodash";
 
 export default function App() {
 	const channel = useContext(ChannelContext)!;
@@ -33,6 +34,14 @@ export default function App() {
 		const commits = await channel.getCommits({ author: user });
 		setCommits(commits!);
 	}, []);
+
+	const handleSearch = useCallback(
+		debounce(async (keyword: string) => {
+			const commits = await channel.getCommits({ keyword });
+			setCommits(commits!);
+		}, 1000),
+		[]
+	);
 
 	useEffect(() => {
 		async function requestRepos() {
@@ -119,7 +128,11 @@ export default function App() {
 					/>
 				</div>
 				<div>
-					<input />
+					<input
+						onChange={(event) => {
+							handleSearch(event.target.value);
+						}}
+					/>
 				</div>
 			</div>
 			<PickableList list={getCommitList()} onPick={(ids) => diff(ids)} />

@@ -59,6 +59,7 @@ export class GitService {
 		const args = [
 			"log",
 			`--author=${options?.author || ""}`,
+			`--grep=${options?.keyword}`,
 			options?.ref || "HEAD",
 			`-n${maxEntries}`,
 			`--format=${COMMIT_FORMAT}`,

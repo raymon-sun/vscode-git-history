@@ -16,6 +16,7 @@ export interface LogOptions {
 	repo?: string;
 	ref?: string;
 	author?: string;
+	keyword?: string;
 }
 
 export interface IExecutionResult<T extends string | Buffer> {

@@ -4,7 +4,7 @@ import { getBuiltInGitApi, getGitBinPath } from "./api";
 import { API } from "../typings/git-extension";
 import { GitSource } from "./source";
 import { workspace } from "vscode";
-import { getUser } from "./utils";
+import { getUser, parseGitCommits } from "./utils";
 
 @injectable()
 export class GitService {
@@ -53,7 +53,17 @@ export class GitService {
 	}
 
 	async getCommits() {
-		return await this.gitExt?.repositories[0].log();
+		const COMMIT_FORMAT = "%H%n%aN%n%aE%n%at%n%ct%n%P%n%B";
+		const maxEntries = 3000;
+		return await this.git
+			?.raw([
+				"log",
+				`-n${maxEntries}`,
+				`--format=${COMMIT_FORMAT}`,
+				"-z",
+				"--",
+			])
+			.then((res) => parseGitCommits(res));
 	}
 
 	async getChangesCollection(refs: string[]) {

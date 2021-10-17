@@ -12,6 +12,12 @@ export interface SpawnOptions extends cp.SpawnOptions {
 	onSpawn?: (childProcess: cp.ChildProcess) => void;
 }
 
+export interface LogOptions {
+	repo?: string;
+	ref?: string;
+	author?: string;
+}
+
 export interface IExecutionResult<T extends string | Buffer> {
 	exitCode: number;
 	stdout: T;

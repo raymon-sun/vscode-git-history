@@ -28,7 +28,7 @@ export class Source {
 
 	getAuthors = () => this.git.getAuthors();
 
-	getCommits = () => this.git.getCommits();
+	getCommits = this.git.getCommits.bind(this.git);
 
 	viewChanges = async (refs: string[]) => {
 		const changesCollection = await this.git.getChangesCollection(refs);

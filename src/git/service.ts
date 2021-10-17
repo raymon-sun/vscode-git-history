@@ -5,12 +5,14 @@ import { API } from "../typings/git-extension";
 import { GitSource } from "./source";
 import { workspace } from "vscode";
 import { getUser, parseGitCommits } from "./utils";
+import { LogOptions } from "./types";
 
 @injectable()
 export class GitService {
 	private gitExt?: API;
 	private gitSource?: GitSource;
 	private git?: SimpleGit;
+	private readonly rootRepoPath = workspace.workspaceFolders![0].uri.fsPath;
 
 	constructor() {
 		this.initializeGitApi();
@@ -22,8 +24,7 @@ export class GitService {
 		const gitBinPath = await getGitBinPath();
 		this.gitSource = new GitSource(gitBinPath!);
 
-		const repositoryRoot = workspace.workspaceFolders![0].uri.fsPath;
-		this.git = simpleGit(repositoryRoot, { binary: gitBinPath });
+		this.git = simpleGit(this.rootRepoPath, { binary: gitBinPath });
 	}
 
 	getRepositories() {
@@ -52,18 +53,24 @@ export class GitService {
 		return await this.gitExt?.repositories[0].show(commitHash, filePath);
 	}
 
-	async getCommits() {
+	async getCommits(options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%aN%n%aE%n%at%n%ct%n%P%n%B";
 		const maxEntries = 3000;
+		const args = [
+			"log",
+			`--author=${options?.author || ""}`,
+			options?.ref || "HEAD",
+			`-n${maxEntries}`,
+			`--format=${COMMIT_FORMAT}`,
+			"-z",
+			"--",
+		];
+
 		return await this.git
-			?.raw([
-				"log",
-				`-n${maxEntries}`,
-				`--format=${COMMIT_FORMAT}`,
-				"-z",
-				"--",
-			])
-			.then((res) => parseGitCommits(res));
+			?.cwd(options?.repo || this.rootRepoPath)
+			.raw(args)
+			.then((res) => parseGitCommits(res))
+			.catch((err) => console.log(err));
 	}
 
 	async getChangesCollection(refs: string[]) {

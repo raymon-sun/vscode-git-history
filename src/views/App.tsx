@@ -1,5 +1,5 @@
 import { Uri } from "vscode";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import Select from "react-select";
 import { Commit } from "../typings/git-extension";
 import PickableList from "./components/PickableList";
@@ -18,6 +18,21 @@ export default function App() {
 	function diff(sortedRefs: string[]) {
 		channel.viewChanges(sortedRefs);
 	}
+
+	const handleRepoChange = useCallback(async (path: string) => {
+		const commits = await channel.getCommits({ repo: path });
+		setCommits(commits!);
+	}, []);
+
+	const handleBranchChange = useCallback(async (branch: string) => {
+		const commits = await channel.getCommits({ ref: branch });
+		setCommits(commits!);
+	}, []);
+
+	const handleUserChange = useCallback(async (user: string) => {
+		const commits = await channel.getCommits({ author: user });
+		setCommits(commits!);
+	}, []);
 
 	useEffect(() => {
 		async function requestRepos() {
@@ -74,24 +89,33 @@ export default function App() {
 					<Select
 						options={repos.map(
 							({ repoName, rootUri: { path } }) => ({
-								value: path,
+								path,
 								label: repoName,
 							})
 						)}
+						onChange={(value) => {
+							handleRepoChange(value!.path);
+						}}
 					/>
 					<div>Branch:</div>
 					<Select
 						options={branches.map((branch) => ({
-							value: branch,
+							branch,
 							label: branch,
 						}))}
+						onChange={(value) => {
+							handleBranchChange(value!.branch);
+						}}
 					/>
 					<div>User:</div>
 					<Select
-						options={users.map(({ name, email }) => ({
-							value: email,
+						options={users.map(({ name }) => ({
+							user: name,
 							label: name,
 						}))}
+						onChange={(value) => {
+							handleUserChange(value!.user);
+						}}
 					/>
 				</div>
 				<div>

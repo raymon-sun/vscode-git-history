@@ -13,7 +13,11 @@ export default function App() {
 		[]
 	);
 	const [users, setUsers] = useState<{ name: string; email: string }[]>([]);
+	const [selectedUser, setSelectedUser] = useState<string>();
+
 	const [branches, setBranches] = useState<string[]>([]);
+	const [selectedBranch, setSelectedBranch] = useState<string>();
+
 	const [commits, setCommits] = useState<Commit[]>([]);
 
 	function diff(sortedRefs: string[]) {
@@ -22,18 +26,34 @@ export default function App() {
 
 	const handleRepoChange = useCallback(async (path: string) => {
 		const commits = await channel.getCommits({ repo: path });
+		setSelectedBranch(undefined);
+		setSelectedUser(undefined);
 		setCommits(commits!);
 	}, []);
 
-	const handleBranchChange = useCallback(async (branch: string) => {
-		const commits = await channel.getCommits({ ref: branch });
-		setCommits(commits!);
-	}, []);
+	const handleBranchChange = useCallback(
+		async (branch: string) => {
+			setSelectedBranch(branch);
+			const commits = await channel.getCommits({
+				ref: branch,
+				author: selectedUser,
+			});
+			setCommits(commits!);
+		},
+		[selectedUser]
+	);
 
-	const handleUserChange = useCallback(async (user: string) => {
-		const commits = await channel.getCommits({ author: user });
-		setCommits(commits!);
-	}, []);
+	const handleUserChange = useCallback(
+		async (user: string) => {
+			setSelectedUser(user);
+			const commits = await channel.getCommits({
+				ref: selectedBranch,
+				author: user,
+			});
+			setCommits(commits!);
+		},
+		[selectedBranch]
+	);
 
 	const handleSearch = useCallback(
 		debounce(async (keyword: string) => {

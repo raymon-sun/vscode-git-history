@@ -3,37 +3,47 @@ import { useDrag } from "@use-gesture/react";
 import { sortedIndex } from "lodash";
 import classNames from "classnames";
 import { useIsKeyPressed } from "./event";
+import { useVirtual } from "react-virtual";
 
 import style from "./index.module.scss";
 
 type Id = string;
 
 interface Props {
-	list?: { id: Id; content: string | ReactNode }[];
+	list: { id: Id; content: string | ReactNode }[];
 	onPick?: (ids: Id[]) => void;
 }
 
 const PickableList: FC<Props> = ({ list, onPick }) => {
-	const containerRef = useRef<HTMLDivElement>(null);
-	const [pickedItems, setPickedItems] = useState<Record<Id, number>>({});
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const dragContainerRef = useRef<HTMLDivElement>(null);
 
+	const rowVirtualizer = useVirtual({
+		size: list.length,
+		parentRef: scrollContainerRef,
+		overscan: 10,
+	});
+
+	const [pickedItems, setPickedItems] = useState<Record<Id, number>>({});
 	const [containerRect, setContainerRect] = useState<DOMRect | undefined>();
 	const [itemYs, setItemYs] = useState<number[]>([]);
 	const [dragStartIndex, setDragStartIndex] = useState<number>(-1);
 	const { checkKeyIsPressed } = useIsKeyPressed();
 
-	const dragBind = useDrag(({ type, values }) => {
-		const [x, y] = values;
+	const dragBind = useDrag(({ type, xy }) => {
+		const [x, y] = xy;
 
 		const existedItems = checkKeyIsPressed("Meta") ? pickedItems : {};
+		const firstItemIndex = rowVirtualizer.virtualItems[0].index;
 		if (type === "pointerdown") {
 			const realTimeContainerRect =
-				containerRef.current?.getBoundingClientRect();
+				dragContainerRef.current?.getBoundingClientRect();
 			const realTimeItemYs = Array.from(
-				containerRef.current?.children || []
+				dragContainerRef.current?.children || []
 			).map((element) => element.getBoundingClientRect().y);
 
-			const dragStartIndex = sortedIndex(realTimeItemYs, y) - 1;
+			const dragStartIndex =
+				firstItemIndex + sortedIndex(realTimeItemYs, y) - 1;
 			setContainerRect(realTimeContainerRect);
 			setItemYs(realTimeItemYs);
 			setDragStartIndex(dragStartIndex);
@@ -62,7 +72,7 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 			y > containerRect.y &&
 			y < containerRect.y + containerRect.height
 		) {
-			const currentIndex = sortedIndex(itemYs, y) - 1;
+			const currentIndex = firstItemIndex + sortedIndex(itemYs, y) - 1;
 			const currentItems = { ...existedItems };
 			for (
 				let index = Math.min(dragStartIndex, currentIndex);
@@ -80,17 +90,42 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 	});
 
 	return (
-		<div ref={containerRef} {...dragBind()} className={style.container}>
-			{list?.map(({ id, content }) => (
-				<div
-					key={id}
-					className={classNames(style.item, {
-						[style.picked]: pickedItems?.hasOwnProperty(id),
-					})}
-				>
-					{content}
-				</div>
-			))}
+		<div
+			{...dragBind()}
+			ref={scrollContainerRef}
+			style={{ overflow: "auto" }}
+			className={style.container}
+		>
+			<div
+				ref={dragContainerRef}
+				style={{
+					height: `${rowVirtualizer.totalSize}px`,
+					width: "100%",
+					position: "relative",
+				}}
+			>
+				{rowVirtualizer.virtualItems.map((virtualRow) => (
+					<div
+						key={virtualRow.index}
+						ref={virtualRow.measureRef}
+						className={classNames(style.item, {
+							[style.picked]: pickedItems?.hasOwnProperty(
+								list[virtualRow.index].id
+							),
+						})}
+						style={{
+							position: "absolute",
+							top: 0,
+							left: 0,
+							width: "100%",
+							height: "22px",
+							transform: `translateY(${virtualRow.start}px)`,
+						}}
+					>
+						{list[virtualRow.index].content}
+					</div>
+				))}
+			</div>
 		</div>
 	);
 };

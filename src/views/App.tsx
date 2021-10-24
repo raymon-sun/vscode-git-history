@@ -149,13 +149,19 @@ export default function App() {
 				</div>
 				<div>
 					<input
+						placeholder="Search..."
 						onChange={(event) => {
 							handleSearch(event.target.value);
 						}}
 					/>
 				</div>
 			</div>
-			<PickableList list={getCommitList()} onPick={(ids) => diff(ids)} />
+			<div className={style["commits-area"]}>
+				<PickableList
+					list={getCommitList()}
+					onPick={(ids) => diff(ids)}
+				/>
+			</div>
 		</div>
 	);
 }

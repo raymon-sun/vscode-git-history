@@ -1,8 +1,62 @@
 $select-host: "git-cruise-select";
 
 .#{$select-host} {
-	.#{$select-host}__control {
+	width: 180px;
+
+	& &__control {
 		min-height: initial;
+		border: none;
+		border-radius: 0;
+		background-color: var(--vscode-input-background);
+		box-shadow: none;
+		color: var(--vscode-foreground);
+	}
+
+	& &__input-container {
+		margin: 0;
+		color: var(--vscode-foreground);
+	}
+
+	& &__value-container {
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+
+	& &__single-value {
+		color: inherit;
+	}
+
+	& &__menu {
+		border-radius: 0;
+		margin: 0;
+		background-color: var(--vscode-dropdown-background);
+		color: var(--vscode-foreground);
+	}
+
+	& &__option {
+		overflow: hidden;
+		line-height: 22px;
+		padding: 0;
+		padding-left: 10px;
+		background-color: transparent;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+
+		&:active {
+			background-color: transparent;
+		}
+	}
+
+	& &__option--is-focused {
+		background-color: var(--vscode-list-activeSelectionBackground);
+	}
+
+	& &__indicator {
+		padding: 0 4px;
+	}
+
+	& &__indicator-separator {
+		display: none;
 	}
 }
 

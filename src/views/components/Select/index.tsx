@@ -1,3 +1,4 @@
+import { ThemeIcon } from "vscode";
 import OriginalSelect from "react-select";
 import styleVars from "./index.scss";
 

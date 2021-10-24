@@ -8,13 +8,21 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	height: 40px;
+	padding: 6px 0;
+
 	.filter-container {
 		display: flex;
+		align-items: center;
+
 		> div:not(:last-child) {
 			margin-right: 12px;
 		}
 	}
+}
+
+.commits-area {
+	flex: 1;
+	overflow: hidden;
 }
 
 .commit {

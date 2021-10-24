@@ -71,12 +71,12 @@ export default function App() {
 
 		async function requestUsers() {
 			const users = await channel.getAuthors();
-			setUsers(users!);
+			setUsers([{ name: "", email: "" }, ...users!]);
 		}
 
 		async function requestBranches() {
 			const branches = await channel.getBranches();
-			setBranches(branches!);
+			setBranches(["", ...branches!]);
 		}
 
 		async function requestCommits() {
@@ -128,22 +128,30 @@ export default function App() {
 					/>
 					<div>Branch:</div>
 					<Select
+						value={{
+							branch: selectedBranch,
+							label: selectedBranch || "All Branches",
+						}}
 						options={branches.map((branch) => ({
 							branch,
-							label: branch,
+							label: branch || "All Branches",
 						}))}
 						onChange={(value) => {
-							handleBranchChange(value!.branch);
+							handleBranchChange(value!.branch!);
 						}}
 					/>
 					<div>User:</div>
 					<Select
+						value={{
+							user: selectedUser,
+							label: selectedUser || "All Users",
+						}}
 						options={users.map(({ name }) => ({
 							user: name,
-							label: name,
+							label: name || "All Users",
 						}))}
 						onChange={(value) => {
-							handleUserChange(value!.user);
+							handleUserChange(value!.user!);
 						}}
 					/>
 				</div>

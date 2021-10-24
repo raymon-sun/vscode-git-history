@@ -1,0 +1,11 @@
+$select-host: "git-cruise-select";
+
+.#{$select-host} {
+	.#{$select-host}__control {
+		min-height: initial;
+	}
+}
+
+:export {
+	SELECT_HOST: #{$select-host};
+}

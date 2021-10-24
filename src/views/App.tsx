@@ -1,8 +1,8 @@
 import { Uri } from "vscode";
 import { useCallback, useContext, useEffect, useState } from "react";
-import Select from "react-select";
 import { Commit } from "../typings/git-extension";
 import PickableList from "./components/PickableList";
+import Select from "./components/Select";
 import style from "./App.module.scss";
 import { ChannelContext } from "./data/channel";
 import { debounce } from "lodash";

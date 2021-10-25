@@ -34,7 +34,7 @@ export class GitService {
 	getBranches() {
 		return this.git
 			?.raw("branch", "-a", "--format=%(refname:short)")
-			.then((res) => res.split("\n"));
+			.then((res) => res.split("\n").filter((branch) => !!branch));
 	}
 
 	getAuthors() {
@@ -42,7 +42,9 @@ export class GitService {
 			?.raw("shortlog", "-ens", "HEAD")
 			.then((res) => {
 				const shortlogs = res.split("\n");
-				return shortlogs.map((shortlog) => getUser(shortlog));
+				return shortlogs
+					.filter((shortlog) => !!shortlog)
+					.map((shortlog) => getUser(shortlog));
 			})
 			.catch((err) => {
 				console.log(err);

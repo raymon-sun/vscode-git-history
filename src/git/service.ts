@@ -56,19 +56,27 @@ export class GitService {
 	async getCommits(options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%aN%n%aE%n%at%n%ct%n%P%n%B";
 		const maxEntries = 3000;
-		const args = [
-			"log",
-			`--author=${options?.author || ""}`,
-			`--grep=${options?.keyword}`,
-			options?.ref || "HEAD",
-			`-n${maxEntries}`,
-			`--format=${COMMIT_FORMAT}`,
-			"-z",
-			"--",
-		];
+		const args = ["log", `--format=${COMMIT_FORMAT}`, "-z"];
+
+		const { repo, author, keyword, ref, maxLength } = options || {};
+		if (author) {
+			args.push(`--author=${author || ""}`);
+		}
+
+		if (keyword) {
+			args.push(`--grep=${keyword}`);
+		}
+
+		if (ref) {
+			args.push(ref);
+		}
+
+		if (maxLength) {
+			`-n${maxEntries}`;
+		}
 
 		return await this.git
-			?.cwd(options?.repo || this.rootRepoPath)
+			?.cwd(repo || this.rootRepoPath)
 			.raw(args)
 			.then((res) => parseGitCommits(res))
 			.catch((err) => console.log(err));

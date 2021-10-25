@@ -17,6 +17,7 @@ export interface LogOptions {
 	ref?: string;
 	author?: string;
 	keyword?: string;
+	maxLength?: number;
 }
 
 export interface IExecutionResult<T extends string | Buffer> {

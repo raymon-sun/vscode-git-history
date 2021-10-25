@@ -72,7 +72,7 @@ export class GitService {
 		}
 
 		if (maxLength) {
-			`-n${maxEntries}`;
+			args.push(`-n${maxEntries}`);
 		}
 
 		return await this.git

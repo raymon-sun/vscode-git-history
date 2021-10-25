@@ -13,10 +13,10 @@ export default function App() {
 		[]
 	);
 	const [users, setUsers] = useState<{ name: string; email: string }[]>([]);
-	const [selectedUser, setSelectedUser] = useState<string>();
+	const [selectedUser, setSelectedUser] = useState<string>("");
 
 	const [branches, setBranches] = useState<string[]>([]);
-	const [selectedBranch, setSelectedBranch] = useState<string>();
+	const [selectedBranch, setSelectedBranch] = useState<string>("");
 
 	const [commits, setCommits] = useState<Commit[]>([]);
 
@@ -26,8 +26,8 @@ export default function App() {
 
 	const handleRepoChange = useCallback(async (path: string) => {
 		const commits = await channel.getCommits({ repo: path });
-		setSelectedBranch(undefined);
-		setSelectedUser(undefined);
+		setSelectedBranch("");
+		setSelectedUser("");
 		setCommits(commits!);
 	}, []);
 
@@ -137,7 +137,7 @@ export default function App() {
 							label: branch || "All Branches",
 						}))}
 						onChange={(value) => {
-							handleBranchChange(value!.branch!);
+							handleBranchChange(value!.branch);
 						}}
 					/>
 					<div>User:</div>
@@ -151,7 +151,7 @@ export default function App() {
 							label: name || "All Users",
 						}))}
 						onChange={(value) => {
-							handleUserChange(value!.user!);
+							handleUserChange(value!.user);
 						}}
 					/>
 				</div>

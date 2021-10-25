@@ -1,4 +1,4 @@
-import { FC, ReactNode, useRef, useState } from "react";
+import { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { useDrag } from "@use-gesture/react";
 import { sortedIndex } from "lodash";
 import classNames from "classnames";
@@ -29,6 +29,10 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 	const [itemYs, setItemYs] = useState<number[]>([]);
 	const [dragStartIndex, setDragStartIndex] = useState<number>(-1);
 	const { checkKeyIsPressed } = useIsKeyPressed();
+
+	useEffect(() => {
+		setPickedItems({});
+	}, [list]);
 
 	const dragBind = useDrag(({ type, xy }) => {
 		const [x, y] = xy;

@@ -55,7 +55,6 @@ export class GitService {
 
 	async getCommits(options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%aN%n%aE%n%at%n%ct%n%P%n%B";
-		const maxEntries = 3000;
 		const args = ["log", `--format=${COMMIT_FORMAT}`, "-z"];
 
 		const { repo, author, keyword, ref, maxLength } = options || {};
@@ -72,7 +71,7 @@ export class GitService {
 		}
 
 		if (maxLength) {
-			args.push(`-n${maxEntries}`);
+			args.push(`-n${maxLength}`);
 		}
 
 		return await this.git

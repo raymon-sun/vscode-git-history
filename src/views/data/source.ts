@@ -14,6 +14,14 @@ export class Source {
 		private fileTreeProvider: FileTreeProvider
 	) {}
 
+	getDefaultRepository = () => {
+		const { rootUri } = this.git.getDefaultRepository();
+		return Promise.resolve({
+			repoName: parse(rootUri.path).base,
+			rootUri,
+		});
+	};
+
 	getRepositories = () => {
 		const repositories = (this.git.getRepositories() || []).map(
 			({ rootUri }) => ({

@@ -27,6 +27,17 @@ export class GitService {
 		this.git = simpleGit(this.rootRepoPath, { binary: gitBinPath });
 	}
 
+	getDefaultRepository() {
+		const workspacePath = workspace.workspaceFolders![0].uri.fsPath;
+		const repos = this.gitExt?.repositories || [];
+
+		return (
+			repos.find(
+				(repository) => repository.rootUri.fsPath === workspacePath
+			) || repos[0]
+		);
+	}
+
 	getRepositories() {
 		return this.gitExt?.repositories;
 	}

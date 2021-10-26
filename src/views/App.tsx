@@ -12,6 +12,9 @@ export default function App() {
 	const [repos, setRepos] = useState<{ repoName: string; rootUri: Uri }[]>(
 		[]
 	);
+	const [selectedRepo, setSelectedRepo] =
+		useState<{ repoName: string; rootUri: Uri }>();
+
 	const [users, setUsers] = useState<{ name: string; email: string }[]>([]);
 	const [selectedUser, setSelectedUser] = useState<string>("");
 
@@ -24,12 +27,18 @@ export default function App() {
 		channel.viewChanges(sortedRefs);
 	}
 
-	const handleRepoChange = useCallback(async (path: string) => {
-		const commits = await channel.getCommits({ repo: path });
-		setSelectedBranch("");
-		setSelectedUser("");
-		setCommits(commits!);
-	}, []);
+	const handleRepoChange = useCallback(
+		async (repo: { rootUri: Uri; repoName: string; label: string }) => {
+			const { rootUri, repoName } = repo;
+			setSelectedRepo({ rootUri, repoName });
+
+			const commits = await channel.getCommits({ repo: rootUri.path });
+			setSelectedBranch("");
+			setSelectedUser("");
+			setCommits(commits!);
+		},
+		[]
+	);
 
 	const handleBranchChange = useCallback(
 		async (branch: string) => {
@@ -80,7 +89,14 @@ export default function App() {
 		}
 
 		async function requestCommits() {
-			const commits = await channel.getCommits();
+			const repo = await channel.getDefaultRepository();
+			setSelectedRepo(repo);
+
+			const commits = await channel.getCommits({
+				repo: repo?.rootUri.path,
+				author: selectedUser,
+				ref: selectedBranch,
+			});
 			setCommits(commits || []);
 		}
 
@@ -110,20 +126,28 @@ export default function App() {
 		}));
 	};
 
+	if (!selectedRepo) {
+		return null;
+	}
+
 	return (
 		<div className={style.container}>
 			<div className={style["operations-bar"]}>
 				<div className={style["filter-container"]}>
 					<div>Repo:</div>
 					<Select
-						options={repos.map(
-							({ repoName, rootUri: { path } }) => ({
-								path,
-								label: repoName,
-							})
-						)}
+						value={{
+							rootUri: selectedRepo.rootUri,
+							repoName: selectedRepo.repoName,
+							label: selectedRepo.repoName,
+						}}
+						options={repos.map(({ repoName, rootUri }) => ({
+							rootUri,
+							repoName,
+							label: repoName,
+						}))}
 						onChange={(value) => {
-							handleRepoChange(value!.path);
+							handleRepoChange(value!);
 						}}
 					/>
 					<div>Branch:</div>

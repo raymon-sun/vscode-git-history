@@ -24,7 +24,7 @@
 			]
 		},
 		"views": {
-			"file-explorer": [
+			"scm": [
 				{
 					"id": "changedFiles",
 					"name": "Changed Files",

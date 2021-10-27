@@ -1,6 +1,6 @@
-# git-diff-plus README
+# git-cruise README
 
-This is the README for your extension "git-diff-plus". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "git-cruise". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

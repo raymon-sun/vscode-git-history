@@ -17,10 +17,10 @@ export class DisposableController {
 
 	createDisposables() {
 		return [
-			commands.registerCommand("git-diff-plus.view", async () => {
+			commands.registerCommand("git-cruise.view", async () => {
 				this.viewController.createWebviewPanel();
 			}),
-			commands.registerCommand("git-diff-plus.quit", () => {
+			commands.registerCommand("git-cruise.quit", () => {
 				window.showInformationMessage("Quit");
 			}),
 			workspace.registerTextDocumentContentProvider(

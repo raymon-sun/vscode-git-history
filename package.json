@@ -1,5 +1,5 @@
 {
-	"name": "vscode-git-diff-plus",
+	"name": "vscode-git-cruise",
 	"displayName": "Git Diff Plus",
 	"description": "",
 	"version": "0.0.1",
@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:git-diff-plus.view"
+		"onCommand:git-cruise.view"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -35,8 +35,8 @@
 		},
 		"commands": [
 			{
-				"category": "GDP",
-				"command": "git-diff-plus.view",
+				"category": "Git Cruise",
+				"command": "git-cruise.view",
 				"title": "View git log"
 			}
 		]

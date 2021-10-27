@@ -1,1 +1,1 @@
-export const EXTENSION_SCHEME = "git-diff-plus";
+export const EXTENSION_SCHEME = "git-cruise";

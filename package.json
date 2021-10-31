@@ -1,10 +1,13 @@
 {
 	"name": "vscode-git-cruise",
 	"displayName": "Git Cruise",
-	"description": "",
+	"description": "view changes between multiple commits",
 	"version": "0.0.1",
+	"icon": "assets/logo/1x.png",
+	"repository": "https://github.com/raymon-sun/vscode-git-cruise",
+	"publisher": "Guodong Sun",
 	"engines": {
-		"vscode": "^1.56.0"
+		"vscode": "^1.60.0"
 	},
 	"categories": [
 		"Other"

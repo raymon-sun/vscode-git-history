@@ -2,6 +2,11 @@
 	"name": "vscode-git-cruise",
 	"displayName": "Git Cruise",
 	"description": "view changes between multiple commits",
+	"keywords": [
+        "git",
+        "log",
+        "diff"
+    ],
 	"version": "0.0.1",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-cruise",

@@ -1,6 +1,6 @@
 {
 	"name": "vscode-git-cruise",
-	"displayName": "Git Diff Plus",
+	"displayName": "Git Cruise",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {
@@ -10,15 +10,15 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:git-cruise.view"
+		"onCommand:git-cruise.changes.view"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "file-explorer",
-					"title": "Files Explorer",
+					"id": "changes-explorer",
+					"title": "Changes Explorer",
 					"icon": "assets/icons/files.svg"
 				}
 			]
@@ -26,20 +26,30 @@
 		"views": {
 			"scm": [
 				{
-					"id": "changedFiles",
-					"name": "Changed Files",
+					"id": "git-cruise.changes",
+					"name": "Git Cruise Changes",
 					"icon": "assets/icons/files.svg",
-					"contextualTitle": "Files Explorer"
+					"contextualTitle": "Changes Explorer"
 				}
 			]
 		},
 		"commands": [
 			{
 				"category": "Git Cruise",
-				"command": "git-cruise.view",
-				"title": "View git log"
+				"command": "git-cruise.changes.view",
+				"title": "View Git Log",
+				"icon": "$(list-flat)"
 			}
-		]
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "git-cruise.changes.view",
+					"when": "view =~ /git-cruise/",
+					"group": "navigation@4"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",

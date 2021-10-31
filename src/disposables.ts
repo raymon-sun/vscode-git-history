@@ -17,7 +17,7 @@ export class DisposableController {
 
 	createDisposables() {
 		return [
-			commands.registerCommand("git-cruise.view", async () => {
+			commands.registerCommand("git-cruise.changes.view", async () => {
 				this.viewController.createWebviewPanel();
 			}),
 			commands.registerCommand("git-cruise.quit", () => {
@@ -28,7 +28,7 @@ export class DisposableController {
 				this.versionedFileProvider
 			),
 			window.registerTreeDataProvider(
-				"changedFiles",
+				"git-cruise.changes",
 				this.fileTreeProvider
 			),
 			window.registerFileDecorationProvider(

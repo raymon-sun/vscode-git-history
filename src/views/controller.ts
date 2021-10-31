@@ -17,8 +17,8 @@ export class ViewController {
 	async createWebviewPanel() {
 		const { extensionUri } = this.context;
 		const panel = window.createWebviewPanel(
-			"gitDiffPlus", // Identifies the type of the webview. Used internally
-			"Git Diff Picker", // Title of the panel displayed to the user
+			"gitCruiseLog", // Identifies the type of the webview. Used internally
+			"Git Cruise Log", // Title of the panel displayed to the user
 			ViewColumn.One, // Editor column to show the new webview panel in.
 			{
 				// Enable scripts in the webview

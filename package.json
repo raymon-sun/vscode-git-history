@@ -3,14 +3,15 @@
 	"displayName": "Git Cruise",
 	"description": "view changes between multiple commits",
 	"keywords": [
-        "git",
-        "log",
-        "diff"
-    ],
+		"git",
+		"log",
+		"diff"
+	],
 	"version": "0.0.1",
+	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-cruise",
-	"publisher": "Guodong Sun",
+	"publisher": "GuodongSun",
 	"engines": {
 		"vscode": "^1.60.0"
 	},

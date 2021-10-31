@@ -39,7 +39,7 @@ export class Source {
 	getCommits = this.git.getCommits.bind(this.git);
 
 	viewChanges = async (repo: string, refs: string[]) => {
-		const changesCollection = await this.git._getChangesCollection(
+		const changesCollection = await this.git.getChangesCollection(
 			repo,
 			refs
 		);

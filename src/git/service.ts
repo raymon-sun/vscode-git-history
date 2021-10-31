@@ -2,7 +2,6 @@ import { injectable } from "inversify";
 import simpleGit, { SimpleGit } from "simple-git";
 import { getBuiltInGitApi, getGitBinPath } from "./api";
 import { API } from "../typings/git-extension";
-import { GitSource } from "./source";
 import { workspace } from "vscode";
 import { getUser, parseGitChanges, parseGitCommits } from "./utils";
 import { LogOptions } from "./types";
@@ -10,7 +9,6 @@ import { LogOptions } from "./types";
 @injectable()
 export class GitService {
 	private gitExt?: API;
-	private gitSource?: GitSource;
 	private git?: SimpleGit;
 	private readonly rootRepoPath = workspace.workspaceFolders![0].uri.fsPath;
 
@@ -22,7 +20,6 @@ export class GitService {
 		this.gitExt = (await getBuiltInGitApi())!;
 
 		const gitBinPath = await getGitBinPath();
-		this.gitSource = new GitSource(gitBinPath!);
 
 		this.git = simpleGit(this.rootRepoPath, { binary: gitBinPath });
 	}
@@ -102,18 +99,7 @@ export class GitService {
 			.catch((err) => console.log(err));
 	}
 
-	async getChangesCollection(refs: string[]) {
-		return await Promise.all(
-			refs.map((ref) =>
-				this.gitSource!.getChangesByRef(ref).then((changes) => ({
-					ref,
-					changes,
-				}))
-			)
-		);
-	}
-
-	async _getChangesCollection(repoPath: string, refs: string[]) {
+	async getChangesCollection(repoPath: string, refs: string[]) {
 		return await Promise.all(
 			refs.map((ref) =>
 				this.getChangesByRef(repoPath, ref).then((changes) => ({

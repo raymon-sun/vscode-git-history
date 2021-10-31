@@ -92,7 +92,7 @@ export class ViewController {
 				return;
 			}
 
-			const response = REQUEST_HANDLER_MAP[what](params);
+			const response = REQUEST_HANDLER_MAP[what](...params);
 			const result =
 				response instanceof Promise ? await response : response;
 			webview.postMessage({ id: message.id, result });

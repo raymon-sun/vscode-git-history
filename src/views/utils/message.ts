@@ -47,7 +47,7 @@ export async function sendMessage<T extends IMessage>(
 	});
 }
 
-export async function request<T>(what: string, params?: any) {
+export async function request<T>(what: string, ...params: any) {
 	const response = await sendMessage<IResponseMessage<T>>({ what, params });
 	return response.result;
 }

@@ -4,7 +4,7 @@ import { getBuiltInGitApi, getGitBinPath } from "./api";
 import { API } from "../typings/git-extension";
 import { GitSource } from "./source";
 import { workspace } from "vscode";
-import { getUser, parseGitCommits } from "./utils";
+import { getUser, parseGitChanges, parseGitCommits } from "./utils";
 import { LogOptions } from "./types";
 
 @injectable()
@@ -29,7 +29,7 @@ export class GitService {
 
 	getDefaultRepository() {
 		const workspacePath = workspace.workspaceFolders![0].uri.fsPath;
-		const repos = this.gitExt?.repositories || [];
+		const repos = this.getRepositories();
 
 		return (
 			repos.find(
@@ -39,7 +39,7 @@ export class GitService {
 	}
 
 	getRepositories() {
-		return this.gitExt?.repositories;
+		return this.gitExt?.repositories || [];
 	}
 
 	getBranches() {
@@ -63,7 +63,15 @@ export class GitService {
 	}
 
 	async show(commitHash: string, filePath: string) {
-		return await this.gitExt?.repositories[0].show(commitHash, filePath);
+		// TODO: record repo path in file node
+		const repo = this.getRepositories()
+			.sort(
+				({ rootUri: rootUriA }, { rootUri: rootUriB }) =>
+					rootUriB.path.length - rootUriA.path.length
+			)
+			.find(({ rootUri }) => filePath.startsWith(rootUri.path));
+
+		return await repo!.show(commitHash, filePath);
 	}
 
 	async getCommits(options?: LogOptions) {
@@ -103,5 +111,32 @@ export class GitService {
 				}))
 			)
 		);
+	}
+
+	async _getChangesCollection(repoPath: string, refs: string[]) {
+		return await Promise.all(
+			refs.map((ref) =>
+				this.getChangesByRef(repoPath, ref).then((changes) => ({
+					ref,
+					changes,
+				}))
+			)
+		);
+	}
+
+	async getChangesByRef(repoPath: string, ref: string) {
+		const args = [
+			"log",
+			"-p",
+			"-1",
+			"--pretty=format:",
+			"--name-status",
+			"-z",
+			ref,
+		];
+
+		return await this.git!.cwd(repoPath || this.rootRepoPath)
+			.raw(args)
+			.then((res) => parseGitChanges(repoPath, res));
 	}
 }

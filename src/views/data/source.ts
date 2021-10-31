@@ -38,8 +38,11 @@ export class Source {
 
 	getCommits = this.git.getCommits.bind(this.git);
 
-	viewChanges = async (refs: string[]) => {
-		const changesCollection = await this.git.getChangesCollection(refs);
+	viewChanges = async (repo: string, refs: string[]) => {
+		const changesCollection = await this.git._getChangesCollection(
+			repo,
+			refs
+		);
 		const newFileTree = resolveChangesCollection(
 			changesCollection,
 			workspace.workspaceFolders![0].uri.path

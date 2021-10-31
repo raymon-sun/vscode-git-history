@@ -24,7 +24,7 @@ export default function App() {
 	const [commits, setCommits] = useState<Commit[]>([]);
 
 	function diff(sortedRefs: string[]) {
-		channel.viewChanges(sortedRefs);
+		channel.viewChanges(selectedRepo?.rootUri.path || "", sortedRefs);
 	}
 
 	const handleRepoChange = useCallback(

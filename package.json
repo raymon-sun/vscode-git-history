@@ -5,9 +5,10 @@
 	"keywords": [
 		"git",
 		"log",
-		"diff"
+		"diff",
+		"cruise"
 	],
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-cruise",

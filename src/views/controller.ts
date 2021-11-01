@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { join } from "path";
+import path, { join } from "path";
 import { ExtensionContext, Uri, ViewColumn, Webview, window } from "vscode";
 import { TYPES } from "../container/types";
 import { IRequestMessage } from "./utils/message";
@@ -26,6 +26,7 @@ export class ViewController {
 				localResourceRoots: [Uri.joinPath(extensionUri, "dist")],
 			} // Webview options. More on these later.
 		);
+		panel.iconPath = Uri.joinPath(extensionUri, "assets/logo/1x.svg");
 
 		this.webview = panel.webview;
 		this.webview.html = await this.generateWebviewContent(this.webview);

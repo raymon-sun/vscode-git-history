@@ -37,7 +37,7 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 	const dragBind = useDrag(({ type, xy }) => {
 		const [x, y] = xy;
 
-		const existedItems = checkKeyIsPressed("Meta") ? pickedItems : {};
+		const existedItems = checkKeyIsPressed("Meta") || checkKeyIsPressed("Control") ? pickedItems : {};
 		const firstItemIndex = rowVirtualizer.virtualItems[0].index;
 		if (type === "pointerdown") {
 			const realTimeContainerRect =

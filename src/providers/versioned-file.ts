@@ -12,7 +12,7 @@ export class VersionedFileProvider implements TextDocumentContentProvider {
 			return "";
 		}
 
-		const content = await this.git.show(ref, uri.path);
+		const content = await this.git.show(ref, uri.fsPath);
 		return content;
 	}
 }

@@ -59,14 +59,13 @@ export class GitService {
 
 	async show(commitHash: string, filePath: string) {
 		// TODO: record repo path in file node / replace gitExt
-		const repo = this.gitExt?.repositories
-			.sort(
-				({ rootUri: { path: pathA } }, { rootUri: { path: pathB } }) =>
-					pathB.length - pathA.length
-			)
-			.find(({ rootUri }) => filePath.startsWith(rootUri.path));
+		const repoPath = this.getRepositories()
+			.sort((fsPathA, fsPathB) => fsPathB.length - fsPathA.length)
+			.find((fsPath) => filePath.startsWith(fsPath));
 
-		return await repo!.show(commitHash, filePath);
+		return await this.gitExt?.repositories
+			.find((repo) => repo.rootUri.fsPath === repoPath)!
+			.show(commitHash, filePath);
 	}
 
 	async getCommits(options?: LogOptions) {

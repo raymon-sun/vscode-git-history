@@ -1,4 +1,3 @@
-import { Uri } from "vscode";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Commit } from "../typings/git-extension";
 import PickableList from "./components/PickableList";
@@ -9,11 +8,9 @@ import { debounce } from "lodash";
 
 export default function App() {
 	const channel = useContext(ChannelContext)!;
-	const [repos, setRepos] = useState<{ repoName: string; rootUri: Uri }[]>(
-		[]
-	);
+	const [repos, setRepos] = useState<{ name: string; path: string }[]>([]);
 	const [selectedRepo, setSelectedRepo] =
-		useState<{ repoName: string; rootUri: Uri }>();
+		useState<{ name: string; path: string }>();
 
 	const [users, setUsers] = useState<{ name: string; email: string }[]>([]);
 	const [selectedUser, setSelectedUser] = useState<string>("");
@@ -24,15 +21,15 @@ export default function App() {
 	const [commits, setCommits] = useState<Commit[]>([]);
 
 	function diff(sortedRefs: string[]) {
-		channel.viewChanges(selectedRepo?.rootUri.path || "", sortedRefs);
+		channel.viewChanges(selectedRepo?.path || "", sortedRefs);
 	}
 
 	const handleRepoChange = useCallback(
-		async (repo: { rootUri: Uri; repoName: string; label: string }) => {
-			const { rootUri, repoName } = repo;
-			setSelectedRepo({ rootUri, repoName });
+		async (repo: { name: string; path: string; label: string }) => {
+			const { name, path } = repo;
+			setSelectedRepo({ name, path });
 
-			const commits = await channel.getCommits({ repo: rootUri.path });
+			const commits = await channel.getCommits({ repo: path });
 			setSelectedBranch("");
 			setSelectedUser("");
 			setCommits(commits!);
@@ -93,7 +90,7 @@ export default function App() {
 			setSelectedRepo(repo);
 
 			const commits = await channel.getCommits({
-				repo: repo?.rootUri.path,
+				repo: repo?.path,
 				author: selectedUser,
 				ref: selectedBranch,
 			});
@@ -137,14 +134,14 @@ export default function App() {
 					<div>Repo:</div>
 					<Select
 						value={{
-							rootUri: selectedRepo.rootUri,
-							repoName: selectedRepo.repoName,
-							label: selectedRepo.repoName,
+							name: selectedRepo.name,
+							path: selectedRepo.path,
+							label: selectedRepo.name,
 						}}
-						options={repos.map(({ repoName, rootUri }) => ({
-							rootUri,
-							repoName,
-							label: repoName,
+						options={repos.map(({ name, path }) => ({
+							name,
+							path,
+							label: name,
 						}))}
 						onChange={(value) => {
 							handleRepoChange(value!);

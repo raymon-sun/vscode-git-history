@@ -28,15 +28,13 @@ export class GitService {
 		const workspacePath = workspace.workspaceFolders![0].uri.fsPath;
 		const repos = this.getRepositories();
 
-		return (
-			repos.find(
-				(repository) => repository.rootUri.fsPath === workspacePath
-			) || repos[0]
-		);
+		return repos.find((fsPath) => fsPath === workspacePath) || repos[0];
 	}
 
 	getRepositories() {
-		return this.gitExt?.repositories || [];
+		return (
+			this.gitExt?.repositories.map(({ rootUri }) => rootUri.fsPath) || []
+		);
 	}
 
 	getBranches() {
@@ -61,14 +59,13 @@ export class GitService {
 
 	async show(commitHash: string, filePath: string) {
 		// TODO: record repo path in file node
-		const repo = this.getRepositories()
-			.sort(
-				({ rootUri: rootUriA }, { rootUri: rootUriB }) =>
-					rootUriB.path.length - rootUriA.path.length
-			)
-			.find(({ rootUri }) => filePath.startsWith(rootUri.path));
+		const repoPath = this.getRepositories()
+			.sort((fsPathA, fsPathB) => fsPathB.length - fsPathA.length)
+			.find((fsPath) => filePath.startsWith(fsPath));
 
-		return await repo!.show(commitHash, filePath);
+		return await this.gitExt?.repositories
+			.find((repo) => repo.rootUri.fsPath === repoPath)!
+			.show(commitHash, filePath);
 	}
 
 	async getCommits(options?: LogOptions) {

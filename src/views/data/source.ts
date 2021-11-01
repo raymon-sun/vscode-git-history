@@ -15,18 +15,18 @@ export class Source {
 	) {}
 
 	getDefaultRepository = () => {
-		const { rootUri } = this.git.getDefaultRepository();
+		const repoPath = this.git.getDefaultRepository();
 		return Promise.resolve({
-			repoName: parse(rootUri.path).base,
-			rootUri,
+			name: parse(repoPath).base,
+			path: repoPath,
 		});
 	};
 
 	getRepositories = () => {
 		const repositories = (this.git.getRepositories() || []).map(
-			({ rootUri }) => ({
-				repoName: parse(rootUri.path).base,
-				rootUri,
+			(repoPath) => ({
+				name: parse(repoPath).base,
+				path: repoPath,
 			})
 		);
 		return Promise.resolve(repositories);

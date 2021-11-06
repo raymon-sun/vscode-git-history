@@ -67,9 +67,7 @@ const viewConfig = {
 						loader: "css-loader",
 						options: {
 							importLoaders: 1,
-							modules: {
-								compileType: "icss",
-							},
+							modules: "icss",
 						},
 					},
 					{
@@ -85,9 +83,7 @@ const viewConfig = {
 						loader: "css-loader",
 						options: {
 							importLoaders: 1,
-							modules: {
-								compileType: "module",
-							},
+							modules: true,
 						},
 					},
 					{

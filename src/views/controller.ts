@@ -24,6 +24,7 @@ export class ViewController {
 				// Enable scripts in the webview
 				enableScripts: true,
 				localResourceRoots: [Uri.joinPath(extensionUri, "dist")],
+				retainContextWhenHidden: true,
 			} // Webview options. More on these later.
 		);
 		panel.iconPath = Uri.joinPath(extensionUri, "assets/logo/1x.svg");

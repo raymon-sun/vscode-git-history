@@ -24,19 +24,6 @@ export default function App() {
 		channel.viewChanges(selectedRepo?.path || "", sortedRefs);
 	}
 
-	useEffect(() => {
-		requestBranches().then(() => setSelectedBranch(""));
-		requestUsers().then(() => setSelectedUser(""));
-
-		channel
-			.getCommits({
-				repo: selectedRepo?.path,
-			})
-			.then((commits) => {
-				setCommits(commits || []);
-			});
-	}, [selectedRepo]);
-
 	const requestBranches = useCallback(async () => {
 		const branches = await channel.getBranches({
 			repo: selectedRepo?.path,
@@ -61,24 +48,26 @@ export default function App() {
 		async (branch: string) => {
 			setSelectedBranch(branch);
 			const commits = await channel.getCommits({
+				repo: selectedRepo?.path,
 				ref: branch,
 				author: selectedUser,
 			});
 			setCommits(commits!);
 		},
-		[selectedUser]
+		[selectedUser, selectedRepo]
 	);
 
 	const handleUserChange = useCallback(
 		async (user: string) => {
 			setSelectedUser(user);
 			const commits = await channel.getCommits({
+				repo: selectedRepo?.path,
 				ref: selectedBranch,
 				author: user,
 			});
 			setCommits(commits!);
 		},
-		[selectedBranch]
+		[selectedBranch, selectedRepo]
 	);
 
 	const handleSearch = useCallback(
@@ -98,6 +87,23 @@ export default function App() {
 			setSelectedRepo(defaultRepo);
 		});
 	}, []);
+
+	useEffect(() => {
+		if (!selectedRepo) {
+			return;
+		}
+
+		requestBranches().then(() => setSelectedBranch(""));
+		requestUsers().then(() => setSelectedUser(""));
+
+		channel
+			.getCommits({
+				repo: selectedRepo?.path,
+			})
+			.then((commits) => {
+				setCommits(commits || []);
+			});
+	}, [selectedRepo]);
 
 	const getCommitList = () => {
 		return commits.map((commit) => ({

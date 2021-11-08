@@ -32,9 +32,9 @@ export class Source {
 		return Promise.resolve(repositories);
 	};
 
-	getBranches = () => this.git.getBranches();
+	getBranches = this.git.getBranches.bind(this.git);
 
-	getAuthors = () => this.git.getAuthors();
+	getAuthors = this.git.getAuthors.bind(this.git);
 
 	getCommits = this.git.getCommits.bind(this.git);
 

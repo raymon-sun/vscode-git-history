@@ -4,7 +4,7 @@ import { getBuiltInGitApi, getGitBinPath } from "./api";
 import { API } from "../typings/git-extension";
 import { workspace } from "vscode";
 import { getUser, parseGitChanges, parseGitCommits } from "./utils";
-import { LogOptions } from "./types";
+import { GitOptions, LogOptions } from "./types";
 
 @injectable()
 export class GitService {
@@ -37,14 +37,18 @@ export class GitService {
 		);
 	}
 
-	getBranches() {
+	getBranches(options: GitOptions) {
+		const { repo = this.rootRepoPath } = options;
 		return this.git
-			?.raw("branch", "-a", "--format=%(refname:short)")
+			?.cwd(repo)
+			.raw("branch", "--format=%(refname:short)")
 			.then((res) => res.split("\n").filter((branch) => !!branch));
 	}
 
-	getAuthors() {
+	getAuthors(options: GitOptions) {
+		const { repo = this.rootRepoPath } = options;
 		return this.git
+			?.cwd(repo)
 			?.raw("shortlog", "-ens", "HEAD")
 			.then((res) => {
 				const shortlogs = res.split("\n");

@@ -12,8 +12,11 @@ export interface SpawnOptions extends cp.SpawnOptions {
 	onSpawn?: (childProcess: cp.ChildProcess) => void;
 }
 
-export interface LogOptions {
+export interface GitOptions {
 	repo?: string;
+}
+
+export interface LogOptions extends GitOptions {
 	ref?: string;
 	author?: string;
 	keyword?: string;

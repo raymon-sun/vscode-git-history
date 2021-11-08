@@ -24,15 +24,35 @@ export default function App() {
 		channel.viewChanges(selectedRepo?.path || "", sortedRefs);
 	}
 
+	useEffect(() => {
+		requestBranches().then(() => setSelectedBranch(""));
+		requestUsers().then(() => setSelectedUser(""));
+
+		channel
+			.getCommits({
+				repo: selectedRepo?.path,
+			})
+			.then((commits) => {
+				setCommits(commits || []);
+			});
+	}, [selectedRepo]);
+
+	const requestBranches = useCallback(async () => {
+		const branches = await channel.getBranches({
+			repo: selectedRepo?.path,
+		});
+		setBranches(["", ...branches!]);
+	}, []);
+
+	const requestUsers = useCallback(async () => {
+		const users = await channel.getAuthors({ repo: selectedRepo?.path });
+		setUsers([{ name: "", email: "" }, ...users!]);
+	}, []);
+
 	const handleRepoChange = useCallback(
 		async (repo: { name: string; path: string; label: string }) => {
 			const { name, path } = repo;
 			setSelectedRepo({ name, path });
-
-			const commits = await channel.getCommits({ repo: path });
-			setSelectedBranch("");
-			setSelectedUser("");
-			setCommits(commits!);
 		},
 		[]
 	);
@@ -70,37 +90,13 @@ export default function App() {
 	);
 
 	useEffect(() => {
-		async function requestRepos() {
-			const repos = await channel.getRepositories();
+		Promise.all([
+			channel.getRepositories(),
+			channel.getDefaultRepository(),
+		]).then(([repos, defaultRepo]) => {
 			setRepos(repos);
-		}
-
-		async function requestUsers() {
-			const users = await channel.getAuthors();
-			setUsers([{ name: "", email: "" }, ...users!]);
-		}
-
-		async function requestBranches() {
-			const branches = await channel.getBranches();
-			setBranches(["", ...branches!]);
-		}
-
-		async function requestCommits() {
-			const repo = await channel.getDefaultRepository();
-			setSelectedRepo(repo);
-
-			const commits = await channel.getCommits({
-				repo: repo?.path,
-				author: selectedUser,
-				ref: selectedBranch,
-			});
-			setCommits(commits || []);
-		}
-
-		requestRepos();
-		requestUsers();
-		requestBranches();
-		requestCommits();
+			setSelectedRepo(defaultRepo);
+		});
 	}, []);
 
 	const getCommitList = () => {

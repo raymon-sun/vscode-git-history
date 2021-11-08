@@ -29,12 +29,12 @@ export default function App() {
 			repo: selectedRepo?.path,
 		});
 		setBranches(["", ...branches!]);
-	}, []);
+	}, [channel, selectedRepo?.path]);
 
 	const requestUsers = useCallback(async () => {
 		const users = await channel.getAuthors({ repo: selectedRepo?.path });
 		setUsers([{ name: "", email: "" }, ...users!]);
-	}, []);
+	}, [channel, selectedRepo?.path]);
 
 	const handleRepoChange = useCallback(
 		async (repo: { name: string; path: string; label: string }) => {
@@ -54,7 +54,7 @@ export default function App() {
 			});
 			setCommits(commits!);
 		},
-		[selectedUser, selectedRepo]
+		[channel, selectedRepo?.path, selectedUser]
 	);
 
 	const handleUserChange = useCallback(
@@ -67,15 +67,21 @@ export default function App() {
 			});
 			setCommits(commits!);
 		},
-		[selectedBranch, selectedRepo]
+		[channel, selectedBranch, selectedRepo?.path]
 	);
 
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const handleSearch = useCallback(
 		debounce(async (keyword: string) => {
-			const commits = await channel.getCommits({ keyword });
+			const commits = await channel.getCommits({
+				repo: selectedRepo?.path,
+				ref: selectedBranch,
+				author: selectedUser,
+				keyword,
+			});
 			setCommits(commits!);
 		}, 1000),
-		[]
+		[selectedRepo, selectedBranch, selectedUser]
 	);
 
 	useEffect(() => {
@@ -86,7 +92,7 @@ export default function App() {
 			setRepos(repos);
 			setSelectedRepo(defaultRepo);
 		});
-	}, []);
+	}, [channel]);
 
 	useEffect(() => {
 		if (!selectedRepo) {
@@ -103,7 +109,7 @@ export default function App() {
 			.then((commits) => {
 				setCommits(commits || []);
 			});
-	}, [selectedRepo]);
+	}, [channel, requestBranches, requestUsers, selectedRepo]);
 
 	const getCommitList = () => {
 		return commits.map((commit) => ({

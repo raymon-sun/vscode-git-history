@@ -5,7 +5,7 @@
 		"ecmaVersion": 6,
 		"sourceType": "module"
 	},
-	"plugins": ["@typescript-eslint"],
+	"plugins": ["@typescript-eslint", "react-hooks"],
 	"rules": {
 		"@typescript-eslint/naming-convention": [
 			"warn",
@@ -19,7 +19,9 @@
 		"curly": "warn",
 		"eqeqeq": "warn",
 		"no-throw-literal": "warn",
-		"semi": "off"
+		"semi": "off",
+		"react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
+		"react-hooks/exhaustive-deps": "warn" // Checks effect dependencies
 	},
 	"ignorePatterns": ["out", "dist", "**/*.d.ts"]
 }

@@ -1,22 +1,33 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "files.exclude": {
-        "out": false, // set this to true to hide the "out" folder with the compiled JS files
-        "dist": false // set this to true to hide the "dist" folder with the compiled JS files
-    },
-    "search.exclude": {
-        "out": true, // set this to false to include "out" folder in search results
-        "dist": true // set this to false to include "dist" folder in search results
-    },
-    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
+	"files.exclude": {
+		"out": false, // set this to true to hide the "out" folder with the compiled JS files
+		"dist": false // set this to true to hide the "dist" folder with the compiled JS files
+	},
+	"search.exclude": {
+		"out": true, // set this to false to include "out" folder in search results
+		"dist": true // set this to false to include "dist" folder in search results
+	},
+	// Turn off tsc task auto detection since we have the necessary tasks as npm scripts
 	"typescript.tsc.autoDetect": "off",
 	"cSpell.words": [
-        "Submodule",
-        "UNTRACKED",
-        "inversify",
-        "submodules",
-        "treeish",
-        "unshallow"
-    ],
-    "typescript.tsdk": "node_modules/typescript/lib"
+		"Submodule",
+		"UNTRACKED",
+		"inversify",
+		"submodules",
+		"treeish",
+		"unshallow",
+		"stylelint"
+	],
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": true,
+		"source.fixAll.stylelint": true
+	},
+	"editor.formatOnSave": true,
+	"css.validate": false,
+	"less.validate": false,
+	"scss.validate": false,
+	"stylelint.validate": ["scss"],
+	"stylelint.snippet": ["scss"]
 }

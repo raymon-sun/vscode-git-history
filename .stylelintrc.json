@@ -1,0 +1,14 @@
+{
+	"plugins": ["stylelint-prettier"],
+	"rules": {
+		"prettier/prettier": true,
+		"selector-pseudo-class-no-unknown": [
+			true,
+			{
+				"ignorePseudoClasses": ["global", "export"]
+			}
+		],
+		"property-no-unknown": [true, { "ignoreProperties": ["SELECT_HOST"] }]
+	},
+	"extends": ["stylelint-config-standard-scss", "stylelint-config-prettier"]
+}

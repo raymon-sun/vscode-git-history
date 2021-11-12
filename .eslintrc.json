@@ -5,7 +5,7 @@
 		"ecmaVersion": 6,
 		"sourceType": "module"
 	},
-	"plugins": ["@typescript-eslint", "react-hooks"],
+	"plugins": ["@typescript-eslint", "import", "react-hooks"],
 	"rules": {
 		"@typescript-eslint/naming-convention": [
 			"warn",
@@ -20,8 +20,23 @@
 		"eqeqeq": "warn",
 		"no-throw-literal": "warn",
 		"semi": "off",
+		"import/order": [
+			"error",
+			{
+				"groups": [
+					"builtin",
+					"external",
+					"internal",
+					"parent",
+					"sibling",
+					"index"
+				],
+				"newlines-between": "always-and-inside-groups"
+			}
+		],
 		"react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
 		"react-hooks/exhaustive-deps": "warn" // Checks effect dependencies
 	},
-	"ignorePatterns": ["out", "dist", "**/*.d.ts"]
+	"ignorePatterns": ["out", "dist", "**/*.d.ts"],
+	"extends": ["prettier"]
 }

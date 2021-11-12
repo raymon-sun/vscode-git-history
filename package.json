@@ -125,5 +125,90 @@
 		"trailingComma": "es5",
 		"useTabs": true,
 		"tabWidth": 4
+	},
+	"eslintConfig": {
+		"root": true,
+		"parser": "@typescript-eslint/parser",
+		"parserOptions": {
+			"ecmaVersion": 6,
+			"sourceType": "module"
+		},
+		"plugins": [
+			"@typescript-eslint",
+			"import",
+			"react-hooks"
+		],
+		"rules": {
+			"@typescript-eslint/naming-convention": [
+				"warn",
+				{
+					"selector": [
+						"enum"
+					],
+					"format": [
+						"PascalCase"
+					],
+					"leadingUnderscore": "allow"
+				}
+			],
+			"@typescript-eslint/semi": "warn",
+			"curly": "warn",
+			"eqeqeq": "warn",
+			"no-throw-literal": "warn",
+			"semi": "off",
+			"import/order": [
+				"error",
+				{
+					"groups": [
+						"builtin",
+						"external",
+						"internal",
+						"parent",
+						"sibling",
+						"index"
+					],
+					"newlines-between": "always-and-inside-groups"
+				}
+			],
+			"react-hooks/rules-of-hooks": "error",
+			"react-hooks/exhaustive-deps": "warn"
+		},
+		"ignorePatterns": [
+			"out",
+			"dist",
+			"**/*.d.ts"
+		],
+		"extends": [
+			"prettier"
+		]
+	},
+	"stylelint": {
+		"plugins": [
+			"stylelint-prettier"
+		],
+		"rules": {
+			"prettier/prettier": true,
+			"selector-pseudo-class-no-unknown": [
+				true,
+				{
+					"ignorePseudoClasses": [
+						"global",
+						"export"
+					]
+				}
+			],
+			"property-no-unknown": [
+				true,
+				{
+					"ignoreProperties": [
+						"SELECT_HOST"
+					]
+				}
+			]
+		},
+		"extends": [
+			"stylelint-config-standard-scss",
+			"stylelint-config-prettier"
+		]
 	}
 }

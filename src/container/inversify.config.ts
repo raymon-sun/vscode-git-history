@@ -23,10 +23,22 @@ function initializeContainer(context: ExtensionContext) {
 	container.bind<Source>(Source).toSelf().inSingletonScope();
 	container.bind<ViewController>(ViewController).toSelf().inSingletonScope();
 	container.bind<GitService>(GitService).toSelf().inSingletonScope();
-	container.bind<FileTreeProvider>(FileTreeProvider).toSelf().inSingletonScope();
-	container.bind<VersionedFileProvider>(VersionedFileProvider).toSelf().inSingletonScope();
-	container.bind<GitStatusDecorationProvider>(GitStatusDecorationProvider).toSelf().inSingletonScope();
-	container.bind<DisposableController>(DisposableController).toSelf().inSingletonScope();
+	container
+		.bind<FileTreeProvider>(FileTreeProvider)
+		.toSelf()
+		.inSingletonScope();
+	container
+		.bind<VersionedFileProvider>(VersionedFileProvider)
+		.toSelf()
+		.inSingletonScope();
+	container
+		.bind<GitStatusDecorationProvider>(GitStatusDecorationProvider)
+		.toSelf()
+		.inSingletonScope();
+	container
+		.bind<DisposableController>(DisposableController)
+		.toSelf()
+		.inSingletonScope();
 }
 
 export { container, initializeContainer };

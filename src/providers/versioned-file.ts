@@ -1,5 +1,6 @@
 import { injectable } from "inversify";
 import { TextDocumentContentProvider, Uri } from "vscode";
+
 import { GitService } from "../git/service";
 
 @injectable()

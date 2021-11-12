@@ -1,7 +1,10 @@
 import path, { sep, parse, normalize } from "path";
+
 import { Uri } from "vscode";
+
 import { EXTENSION_SCHEME } from "../constants";
 import { Commit } from "../typings/git-extension";
+
 import { Change, Status } from "./types";
 
 export type ChangesCollection = { ref: string; changes: Change[] }[];

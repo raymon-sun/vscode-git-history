@@ -1,5 +1,7 @@
 import { deepStrictEqual } from "assert";
+
 import { Status } from "../typings/git-extension";
+
 import {
 	PathCollection,
 	PathType,

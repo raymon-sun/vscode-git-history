@@ -9,6 +9,7 @@ import {
 	Command,
 } from "vscode";
 import { inject, injectable } from "inversify";
+
 import { TYPES } from "../container/types";
 import {
 	compareFileTreeNode,

@@ -1,6 +1,8 @@
-import { inject, injectable } from "inversify";
 import { parse } from "path";
+
+import { inject, injectable } from "inversify";
 import { ExtensionContext, workspace } from "vscode";
+
 import { TYPES } from "../../container/types";
 import { GitService } from "../../git/service";
 import { PathCollection, resolveChangesCollection } from "../../git/utils";

@@ -1,10 +1,13 @@
 import { useCallback, useContext, useEffect, useState } from "react";
+
+import { debounce } from "lodash";
+
 import { Commit } from "../typings/git-extension";
+
 import PickableList from "./components/PickableList";
 import Select from "./components/Select";
 import style from "./App.module.scss";
 import { ChannelContext } from "./data/channel";
-import { debounce } from "lodash";
 
 export default function App() {
 	const channel = useContext(ChannelContext)!;

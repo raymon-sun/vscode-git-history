@@ -1,4 +1,5 @@
 import cp from "child_process";
+
 import { CancellationToken, ThemeColor, Uri } from "vscode";
 import { loadMessageBundle } from "vscode-nls";
 

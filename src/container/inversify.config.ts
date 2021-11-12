@@ -7,9 +7,11 @@ import { FileTreeProvider } from "../providers/file-tree";
 import { VersionedFileProvider } from "../providers/versioned-file";
 import { Source } from "../views/data/source";
 import { ViewController } from "../views/controller";
-import { TYPES } from "./types";
+
 import { DisposableController } from "../disposables";
 import { GitStatusDecorationProvider } from "../providers/decoration";
+
+import { TYPES } from "./types";
 
 const container = new Container();
 

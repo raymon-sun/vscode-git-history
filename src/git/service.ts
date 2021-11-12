@@ -1,8 +1,12 @@
 import { injectable } from "inversify";
 import simpleGit, { SimpleGit } from "simple-git";
-import { getBuiltInGitApi, getGitBinPath } from "./api";
-import { API } from "../typings/git-extension";
+
 import { workspace } from "vscode";
+
+import { API } from "../typings/git-extension";
+
+import { getBuiltInGitApi, getGitBinPath } from "./api";
+
 import { getUser, parseGitChanges, parseGitCommits } from "./utils";
 import { GitOptions, LogOptions } from "./types";
 

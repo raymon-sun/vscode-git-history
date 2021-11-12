@@ -1,5 +1,6 @@
 import { commands, window, workspace } from "vscode";
 import { injectable } from "inversify";
+
 import { ViewController } from "./views/controller";
 import { VersionedFileProvider } from "./providers/versioned-file";
 import { FileTreeProvider } from "./providers/file-tree";

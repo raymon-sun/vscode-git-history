@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom";
+
 import App from "./App";
 import { ChannelContext, initializeChannel } from "./data/channel";
 import "./index.scss";

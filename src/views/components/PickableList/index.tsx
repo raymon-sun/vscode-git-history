@@ -2,8 +2,10 @@ import { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { useDrag } from "@use-gesture/react";
 import { sortedIndex } from "lodash";
 import classNames from "classnames";
-import { useIsKeyPressed } from "./event";
+
 import { useVirtual } from "react-virtual";
+
+import { useIsKeyPressed } from "./event";
 
 import style from "./index.module.scss";
 

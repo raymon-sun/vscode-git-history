@@ -1,4 +1,5 @@
 import OriginalSelect from "react-select";
+
 import styleVars from "./index.scss";
 
 const { SELECT_HOST } = styleVars;

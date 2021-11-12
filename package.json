@@ -120,5 +120,10 @@
 		"simple-git": "^2.47.0",
 		"vscode-nls": "^5.0.0",
 		"which": "^2.0.2"
+	},
+	"prettier": {
+		"trailingComma": "es5",
+		"useTabs": true,
+		"tabWidth": 4
 	}
 }

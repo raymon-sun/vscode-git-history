@@ -1,17 +1,9 @@
 import cp from "child_process";
 
-import { CancellationToken, ThemeColor, Uri } from "vscode";
+import { ThemeColor, Uri } from "vscode";
 import { loadMessageBundle } from "vscode-nls";
 
 const localize = loadMessageBundle();
-
-export interface SpawnOptions extends cp.SpawnOptions {
-	input?: string;
-	encoding?: string;
-	log?: boolean;
-	cancellationToken?: CancellationToken;
-	onSpawn?: (childProcess: cp.ChildProcess) => void;
-}
 
 export interface GitOptions {
 	repo?: string;
@@ -22,12 +14,6 @@ export interface LogOptions extends GitOptions {
 	author?: string;
 	keyword?: string;
 	maxLength?: number;
-}
-
-export interface IExecutionResult<T extends string | Buffer> {
-	exitCode: number;
-	stdout: T;
-	stderr: string;
 }
 
 export interface Change {

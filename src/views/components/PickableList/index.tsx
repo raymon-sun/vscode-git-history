@@ -89,7 +89,7 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 				index++
 			) {
 				const { id } = list![index];
-				if (!currentItems.hasOwnProperty(id)) {
+				if (!Object.prototype.hasOwnProperty.call(currentItems, id)) {
 					currentItems[id] = index;
 				}
 			}
@@ -118,9 +118,11 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 						key={virtualRow.index}
 						ref={virtualRow.measureRef}
 						className={classNames(style.item, {
-							[style.picked]: pickedItems?.hasOwnProperty(
-								list[virtualRow.index].id
-							),
+							[style.picked]:
+								Object.prototype.hasOwnProperty.call(
+									pickedItems,
+									list[virtualRow.index].id
+								),
 						})}
 						style={{
 							position: "absolute",

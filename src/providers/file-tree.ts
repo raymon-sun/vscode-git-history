@@ -30,11 +30,11 @@ export class FileTreeProvider implements TreeDataProvider<TreeItem> {
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext
 	) {}
 
-	getTreeItem(element: Path): Path {
+	getTreeItem(element: Path) {
 		return element;
 	}
 
-	getChildren(element?: Path): Thenable<Path[]> {
+	getChildren(element?: Path) {
 		const treeData =
 			this.context.globalState.get<PathCollection>("changedFileTree")!;
 		// TODO: order by type and name

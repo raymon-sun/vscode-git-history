@@ -1,5 +1,3 @@
-import cp from "child_process";
-
 import { ThemeColor, Uri } from "vscode";
 import { loadMessageBundle } from "vscode-nls";
 

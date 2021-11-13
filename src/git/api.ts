@@ -14,7 +14,9 @@ export async function getBuiltInGitApi() {
 
 			return gitExtension.getAPI(1);
 		}
-	} catch {}
+	} catch (err) {
+		console.error(err);
+	}
 
 	return undefined;
 }
@@ -31,7 +33,9 @@ export async function getGitBinPath() {
 
 			return gitExtension.getAPI(1).git.path;
 		}
-	} catch {}
+	} catch (err) {
+		console.error(err);
+	}
 
 	return undefined;
 }

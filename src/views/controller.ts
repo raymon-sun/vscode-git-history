@@ -1,4 +1,4 @@
-import path, { join } from "path";
+import { join } from "path";
 
 import { inject, injectable } from "inversify";
 import { ExtensionContext, Uri, ViewColumn, Webview, window } from "vscode";

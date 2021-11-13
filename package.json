@@ -69,14 +69,14 @@
 		"test-compile": "tsc -p ./",
 		"test-watch": "tsc -watch -p ./",
 		"pretest": "npm run test-compile && npm run lint",
-		"lint": "eslint src --ext ts",
-		"lint-fix": "eslint src --ext ts --fix",
+		"lint": "eslint src --ext ts,tsx,js",
+		"lint-fix": "eslint src --ext ts,tsx,js --fix",
 		"test": "node ./dist/test/runTest.js"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.2.0",
+		"@types/jest": "^27.0.2",
 		"@types/lodash": "^4.14.176",
-		"@types/mocha": "^9.0.0",
 		"@types/node": "^16.11.6",
 		"@types/react": "^17.0.34",
 		"@types/react-dom": "^17.0.11",
@@ -88,9 +88,10 @@
 		"eslint": "^8.2.0",
 		"eslint-config-prettier": "^8.3.0",
 		"eslint-plugin-import": "^2.25.2",
+		"eslint-plugin-jest": "^25.2.4",
 		"eslint-plugin-react-hooks": "^4.2.1-alpha-ee069065d-20211105",
 		"glob": "^7.2.0",
-		"mocha": "^9.1.3",
+		"jest": "^27.3.1",
 		"prettier": "^2.4.1",
 		"sass-loader": "^12.3.0",
 		"style-loader": "^3.3.1",
@@ -98,6 +99,7 @@
 		"stylelint-config-prettier": "^9.0.3",
 		"stylelint-config-standard-scss": "^2.0.1",
 		"stylelint-prettier": "^2.0.0",
+		"ts-jest": "^27.0.7",
 		"ts-loader": "^9.2.6",
 		"typescript": "^4.4.4",
 		"typescript-plugin-css-modules": "^3.4.0",
@@ -128,6 +130,12 @@
 	},
 	"eslintConfig": {
 		"root": true,
+		"env": {
+			"browser": true,
+			"amd": true,
+			"node": true,
+			"jest/globals": true
+		},
 		"parser": "@typescript-eslint/parser",
 		"parserOptions": {
 			"ecmaVersion": 6,
@@ -136,6 +144,7 @@
 		"plugins": [
 			"@typescript-eslint",
 			"import",
+			"jest",
 			"react-hooks"
 		],
 		"rules": {
@@ -155,6 +164,9 @@
 			"curly": "warn",
 			"eqeqeq": "warn",
 			"no-throw-literal": "warn",
+			"no-control-regex": "off",
+			"no-constant-condition": "off",
+			"no-case-declarations": "off",
 			"semi": "off",
 			"import/order": [
 				"error",
@@ -179,6 +191,7 @@
 			"**/*.d.ts"
 		],
 		"extends": [
+			"eslint:recommended",
 			"prettier"
 		]
 	},

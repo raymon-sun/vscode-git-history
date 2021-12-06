@@ -71,7 +71,8 @@
 		"pretest": "npm run test-compile && npm run lint",
 		"lint": "eslint src --ext ts,tsx,js",
 		"lint-fix": "eslint src --ext ts,tsx,js --fix",
-		"test": "node ./dist/test/runTest.js"
+		"test": "node ./dist/test/runTest.js",
+		"prepare": "husky install"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.2.0",
@@ -91,6 +92,7 @@
 		"eslint-plugin-jest": "^25.2.4",
 		"eslint-plugin-react-hooks": "^4.2.1-alpha-ee069065d-20211105",
 		"glob": "^7.2.0",
+		"husky": "^7.0.4",
 		"jest": "^27.3.1",
 		"prettier": "^2.4.1",
 		"sass-loader": "^12.3.0",

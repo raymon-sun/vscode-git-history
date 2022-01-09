@@ -13,7 +13,7 @@ import {
 	getUser,
 } from "./utils";
 
-it("Git utils", () => {
+suite("Git utils", () => {
 	test.skip("should create a file tree when given changes collection", () => {
 		const mockChangesCollection = [
 			{

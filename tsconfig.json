@@ -4,7 +4,7 @@
 		"target": "es6",
 		"outDir": "dist",
 		"lib": ["es6", "DOM"],
-		"types": ["reflect-metadata", "jest"],
+		"types": ["reflect-metadata"],
 		"sourceMap": true,
 		"rootDir": "src",
 		"strict": true /* enable all strict type-checking options */,

@@ -7,8 +7,10 @@ import { API } from "../typings/git-extension";
 
 import { getBuiltInGitApi, getGitBinPath } from "./api";
 
-import { getUser, parseGitChanges, parseGitCommits } from "./utils";
 import { GitOptions, LogOptions } from "./types";
+import { parseGitCommits } from "./commit";
+import { parseGitChanges } from "./changes/changes";
+import { getUser } from "./utils";
 
 @injectable()
 export class GitService {

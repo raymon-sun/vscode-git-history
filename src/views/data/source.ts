@@ -5,7 +5,10 @@ import { ExtensionContext, workspace } from "vscode";
 
 import { TYPES } from "../../container/types";
 import { GitService } from "../../git/service";
-import { PathCollection, resolveChangesCollection } from "../../git/utils";
+import {
+	PathCollection,
+	resolveChangesCollection,
+} from "../../git/changes/tree";
 import { FileTreeProvider } from "../../providers/file-tree";
 
 @injectable()

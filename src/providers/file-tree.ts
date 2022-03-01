@@ -11,15 +11,14 @@ import {
 import { inject, injectable } from "inversify";
 
 import { TYPES } from "../container/types";
+import { compareFileTreeNode, getDiffUriPair } from "../git/utils";
+import { EXTENSION_SCHEME } from "../constants";
 import {
-	compareFileTreeNode,
 	FileNode,
 	FolderNode,
-	getDiffUriPair,
 	PathCollection,
 	PathType,
-} from "../git/utils";
-import { EXTENSION_SCHEME } from "../constants";
+} from "../git/changes/tree";
 
 @injectable()
 export class FileTreeProvider implements TreeDataProvider<TreeItem> {

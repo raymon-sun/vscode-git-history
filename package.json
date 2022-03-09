@@ -20,6 +20,7 @@
 		"Other"
 	],
 	"activationEvents": [
+		"onView:git-cruise.log",
 		"onCommand:git-cruise.changes.view"
 	],
 	"main": "./dist/extension.js",
@@ -31,9 +32,25 @@
 					"title": "Changes Explorer",
 					"icon": "assets/icons/files.svg"
 				}
+			],
+			"panel": [
+				{
+					"id": "gitCruiseLog",
+					"title": "GitCruise",
+					"icon": "assets/icons/files.svg"
+				}
 			]
 		},
 		"views": {
+			"gitCruiseLog": [
+				{
+					"type": "webview",
+					"id": "git-cruise.log",
+					"name": "Log",
+					"contextualTitle": "Git Cruise",
+					"visibility": "visible"
+				}
+			],
 			"scm": [
 				{
 					"id": "git-cruise.changes",
@@ -48,6 +65,12 @@
 				"category": "Git Cruise",
 				"command": "git-cruise.changes.view",
 				"title": "View Git Log",
+				"icon": "$(list-flat)"
+			},
+			{
+				"category": "Git Cruise",
+				"command": "git-cruise.log",
+				"title": "Git Log",
 				"icon": "$(list-flat)"
 			}
 		],

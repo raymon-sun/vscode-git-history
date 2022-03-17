@@ -88,14 +88,22 @@ export default function App() {
 	);
 
 	useEffect(() => {
-		Promise.all([
-			channel.getRepositories(),
-			channel.getDefaultRepository(),
-		]).then(([repos, defaultRepo]) => {
+		channel.onReposChange(async (repos) => {
 			setRepos(repos);
-			setSelectedRepo(defaultRepo);
+		});
+		channel.getRepositories().then((repos) => {
+			setRepos(repos);
 		});
 	}, [channel]);
+
+	useEffect(() => {
+		if (selectedRepo) {
+			return;
+		}
+		channel.getDefaultRepository().then((repo) => {
+			repo && setSelectedRepo(repo);
+		});
+	}, [channel, repos, selectedRepo]);
 
 	useEffect(() => {
 		if (!selectedRepo) {

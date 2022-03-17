@@ -12,6 +12,7 @@ import {
 import { TYPES } from "../container/types";
 import { IRequestMessage } from "../views/utils/message";
 import { Source } from "../views/data/source";
+import { linksMap } from "../views/data/link";
 
 @injectable()
 export class WebviewProvider implements WebviewViewProvider {
@@ -69,27 +70,38 @@ export class WebviewProvider implements WebviewViewProvider {
 	}
 
 	private registerRequestHandlers(webview: Webview) {
+		// TODO: complete type
 		const REQUEST_HANDLER_MAP: {
-			[request: string]: (params?: any) => Promise<any> | any;
+			[request: string]: any;
 		} = {
-			initialize: () =>
-				Object.entries(this.source).map(([name, func]) => {
-					// TODO: exclude private key
-					REQUEST_HANDLER_MAP[name] = func;
-					return name;
-				}),
+			initialize: () => linksMap.get(Object.getPrototypeOf(this.source)),
 		};
 
 		webview.onDidReceiveMessage(async (message: IRequestMessage) => {
-			const { id, what, params } = message;
-			if (id === undefined) {
+			const { id, type, what, params } = message;
+			if (id === undefined || type === undefined) {
 				return;
 			}
 
-			const response = REQUEST_HANDLER_MAP[what](...params);
-			const result =
-				response instanceof Promise ? await response : response;
-			webview.postMessage({ id: message.id, result });
+			switch (type) {
+				case "promise":
+					const response = (
+						REQUEST_HANDLER_MAP[what] ||
+						this.source[what as keyof Source].bind(this.source)
+					)(...params);
+					const result =
+						response instanceof Promise ? await response : response;
+					webview.postMessage({ id, type, result });
+					break;
+				case "subscription":
+					(
+						REQUEST_HANDLER_MAP[what] ||
+						this.source[what as keyof Source].bind(this.source)
+					)((e: any) => {
+						webview.postMessage({ id, type, result: e });
+					}, params);
+					break;
+			}
 		});
 	}
 }

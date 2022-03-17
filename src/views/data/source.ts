@@ -11,6 +11,10 @@ import {
 } from "../../git/changes/tree";
 import { FileTreeProvider } from "../../providers/file-tree";
 
+import { GitOptions, LogOptions } from "../../git/types";
+
+import { link } from "./link";
+
 @injectable()
 export class Source {
 	constructor(
@@ -19,15 +23,26 @@ export class Source {
 		private fileTreeProvider: FileTreeProvider
 	) {}
 
-	getDefaultRepository = () => {
+	@link("promise")
+	getWorkspacePath() {
+		return Promise.resolve(workspace.workspaceFolders![0].uri.fsPath);
+	}
+
+	@link("promise")
+	getDefaultRepository() {
 		const repoPath = this.git.getDefaultRepository();
+		if (!repoPath) {
+			return Promise.resolve();
+		}
+
 		return Promise.resolve({
 			name: parse(repoPath).base,
 			path: repoPath,
 		});
-	};
+	}
 
-	getRepositories = () => {
+	@link("promise")
+	getRepositories() {
 		const repositories = (this.git.getRepositories() || []).map(
 			(repoPath) => ({
 				name: parse(repoPath).base,
@@ -35,15 +50,25 @@ export class Source {
 			})
 		);
 		return Promise.resolve(repositories);
-	};
+	}
 
-	getBranches = this.git.getBranches.bind(this.git);
+	@link("promise")
+	getBranches(options: GitOptions) {
+		return this.git.getBranches(options);
+	}
 
-	getAuthors = this.git.getAuthors.bind(this.git);
+	@link("promise")
+	getAuthors(options: GitOptions) {
+		return this.git.getAuthors(options);
+	}
 
-	getCommits = this.git.getCommits.bind(this.git);
+	@link("promise")
+	getCommits(options?: LogOptions) {
+		return this.git.getCommits(options);
+	}
 
-	viewChanges = async (repo: string, refs: string[]) => {
+	@link("promise")
+	async viewChanges(repo: string, refs: string[]) {
 		const changesCollection = await this.git.getChangesCollection(
 			repo,
 			refs
@@ -53,7 +78,28 @@ export class Source {
 			workspace.workspaceFolders![0].uri.path
 		);
 		this.updateTreeView(newFileTree);
-	};
+	}
+
+	@link("subscription")
+	onReposChange(handler: (repos: { name: string; path: string }[]) => void) {
+		this.git.onDidOpenRepo(() => {
+			handler(
+				(this.git.getRepositories() || []).map((repoPath) => ({
+					name: parse(repoPath).base,
+					path: repoPath,
+				}))
+			);
+		});
+
+		this.git.onDidCloseRepo(() => {
+			handler(
+				(this.git.getRepositories() || []).map((repoPath) => ({
+					name: parse(repoPath).base,
+					path: repoPath,
+				}))
+			);
+		});
+	}
 
 	private updateTreeView(fileTree: PathCollection) {
 		this.context.globalState.update("changedFileTree", fileTree);

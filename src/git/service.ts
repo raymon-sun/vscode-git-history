@@ -3,7 +3,7 @@ import simpleGit, { SimpleGit } from "simple-git";
 
 import { workspace } from "vscode";
 
-import { API } from "../typings/git-extension";
+import { API, Repository } from "../typings/git-extension";
 
 import { getBuiltInGitApi, getGitBinPath } from "./api";
 
@@ -131,5 +131,17 @@ export class GitService {
 		return await this.git!.cwd(repoPath || this.rootRepoPath)
 			.raw(args)
 			.then((res) => parseGitChanges(repoPath, res));
+	}
+
+	onDidOpenRepo(handler: (repo: Repository) => void) {
+		this.gitExt?.onDidOpenRepository((repo) => {
+			handler(repo);
+		});
+	}
+
+	onDidCloseRepo(handler: (repo: Repository) => void) {
+		this.gitExt?.onDidOpenRepository((repo) => {
+			handler(repo);
+		});
 	}
 }

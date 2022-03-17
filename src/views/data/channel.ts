@@ -1,6 +1,6 @@
 import { createContext } from "react";
 
-import { request } from "../utils/message";
+import { IMessageType, request, subscribe } from "../utils/message";
 
 import type { Source } from "./source";
 
@@ -8,15 +8,27 @@ type FuncName = keyof Source;
 type Func = Source[FuncName];
 
 export async function initializeChannel() {
-	const funcNames = await request<FuncName[]>("initialize");
-
-	const channel: Partial<Source> = {};
-	funcNames.forEach(
-		(funcName) =>
-			(channel[funcName] = async (...params: Parameters<Func>) =>
-				await request(funcName, ...params))
+	const linkedFuncs = await request<{ name: FuncName; type: IMessageType }[]>(
+		"initialize"
 	);
-	return channel as Source;
+
+	// TODO: pick decorated properties
+	return Object.fromEntries<any>(
+		linkedFuncs.map(({ name, type }) => {
+			return [name, buildFunc(name, type)];
+		})
+	) as Source;
+}
+
+function buildFunc(name: string, type: IMessageType) {
+	switch (type) {
+		case "promise":
+			return async (...params: Parameters<Func>) =>
+				await request(name, ...params);
+		case "subscription":
+			return (handler: (e: any) => void, params: any) =>
+				subscribe(name, params, handler);
+	}
 }
 
 export const ChannelContext = createContext<Source | undefined>(undefined);

@@ -83,6 +83,7 @@ export class ViewController {
 				}),
 		};
 
+		// FIXME: don't repeat the request until the previous request is received
 		webview.onDidReceiveMessage(async (message: IRequestMessage) => {
 			const { id, what, params } = message;
 			if (id === undefined) {

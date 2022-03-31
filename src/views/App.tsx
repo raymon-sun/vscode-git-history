@@ -106,7 +106,7 @@ export default function App() {
 	}, [channel, repos, selectedRepo]);
 
 	useEffect(() => {
-		if (!selectedRepo) {
+		if (!selectedRepo?.path) {
 			return;
 		}
 
@@ -120,7 +120,7 @@ export default function App() {
 			.then((commits) => {
 				setCommits(commits || []);
 			});
-	}, [channel, requestBranches, requestUsers, selectedRepo]);
+	}, [channel, requestBranches, requestUsers, selectedRepo?.path]);
 
 	const getCommitList = () => {
 		return commits.map((commit) => ({

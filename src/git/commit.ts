@@ -1,3 +1,5 @@
+import { CommitGraphData } from "./graph";
+
 export interface Commit {
 	readonly hash: string;
 	readonly message: string;
@@ -6,6 +8,7 @@ export interface Commit {
 	readonly authorEmail: string;
 	readonly authorName: string;
 	readonly authorDate: string;
+	graph?: CommitGraphData;
 }
 
 export function parseGitCommits(data: string): Commit[] {

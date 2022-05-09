@@ -16,7 +16,7 @@ const GitGraph: FC<Props> = ({ data }) => {
 	const RADIUS = 4;
 
 	const { commitPosition } = data;
-	const commitX = commitPosition * UNIT;
+	const commitX = (commitPosition + 1) * UNIT;
 	return (
 		<svg height={HEIGHT}>
 			<circle
@@ -28,8 +28,8 @@ const GitGraph: FC<Props> = ({ data }) => {
 				strokeWidth="2"
 			/>
 			{data?.lines.map(({ top, bottom, color }) => {
-				const topX = top * UNIT;
-				const bottomX = bottom * UNIT;
+				const topX = (top + 1) * UNIT;
+				const bottomX = (bottom + 1) * UNIT;
 				let points = `${topX},0 ${topX},4 ${bottomX},11 ${bottomX},${HEIGHT}`;
 				if (top < 0) {
 					points = `${commitX},11 ${bottomX},18 ${bottomX},${HEIGHT}`;

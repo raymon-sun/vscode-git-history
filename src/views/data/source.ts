@@ -13,6 +13,8 @@ import { FileTreeProvider } from "../../providers/file-tree";
 
 import { GitOptions, LogOptions } from "../../git/types";
 
+import { attachGraph } from "../../git/graph";
+
 import { link } from "./link";
 
 @injectable()
@@ -63,8 +65,10 @@ export class Source {
 	}
 
 	@link("promise")
-	getCommits(options?: LogOptions) {
-		return this.git.getCommits(options);
+	async getCommits(options?: LogOptions) {
+		const commits = await this.git.getCommits(options);
+		attachGraph(commits || []);
+		return commits;
 	}
 
 	@link("promise")

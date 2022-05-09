@@ -1,13 +1,24 @@
 import { Commit } from "./commit";
 
-export function generateBranches(commits: Commit[]) {
+export function attachGraph(commits: Commit[]) {
 	const branches: IBranchNode[][] = [];
 	let currentBranches: IBranchNode[][] = [];
 	/**
 	 * record commit hash to its branch chain
 	 */
 	const nodeChainMap: Record<string, IBranchNode[][]> = {};
-	commits.forEach(({ hash, parents }, index) => {
+	commits.forEach((commit, index) => {
+		const { hash, parents } = commit;
+		let commitPosition: number;
+		const lines: CommitGraphLine[] =
+			commits[index - 1]?.graph?.lines
+				.filter(({ bottom }) => bottom !== -1)
+				.map(({ bottom, color }) => ({
+					top: bottom,
+					bottom,
+					color,
+				})) || [];
+
 		const node = { hash, position: index };
 		const existedChains = nodeChainMap[hash];
 
@@ -23,21 +34,39 @@ export function generateBranches(commits: Commit[]) {
 
 				indexList.push(index);
 			});
-			nodeChainMap[firstParent] = existedChains;
+			nodeChainMap[firstParent] = [
+				...(nodeChainMap[firstParent] || []),
+				...existedChains,
+			];
 
-			const [, ...otherIndexList] = indexList.sort();
+			const [firstIndex, ...otherIndexList] = indexList.sort();
+			commitPosition = firstIndex;
 			if (otherIndexList.length) {
 				// remove merged branch
 				currentBranches = currentBranches.filter(
 					(_, i) => !otherIndexList.includes(i)
 				);
+
+				lines.forEach(
+					(line, index) =>
+						otherIndexList.includes(index) && (line.bottom = -1)
+				);
 			}
 		} else {
 			const newChain = [node];
-			nodeChainMap[firstParent] = [newChain];
+			nodeChainMap[firstParent] = [
+				...(nodeChainMap[firstParent] || []),
+				newChain,
+			];
 
 			branches.push(newChain);
 			currentBranches.push(newChain);
+			commitPosition = currentBranches.length - 1;
+			lines.push({
+				top: -1,
+				bottom: currentBranches.length - 1,
+				color: "red",
+			});
 		}
 
 		forkParents.forEach((parent) => {
@@ -47,13 +76,22 @@ export function generateBranches(commits: Commit[]) {
 				// TODO: how to handle
 			} else {
 				const otherChain = [{ ...node }];
-				nodeChainMap[parent] = [otherChain];
+				nodeChainMap[parent] = [
+					...(nodeChainMap[parent] || []),
+					otherChain,
+				];
+				currentBranches.push(otherChain);
 				branches.push(otherChain);
+				lines.push({
+					top: -1,
+					bottom: currentBranches.length - 1,
+					color: "red",
+				});
 			}
 		});
-	});
 
-	return branches;
+		commit.graph = { commitPosition, lines };
+	});
 }
 
 interface IBranchNode {
@@ -63,5 +101,11 @@ interface IBranchNode {
 
 export interface CommitGraphData {
 	commitPosition: number;
-	lines: { top: number; bottom: number; color: string }[];
+	lines: CommitGraphLine[];
+}
+
+export interface CommitGraphLine {
+	top: number;
+	bottom: number;
+	color: string;
 }

@@ -80,7 +80,7 @@ export class GitService {
 
 	async getCommits(options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%aN%n%aE%n%at%n%ct%n%P%n%B";
-		const args = ["log", `--format=${COMMIT_FORMAT}`, "-z"];
+		const args = ["log", `--format=${COMMIT_FORMAT}`, "-z", "--all"];
 
 		const { repo, author, keyword, ref, maxLength } = options || {};
 		if (author) {

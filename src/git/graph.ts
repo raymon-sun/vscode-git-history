@@ -10,9 +10,20 @@ export function attachGraph(commits: Commit[]) {
 	commits.forEach((commit, index) => {
 		const { hash, parents } = commit;
 		let commitPosition: number;
+		const existedBottoms: number[] = [];
 		const lines: CommitGraphLine[] =
 			commits[index - 1]?.graph?.lines
-				.filter(({ bottom }) => bottom !== -1)
+				.filter(({ bottom }) => {
+					if (existedBottoms.includes(bottom)) {
+						return false;
+					}
+
+					existedBottoms.push(bottom);
+
+					if (bottom !== -1) {
+						return true;
+					}
+				})
 				.map(({ bottom, color }) => ({
 					top: bottom,
 					bottom,
@@ -64,6 +75,7 @@ export function attachGraph(commits: Commit[]) {
 				});
 			}
 		} else {
+			// first node of a branch
 			const newChain = [node];
 			nodeChainMap[firstParent] = [
 				...(nodeChainMap[firstParent] || []),
@@ -80,12 +92,32 @@ export function attachGraph(commits: Commit[]) {
 			});
 		}
 
+		// handle multiple parents of the node
 		forkParents.forEach((parent) => {
 			const chains = nodeChainMap[parent];
 			if (chains) {
-				chains;
-				// TODO: how to handle
+				// flow into the existed branch
+				const indexList: number[] = [];
+				chains.forEach((chain) => {
+					const index = currentBranches.indexOf(chain);
+					if (index < 0) {
+						return;
+					}
+
+					indexList.push(index);
+				});
+
+				const sortedIndexList = indexList.sort();
+				const [firstIndex] = sortedIndexList;
+				if (firstIndex !== undefined) {
+					lines.push({
+						top: -1,
+						bottom: firstIndex,
+						color: "red",
+					});
+				}
 			} else {
+				// new branch
 				const otherChain = [{ ...node }];
 				nodeChainMap[parent] = [
 					...(nodeChainMap[parent] || []),

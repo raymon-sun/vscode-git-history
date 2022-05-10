@@ -34,23 +34,34 @@ export function attachGraph(commits: Commit[]) {
 
 				indexList.push(index);
 			});
+
 			nodeChainMap[firstParent] = [
 				...(nodeChainMap[firstParent] || []),
 				...existedChains,
 			];
 
-			const [firstIndex, ...otherIndexList] = indexList.sort();
+			const sortedIndexList = indexList.sort();
+			const [firstIndex, ...otherIndexList] = sortedIndexList;
 			commitPosition = firstIndex;
-			if (otherIndexList.length) {
+
+			const collapseIndexList = firstParent
+				? otherIndexList
+				: sortedIndexList;
+			if (collapseIndexList.length) {
 				// remove merged branch
 				currentBranches = currentBranches.filter(
-					(_, i) => !otherIndexList.includes(i)
+					(_, i) => !collapseIndexList.includes(i)
 				);
 
-				lines.forEach(
-					(line, index) =>
-						otherIndexList.includes(index) && (line.bottom = -1)
-				);
+				let bottomIndex = 0;
+				lines.forEach((line, index) => {
+					if (collapseIndexList.includes(index)) {
+						line.bottom = -1;
+					} else {
+						line.bottom = bottomIndex;
+						bottomIndex++;
+					}
+				});
 			}
 		} else {
 			const newChain = [node];

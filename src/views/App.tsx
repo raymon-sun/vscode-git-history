@@ -2,12 +2,13 @@ import { useCallback, useContext, useEffect, useState } from "react";
 
 import { debounce } from "lodash";
 
-import { Commit } from "../typings/git-extension";
+import { Commit } from "../git/commit";
 
 import PickableList from "./components/PickableList";
 import Select from "./components/Select";
 import style from "./App.module.scss";
 import { ChannelContext } from "./data/channel";
+import GitGraph from "./components/GitGraph";
 
 export default function App() {
 	const channel = useContext(ChannelContext)!;
@@ -127,6 +128,11 @@ export default function App() {
 			id: commit.hash,
 			content: (
 				<div className={style.commit}>
+					{!selectedUser && (
+						<span>
+							<GitGraph data={commit.graph} />
+						</span>
+					)}
 					<span className={style.hash}>
 						{commit.hash.slice(0, 6)}
 					</span>

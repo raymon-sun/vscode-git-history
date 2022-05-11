@@ -11,19 +11,20 @@ const GitGraph: FC<Props> = ({ data }) => {
 		return null;
 	}
 
+	const WIDTH = 80;
 	const HEIGHT = 22;
 	const UNIT = 14;
-	const RADIUS = 4;
+	const RADIUS = 3;
 
 	const { commitPosition } = data;
 	const commitX = (commitPosition + 1) * UNIT;
 	return (
-		<svg height={HEIGHT}>
+		<svg width={WIDTH} height={HEIGHT}>
 			<circle
 				cx={commitX}
 				cy={HEIGHT / 2}
 				r={RADIUS}
-				fill="black"
+				fill="red"
 				stroke="red"
 				strokeWidth="2"
 			/>
@@ -44,7 +45,7 @@ const GitGraph: FC<Props> = ({ data }) => {
 						style={{
 							fill: "none",
 							stroke: color,
-							strokeWidth: 2,
+							strokeWidth: 1,
 						}}
 					/>
 				);

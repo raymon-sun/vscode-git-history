@@ -3,9 +3,9 @@ import { Commit } from "./commit";
 // TODO: merge to #getCommits()
 export function attachGraph(commits: Commit[]) {
 	/** record chains cross current commit */
-	let currentChains: IBranchNode[][] = [];
+	let currentChains: IChainNode[][] = [];
 	/** record commit hash with chains chain */
-	const nodeChainsMap: Record<string, IBranchNode[][]> = {};
+	const nodeChainsMap: Record<string, IChainNode[][]> = {};
 	commits.forEach((commit, index) => {
 		const { hash, parents } = commit;
 		const lines = getCurrentLines(commits[index - 1]);
@@ -95,9 +95,9 @@ export function attachGraph(commits: Commit[]) {
 }
 
 function pushChains(
-	nodeChainsMap: Record<string, IBranchNode[][]>,
+	nodeChainsMap: Record<string, IChainNode[][]>,
 	hash: string,
-	chain: IBranchNode[][]
+	chain: IChainNode[][]
 ) {
 	nodeChainsMap[hash] = [...(nodeChainsMap[hash] || []), ...chain];
 }
@@ -122,9 +122,9 @@ function getCurrentLines(preCommit?: Commit) {
 }
 
 function getSortedIndexListForCurrentChains(
-	chains: IBranchNode[][],
-	currentChains: IBranchNode[][],
-	iterationCallback?: (chain: IBranchNode[]) => void
+	chains: IChainNode[][],
+	currentChains: IChainNode[][],
+	iterationCallback?: (chain: IChainNode[]) => void
 ) {
 	const indexList: number[] = [];
 	chains.forEach((chain) => {
@@ -137,7 +137,7 @@ function getSortedIndexListForCurrentChains(
 	return indexList.sort();
 }
 
-interface IBranchNode {
+interface IChainNode {
 	hash: string;
 	position: number;
 }

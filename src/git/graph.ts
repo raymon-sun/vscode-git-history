@@ -2,6 +2,8 @@ import { Commit } from "./commit";
 
 // TODO: merge to #getCommits()
 export function attachGraph(commits: Commit[]) {
+	const colorPicker = getColorPicker();
+
 	/** record chains cross current commit */
 	let currentChains: IChainNode[][] = [];
 	/** record commit hash with chains chain */
@@ -10,20 +12,26 @@ export function attachGraph(commits: Commit[]) {
 		const { hash, parents } = commit;
 		const lines = getCurrentLines(commits[index - 1]);
 
-		const node = { hash, position: index };
 		const existedChains = nodeChainsMap[hash];
 
 		const [firstParent, ...forkParents] = parents;
 		let commitPosition: number;
+		let commitColor: string;
 		if (existedChains) {
 			// not first node of a chain
 			const sortedIndexList = getSortedIndexListForCurrentChains(
 				existedChains,
 				currentChains,
-				(chain) => chain.push(node)
+				(chain) =>
+					chain.push({
+						hash,
+						position: index,
+						color: chain[chain.length - 1].color,
+					})
 			);
 			const [firstIndex, ...otherIndexList] = sortedIndexList;
 			commitPosition = firstIndex;
+			commitColor = getChainColor(currentChains[firstIndex]);
 
 			pushChains(nodeChainsMap, firstParent, existedChains);
 
@@ -47,8 +55,11 @@ export function attachGraph(commits: Commit[]) {
 				});
 			}
 		} else {
+			commitColor = colorPicker.get();
 			// first node of a chain
-			const newChain = [node];
+			const newChain: IChainNode[] = [
+				{ hash, position: index, color: commitColor },
+			];
 			pushChains(nodeChainsMap, firstParent, [newChain]);
 
 			currentChains.push(newChain);
@@ -56,7 +67,7 @@ export function attachGraph(commits: Commit[]) {
 			lines.push({
 				top: -1,
 				bottom: currentChains.length - 1,
-				color: "red",
+				color: commitColor,
 			});
 		}
 
@@ -70,27 +81,33 @@ export function attachGraph(commits: Commit[]) {
 					currentChains
 				);
 				const [firstIndex] = sortedIndexList;
+				const firstChains = currentChains[firstIndex];
+
+				const color = firstChains[firstChains.length - 1].color;
 				if (firstIndex !== undefined) {
 					lines.push({
 						top: -1,
 						bottom: firstIndex,
-						color: "red",
+						color,
 					});
 				}
 			} else {
 				// new chain
-				const otherChain = [{ ...node }];
+				commitColor = colorPicker.get();
+				const otherChain = [
+					{ hash, position: index, color: commitColor },
+				];
 				pushChains(nodeChainsMap, parent, [otherChain]);
 				currentChains.push(otherChain);
 				lines.push({
 					top: -1,
 					bottom: currentChains.length - 1,
-					color: "red",
+					color: commitColor,
 				});
 			}
 		});
 
-		commit.graph = { commitPosition, lines };
+		commit.graph = { commitPosition, commitColor, lines };
 	});
 }
 
@@ -137,13 +154,43 @@ function getSortedIndexListForCurrentChains(
 	return indexList.sort();
 }
 
+function getColorPicker() {
+	let index = -1;
+	const colors = [
+		"#C62E65",
+		"#005377",
+		"#06A77D",
+		"#D5C67A",
+		"#F1A208",
+		"#D36135",
+		"#D63AF9",
+	];
+	return {
+		get() {
+			if (index >= colors.length - 1) {
+				index = 0;
+			} else {
+				index++;
+			}
+
+			return colors[index];
+		},
+	};
+}
+
+function getChainColor(chain: IChainNode[]) {
+	return chain[chain.length - 1].color;
+}
+
 interface IChainNode {
 	hash: string;
 	position: number;
+	color: string;
 }
 
 export interface CommitGraphData {
 	commitPosition: number;
+	commitColor: string;
 	lines: CommitGraphLine[];
 }
 

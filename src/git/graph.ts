@@ -157,9 +157,9 @@ function getSortedIndexListForCurrentChains(
 function getColorPicker() {
 	let index = -1;
 	const colors = [
+		"#06A77D",
 		"#C62E65",
 		"#005377",
-		"#06A77D",
 		"#D5C67A",
 		"#F1A208",
 		"#D36135",

@@ -130,7 +130,7 @@ export default function App() {
 				<div className={style.commit}>
 					{!selectedUser && (
 						<span>
-							<GitGraph data={commit.graph} />
+							<GitGraph data={commit.graph!} />
 						</span>
 					)}
 					<span className={style.hash}>

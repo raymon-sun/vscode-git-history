@@ -3,7 +3,7 @@ import type { FC } from "react";
 import { CommitGraphData } from "../../../git/graph";
 
 interface Props {
-	data?: CommitGraphData;
+	data: CommitGraphData;
 }
 
 const GitGraph: FC<Props> = ({ data }) => {
@@ -11,16 +11,22 @@ const GitGraph: FC<Props> = ({ data }) => {
 		return null;
 	}
 
-	const WIDTH = 80;
-	const HEIGHT = 22;
 	const UNIT = 14;
-	const RADIUS = 3;
+	const MIN_WIDTH = 5 * UNIT;
+	const HEIGHT = 22;
 
-	const { commitPosition, commitColor } = data;
+	const RADIUS = 4;
+
+	const { commitPosition, commitColor, lines } = data;
 	const commitX = (commitPosition + 1) * UNIT;
+
+	const width =
+		(Math.max(...lines.map(({ top, bottom }) => Math.max(top, bottom))) +
+			2) *
+		UNIT;
 	return (
-		<svg width={WIDTH} height={HEIGHT}>
-			{data?.lines.map(({ top, bottom, color }) => {
+		<svg width={Math.max(width, MIN_WIDTH)} height={HEIGHT}>
+			{lines.map(({ top, bottom, color }) => {
 				const topX = (top + 1) * UNIT;
 				const bottomX = (bottom + 1) * UNIT;
 				let points = `${topX},0 ${topX},4 ${bottomX},11 ${bottomX},${HEIGHT}`;

@@ -14,7 +14,7 @@
 	"repository": "https://github.com/raymon-sun/vscode-git-cruise",
 	"publisher": "GuodongSun",
 	"engines": {
-		"vscode": "^1.60.0"
+		"vscode": "^1.67.0"
 	},
 	"categories": [
 		"Other"

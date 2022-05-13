@@ -28,7 +28,8 @@ export class DisposableController {
 			}),
 			window.registerWebviewViewProvider(
 				`${EXTENSION_SCHEME}.log`,
-				this.webviewProvider
+				this.webviewProvider,
+				{ webviewOptions: { retainContextWhenHidden: true } }
 			),
 			workspace.registerTextDocumentContentProvider(
 				EXTENSION_SCHEME,

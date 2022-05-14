@@ -28,7 +28,7 @@
 			"panel": [
 				{
 					"id": "gitCruiseLog",
-					"title": "GitCruise",
+					"title": "Git",
 					"icon": "assets/icons/files.svg"
 				}
 			]
@@ -39,14 +39,14 @@
 					"type": "webview",
 					"id": "git-cruise.log",
 					"name": "Log",
-					"contextualTitle": "Git Cruise",
+					"contextualTitle": "Git",
 					"visibility": "visible"
 				},
 				{
 					"id": "git-cruise.files",
 					"name": "Changes",
 					"icon": "assets/icons/files.svg",
-					"contextualTitle": "Git Cruise"
+					"contextualTitle": "Git"
 				}
 			]
 		},

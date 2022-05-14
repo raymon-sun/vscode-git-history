@@ -6,9 +6,12 @@
 		"git",
 		"log",
 		"diff",
-		"cruise"
+		"cruise",
+		"history",
+		"graph",
+		"branch"
 	],
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-cruise",

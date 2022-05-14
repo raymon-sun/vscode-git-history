@@ -36,7 +36,7 @@ export class DisposableController {
 				this.versionedFileProvider
 			),
 			window.registerTreeDataProvider(
-				"git-cruise.changes",
+				"git-cruise.files",
 				this.fileTreeProvider
 			),
 			window.registerFileDecorationProvider(

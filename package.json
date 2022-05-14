@@ -20,8 +20,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:git-cruise.log",
-		"onCommand:git-cruise.changes.view"
+		"onView:git-cruise.log"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -49,14 +48,12 @@
 					"name": "Log",
 					"contextualTitle": "Git Cruise",
 					"visibility": "visible"
-				}
-			],
-			"scm": [
+				},
 				{
-					"id": "git-cruise.changes",
-					"name": "Git Cruise Changes",
+					"id": "git-cruise.files",
+					"name": "Changes",
 					"icon": "assets/icons/files.svg",
-					"contextualTitle": "Changes Explorer"
+					"contextualTitle": "Git Cruise"
 				}
 			]
 		},

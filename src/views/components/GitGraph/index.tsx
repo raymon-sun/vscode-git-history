@@ -26,7 +26,7 @@ const GitGraph: FC<Props> = ({ data }) => {
 		UNIT;
 	return (
 		<svg width={Math.max(width, MIN_WIDTH)} height={HEIGHT}>
-			{lines.map(({ top, bottom, color }) => {
+			{lines.map(({ top, bottom, color }, index) => {
 				const topX = (top + 1) * UNIT;
 				const bottomX = (bottom + 1) * UNIT;
 				let points = `${topX},0 ${topX},4 ${bottomX},11 ${bottomX},${HEIGHT}`;
@@ -39,6 +39,7 @@ const GitGraph: FC<Props> = ({ data }) => {
 				}
 				return (
 					<polyline
+						key={index}
 						points={points}
 						style={{
 							fill: "none",

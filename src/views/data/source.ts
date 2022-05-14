@@ -86,18 +86,9 @@ export class Source {
 
 	@link("subscription")
 	onReposChange(handler: (repos: { name: string; path: string }[]) => void) {
-		this.git.onDidOpenRepo(() => {
+		this.git.onReposChange((repos) => {
 			handler(
-				(this.git.getRepositories() || []).map((repoPath) => ({
-					name: parse(repoPath).base,
-					path: repoPath,
-				}))
-			);
-		});
-
-		this.git.onDidCloseRepo(() => {
-			handler(
-				(this.git.getRepositories() || []).map((repoPath) => ({
+				repos.map((repoPath) => ({
 					name: parse(repoPath).base,
 					path: repoPath,
 				}))

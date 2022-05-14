@@ -1,9 +1,9 @@
 import { injectable } from "inversify";
 import simpleGit, { SimpleGit } from "simple-git";
 
-import { workspace } from "vscode";
+import { EventEmitter, workspace } from "vscode";
 
-import { API, Repository } from "../typings/git-extension";
+import { API } from "../typings/git-extension";
 
 import { getBuiltInGitApi, getGitBinPath } from "./api";
 
@@ -18,6 +18,9 @@ export class GitService {
 	private git?: SimpleGit;
 	private readonly rootRepoPath = workspace.workspaceFolders![0].uri.fsPath;
 
+	private storedRepos: string[] = [];
+	private readonly reposEvent = new EventEmitter<string[]>();
+
 	constructor() {
 		this.initializeGitApi();
 	}
@@ -28,6 +31,18 @@ export class GitService {
 		const gitBinPath = await getGitBinPath();
 
 		this.git = simpleGit(this.rootRepoPath, { binary: gitBinPath });
+
+		this.initializeReposEvents();
+	}
+
+	private initializeReposEvents() {
+		const handler = () => {
+			this.storedRepos = this.getRepositories() || [];
+			this.reposEvent.fire(this.storedRepos);
+		};
+
+		this.gitExt?.onDidOpenRepository(handler);
+		this.gitExt?.onDidCloseRepository(handler);
 	}
 
 	getDefaultRepository() {
@@ -139,15 +154,10 @@ export class GitService {
 			.then((res) => parseGitChanges(repoPath, res));
 	}
 
-	onDidOpenRepo(handler: (repo: Repository) => void) {
-		this.gitExt?.onDidOpenRepository((repo) => {
-			handler(repo);
-		});
-	}
-
-	onDidCloseRepo(handler: (repo: Repository) => void) {
-		this.gitExt?.onDidOpenRepository((repo) => {
-			handler(repo);
+	onReposChange(handler: (repos: string[]) => void) {
+		handler(this.storedRepos);
+		this.reposEvent.event((repos) => {
+			handler(repos);
 		});
 	}
 }

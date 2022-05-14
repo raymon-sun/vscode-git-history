@@ -90,9 +90,7 @@ export default function App() {
 
 	useEffect(() => {
 		channel.onReposChange(async (repos) => {
-			setRepos(repos);
-		});
-		channel.getRepositories().then((repos) => {
+			console.log("webview on repos change", repos);
 			setRepos(repos);
 		});
 	}, [channel]);

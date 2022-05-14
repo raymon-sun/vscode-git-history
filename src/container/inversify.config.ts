@@ -6,7 +6,6 @@ import { GitService } from "../git/service";
 import { FileTreeProvider } from "../providers/file-tree";
 import { VersionedFileProvider } from "../providers/versioned-file";
 import { Source } from "../views/data/source";
-import { ViewController } from "../views/controller";
 import { DisposableController } from "../disposables";
 import { GitStatusDecorationProvider } from "../providers/decoration";
 import { WebviewProvider } from "../providers/view";
@@ -21,7 +20,6 @@ function initializeContainer(context: ExtensionContext) {
 		.toConstantValue(context);
 
 	container.bind<Source>(Source).toSelf().inSingletonScope();
-	container.bind<ViewController>(ViewController).toSelf().inSingletonScope();
 	container.bind<GitService>(GitService).toSelf().inSingletonScope();
 	container
 		.bind<WebviewProvider>(WebviewProvider)

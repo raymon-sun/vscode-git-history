@@ -25,13 +25,6 @@
 	"main": "./dist/extension.js",
 	"contributes": {
 		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "changes-explorer",
-					"title": "Changes Explorer",
-					"icon": "assets/icons/files.svg"
-				}
-			],
 			"panel": [
 				{
 					"id": "gitCruiseLog",
@@ -70,16 +63,7 @@
 				"title": "Git Log",
 				"icon": "$(list-flat)"
 			}
-		],
-		"menus": {
-			"view/title": [
-				{
-					"command": "git-cruise.changes.view",
-					"when": "view =~ /git-cruise/",
-					"group": "navigation@4"
-				}
-			]
-		}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",

@@ -21,7 +21,10 @@ const GitGraph: FC<Props> = ({ data }) => {
 	const commitX = (commitPosition + 1) * UNIT;
 
 	const width =
-		(Math.max(...lines.map(({ top, bottom }) => Math.max(top, bottom))) +
+		(Math.max(
+			...lines.map(({ top, bottom }) => Math.max(top, bottom)),
+			commitPosition
+		) +
 			2) *
 		UNIT;
 	return (
@@ -30,6 +33,10 @@ const GitGraph: FC<Props> = ({ data }) => {
 				const topX = (top + 1) * UNIT;
 				const bottomX = (bottom + 1) * UNIT;
 				let points = `${topX},0 ${topX},4 ${bottomX},11 ${bottomX},${HEIGHT}`;
+				if (top < 0 && bottom < 0) {
+					return null;
+				}
+
 				if (top < 0) {
 					points = `${commitX},11 ${bottomX},18 ${bottomX},${HEIGHT}`;
 				}
@@ -37,6 +44,7 @@ const GitGraph: FC<Props> = ({ data }) => {
 				if (bottom < 0) {
 					points = `${topX},0 ${topX},4 ${commitX},11`;
 				}
+
 				return (
 					<polyline
 						key={index}

@@ -13,8 +13,10 @@ import GitGraph from "./components/GitGraph";
 export default function App() {
 	const channel = useContext(ChannelContext)!;
 	const [repos, setRepos] = useState<{ name: string; path: string }[]>([]);
-	const [selectedRepo, setSelectedRepo] =
-		useState<{ name: string; path: string }>();
+	const [selectedRepo, setSelectedRepo] = useState<{
+		name: string;
+		path: string;
+	}>();
 
 	const [users, setUsers] = useState<{ name: string; email: string }[]>([]);
 	const [selectedUser, setSelectedUser] = useState<string>("");

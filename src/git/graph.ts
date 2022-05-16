@@ -43,17 +43,19 @@ export function getGraphPrinter() {
 				}
 			} else {
 				commitColor = colorPicker.get();
-				curChains.push({
-					hash,
-					parent: firstParent,
-					color: commitColor,
-				});
+				commitPosition = curChains.length;
+				if (firstParent) {
+					curChains.push({
+						hash,
+						parent: firstParent,
+						color: commitColor,
+					});
+				}
 
 				// first node of a chain
-				commitPosition = curChains.length - 1;
 				lines.push({
 					top: -1,
-					bottom: curChains.length - 1,
+					bottom: firstParent ? curChains.length - 1 : -1,
 					color: commitColor,
 				});
 			}

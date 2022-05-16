@@ -1,4 +1,4 @@
-import { CommitGraphData } from "./graph";
+import { CommitGraphData, getGraphPrinter } from "./graph";
 
 export interface Commit {
 	readonly hash: string;
@@ -25,6 +25,7 @@ export function parseGitCommits(data: string): Commit[] {
 	let message;
 	let match;
 
+	const graphPrinter = getGraphPrinter();
 	do {
 		match = commitRegex.exec(data);
 		if (match === null) {
@@ -47,7 +48,7 @@ export function parseGitCommits(data: string): Commit[] {
 		}
 
 		// Stop excessive memory usage by using substr -- https://bugs.chromium.org/p/v8/issues/detail?id=2869
-		commits.push({
+		const commit: Commit = {
 			hash: ` ${ref}`.substr(1),
 			message: ` ${message}`.substr(1),
 			parents: parents ? parents.split(" ") : [],
@@ -55,7 +56,11 @@ export function parseGitCommits(data: string): Commit[] {
 			authorName: ` ${authorName}`.substr(1),
 			authorEmail: ` ${authorEmail}`.substr(1),
 			commitDate: new Date(Number(commitDate) * 1000).toLocaleString(),
-		});
+		};
+
+		commit.graph = graphPrinter.print(commit, commits.length, commits);
+
+		commits.push(commit);
 	} while (true);
 
 	return commits;

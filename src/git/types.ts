@@ -1,6 +1,8 @@
 import { ThemeColor, Uri } from "vscode";
 import { loadMessageBundle } from "vscode-nls";
 
+import { Commit } from "./commit";
+
 const localize = loadMessageBundle();
 
 export interface GitOptions {
@@ -12,6 +14,14 @@ export interface LogOptions extends GitOptions {
 	author?: string;
 	keyword?: string;
 	maxLength?: number;
+	count?: number;
+	skip?: number;
+}
+
+export interface BatchedCommits {
+	totalCount: number;
+	batchNumber: number;
+	commits: Commit[];
 }
 
 export interface Change {

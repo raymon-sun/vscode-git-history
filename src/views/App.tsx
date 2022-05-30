@@ -1,8 +1,10 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 import { debounce } from "lodash";
 
 import { Commit } from "../git/commit";
+
+import { BatchedCommits } from "../git/types";
 
 import PickableList from "./components/PickableList";
 import Select from "./components/Select";
@@ -24,7 +26,23 @@ export default function App() {
 	const [branches, setBranches] = useState<string[]>([]);
 	const [selectedBranch, setSelectedBranch] = useState<string>("");
 
-	const [commits, setCommits] = useState<Commit[]>([]);
+	const [commits, _setCommits] = useState<Commit[]>([]);
+	const commitsRef = useRef(commits);
+	const setCommits = (commits: Commit[]) => {
+		commitsRef.current = commits;
+		_setCommits(commits);
+	};
+	const [commitsCount, setCommitsCount] = useState<number>(0);
+
+	const dealBatchedCommits = useCallback((batchedCommits: BatchedCommits) => {
+		const { commits: newCommits, batchNumber, totalCount } = batchedCommits;
+		setCommitsCount(totalCount);
+		setCommits(
+			batchNumber === 0
+				? newCommits
+				: commitsRef.current.concat(newCommits)
+		);
+	}, []);
 
 	function diff(sortedRefs: string[]) {
 		channel.viewChanges(selectedRepo?.path || "", sortedRefs);
@@ -51,41 +69,50 @@ export default function App() {
 	);
 
 	const handleBranchChange = useCallback(
-		async (branch: string) => {
+		(branch: string) => {
 			setSelectedBranch(branch);
-			const commits = await channel.getCommits({
-				repo: selectedRepo?.path,
-				ref: branch,
-				author: selectedUser,
-			});
-			setCommits(commits!);
+			channel.getCommits(
+				(batchedCommits: BatchedCommits) =>
+					dealBatchedCommits(batchedCommits),
+				{
+					repo: selectedRepo?.path,
+					ref: branch,
+					author: selectedUser,
+				}
+			);
 		},
-		[channel, selectedRepo?.path, selectedUser]
+		[channel, dealBatchedCommits, selectedRepo?.path, selectedUser]
 	);
 
 	const handleUserChange = useCallback(
-		async (user: string) => {
+		(user: string) => {
 			setSelectedUser(user);
-			const commits = await channel.getCommits({
-				repo: selectedRepo?.path,
-				ref: selectedBranch,
-				author: user,
-			});
-			setCommits(commits!);
+			channel.getCommits(
+				(batchedCommits: BatchedCommits) =>
+					dealBatchedCommits(batchedCommits),
+				{
+					repo: selectedRepo?.path,
+					ref: selectedBranch,
+					author: user,
+				}
+			);
 		},
-		[channel, selectedBranch, selectedRepo?.path]
+		[channel, dealBatchedCommits, selectedBranch, selectedRepo?.path]
 	);
 
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const handleSearch = useCallback(
-		debounce(async (keyword: string) => {
-			const commits = await channel.getCommits({
-				repo: selectedRepo?.path,
-				ref: selectedBranch,
-				author: selectedUser,
-				keyword,
-			});
-			setCommits(commits!);
+		debounce((keyword: string) => {
+			channel.getCommits(
+				(batchedCommits: BatchedCommits) =>
+					dealBatchedCommits(batchedCommits),
+				{
+					repo: selectedRepo?.path,
+					ref: selectedBranch,
+					author: selectedUser,
+					keyword,
+				}
+			);
 		}, 1000),
 		[selectedRepo, selectedBranch, selectedUser]
 	);
@@ -114,14 +141,20 @@ export default function App() {
 		requestBranches().then(() => setSelectedBranch(""));
 		requestUsers().then(() => setSelectedUser(""));
 
-		channel
-			.getCommits({
+		channel.getCommits(
+			(batchedCommits: BatchedCommits) =>
+				dealBatchedCommits(batchedCommits),
+			{
 				repo: selectedRepo?.path,
-			})
-			.then((commits) => {
-				setCommits(commits || []);
-			});
-	}, [channel, requestBranches, requestUsers, selectedRepo?.path]);
+			}
+		);
+	}, [
+		channel,
+		dealBatchedCommits,
+		requestBranches,
+		requestUsers,
+		selectedRepo?.path,
+	]);
 
 	const getCommitList = () => {
 		return commits.map((commit) => ({
@@ -213,6 +246,7 @@ export default function App() {
 			<div className={style["commits-area"]}>
 				<PickableList
 					list={getCommitList()}
+					size={commitsCount}
 					onPick={(ids) => diff(ids)}
 				/>
 			</div>

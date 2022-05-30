@@ -13,15 +13,16 @@ type Id = string;
 
 interface Props {
 	list: { id: Id; content: string | ReactNode }[];
+	size?: number;
 	onPick?: (ids: Id[]) => void;
 }
 
-const PickableList: FC<Props> = ({ list, onPick }) => {
+const PickableList: FC<Props> = ({ list, size, onPick }) => {
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const dragContainerRef = useRef<HTMLDivElement>(null);
 
 	const rowVirtualizer = useVirtual({
-		size: list.length,
+		size: size ?? list.length,
 		parentRef: scrollContainerRef,
 		overscan: 10,
 	});
@@ -119,6 +120,7 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 						ref={virtualRow.measureRef}
 						className={classNames(style.item, {
 							[style.picked]:
+								list[virtualRow.index] &&
 								Object.prototype.hasOwnProperty.call(
 									pickedItems,
 									list[virtualRow.index].id
@@ -133,7 +135,7 @@ const PickableList: FC<Props> = ({ list, onPick }) => {
 							transform: `translateY(${virtualRow.start}px)`,
 						}}
 					>
-						{list[virtualRow.index].content}
+						{list[virtualRow.index]?.content}
 					</div>
 				))}
 			</div>

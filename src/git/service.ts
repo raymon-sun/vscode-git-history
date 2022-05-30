@@ -103,7 +103,8 @@ export class GitService {
 			"--author-date-order",
 		];
 
-		const { repo, author, keyword, ref, maxLength } = options || {};
+		const { repo, author, keyword, ref, maxLength, count, skip } =
+			options || {};
 		if (author) {
 			args.push(`--author=${author || ""}`);
 		}
@@ -120,10 +121,27 @@ export class GitService {
 			args.push(`-n${maxLength}`);
 		}
 
+		if (skip) {
+			args.push(`--skip=${skip}`);
+		}
+
+		if (count) {
+			args.push(`-${count}`);
+		}
+
 		return await this.git
 			?.cwd(repo || this.rootRepoPath)
 			.raw(args)
 			.then((res) => parseGitCommits(res))
+			.catch((err) => console.log(err));
+	}
+
+	async getCommitsTotalCount(options?: LogOptions) {
+		const { repo } = options || {};
+		const args = ["rev-list", "--all", "--count"];
+		return await this.git
+			?.cwd(repo || this.rootRepoPath)
+			.raw(args)
 			.catch((err) => console.log(err));
 	}
 

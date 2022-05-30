@@ -11,7 +11,7 @@ import {
 } from "../../git/changes/tree";
 import { FileTreeProvider } from "../../providers/file-tree";
 
-import { GitOptions, LogOptions } from "../../git/types";
+import { BatchedCommits, GitOptions, LogOptions } from "../../git/types";
 
 import { link } from "./link";
 
@@ -62,9 +62,45 @@ export class Source {
 		return this.git.getAuthors(options);
 	}
 
-	@link("promise")
-	async getCommits(options?: LogOptions) {
-		return await this.git.getCommits(options);
+	@link("subscription")
+	async getCommits(
+		handler: (batchedCommits: BatchedCommits) => void,
+		options?: LogOptions
+	) {
+		const BATCH_SIZE = 5000;
+		const firstBatchCommits = await this.git.getCommits({
+			...options,
+			count: BATCH_SIZE,
+		});
+
+		if (firstBatchCommits && firstBatchCommits.length === BATCH_SIZE) {
+			const totalCount = Number(
+				await this.git.getCommitsTotalCount(options)
+			);
+
+			handler({ totalCount, batchNumber: 0, commits: firstBatchCommits });
+
+			for (let i = BATCH_SIZE; i < totalCount; i = i + BATCH_SIZE) {
+				const commits =
+					(await this.git.getCommits({
+						...options,
+						count: BATCH_SIZE,
+						skip: i,
+					})) || [];
+
+				handler({
+					totalCount,
+					batchNumber: Math.floor(i / BATCH_SIZE),
+					commits,
+				});
+			}
+		} else {
+			handler({
+				totalCount: firstBatchCommits?.length || 0,
+				batchNumber: 0,
+				commits: firstBatchCommits || [],
+			});
+		}
 	}
 
 	@link("promise")

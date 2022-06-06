@@ -225,6 +225,9 @@
 						"SELECT_HOST"
 					]
 				}
+			],
+			"custom-property-pattern": [
+				"^([A-Za-z0-9]*)(-[A-Za-z0-9]+)*$"
 			]
 		},
 		"extends": [

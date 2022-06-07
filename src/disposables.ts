@@ -6,6 +6,7 @@ import { FileTreeProvider } from "./providers/file-tree";
 import { GitStatusDecorationProvider } from "./providers/decoration";
 import { EXTENSION_SCHEME } from "./constants";
 import { WebviewProvider } from "./providers/view";
+import { getCommandDisposables } from "./commands";
 
 @injectable()
 export class DisposableController {
@@ -18,6 +19,7 @@ export class DisposableController {
 
 	createDisposables() {
 		return [
+			...getCommandDisposables(),
 			window.registerWebviewViewProvider(
 				`${EXTENSION_SCHEME}.log`,
 				this.webviewProvider,

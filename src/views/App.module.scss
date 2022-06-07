@@ -4,18 +4,17 @@
 	height: 100%;
 }
 
-.operations-bar {
+.commit-headers {
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 6px 0;
+	line-height: 24px;
+	margin-top: 4px;
 
-	.filter-container {
+	.header-item {
 		display: flex;
 		align-items: center;
 
-		> div:not(:last-child) {
-			margin-right: 12px;
+		> span {
+			margin-right: 8px;
 		}
 	}
 }
@@ -23,35 +22,39 @@
 .commits-area {
 	flex: 1;
 	overflow: hidden;
+
+	.commit {
+		display: flex;
+		line-height: 22px;
+
+		&.selected {
+			background-color: var(--vscode-list-highlightForeground);
+		}
+
+		> span {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	}
 }
 
-.commit {
-	display: flex;
-	line-height: 22px;
+.graph {
+	width: 70px;
+}
 
-	&.selected {
-		background-color: var(--vscode-list-highlightForeground);
-	}
+.hash {
+	width: 90px;
+}
 
-	> span {
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
+.message {
+	flex: 1;
+}
 
-	.hash {
-		width: 60px;
-	}
+.author-name {
+	width: 108px;
+}
 
-	.message {
-		flex: 1;
-	}
-
-	.author-name {
-		width: 108px;
-	}
-
-	.commit-date {
-		width: 144px;
-	}
+.commit-date {
+	width: 144px;
 }

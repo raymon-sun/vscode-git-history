@@ -1,7 +1,7 @@
 import { parse } from "path";
 
 import { inject, injectable } from "inversify";
-import { ExtensionContext, workspace } from "vscode";
+import { commands, ExtensionContext, workspace } from "vscode";
 
 import { TYPES } from "../../container/types";
 import { GitService } from "../../git/service";
@@ -11,17 +11,23 @@ import {
 } from "../../git/changes/tree";
 import { FileTreeProvider } from "../../providers/file-tree";
 
-import { BatchedCommits, GitOptions, LogOptions } from "../../git/types";
+import { BatchedCommits, LogOptions } from "../../git/types";
 
 import { link } from "./link";
 
 @injectable()
 export class Source {
+	private switchSubscriber?: (batchedCommits: BatchedCommits) => void;
+
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
 		private git: GitService,
 		private fileTreeProvider: FileTreeProvider
 	) {}
+
+	getSwitchSubscriber() {
+		return this.switchSubscriber;
+	}
 
 	@link("promise")
 	getWorkspacePath() {
@@ -52,14 +58,21 @@ export class Source {
 		return Promise.resolve(repositories);
 	}
 
-	@link("promise")
-	getBranches(options: GitOptions) {
-		return this.git.getBranches(options);
+	@link("subscription")
+	async subscribeSwitcher(handler: (batchedCommits: BatchedCommits) => void) {
+		this.switchSubscriber = handler;
 	}
 
-	@link("promise")
-	getAuthors(options: GitOptions) {
-		return this.git.getAuthors(options);
+	@link("subscription")
+	async filterAuthor(
+		handler: (batchedCommits: BatchedCommits) => void,
+		options?: LogOptions
+	) {
+		const [author] = await commands.executeCommand<string>(
+			"git-cruise.log.filter.author"
+		);
+
+		this.getCommits(handler, { ...options, author });
 	}
 
 	@link("subscription")

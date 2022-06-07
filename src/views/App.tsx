@@ -1,16 +1,18 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 
-import { debounce } from "lodash";
+import classNames from "classnames";
 
 import { Commit } from "../git/commit";
 
 import { BatchedCommits } from "../git/types";
 
 import PickableList from "./components/PickableList";
-import Select from "./components/Select";
 import style from "./App.module.scss";
 import { ChannelContext } from "./data/channel";
 import GitGraph from "./components/GitGraph";
+
+import "@vscode/codicons/dist/codicon.css";
 
 export default function App() {
 	const channel = useContext(ChannelContext)!;
@@ -19,12 +21,6 @@ export default function App() {
 		name: string;
 		path: string;
 	}>();
-
-	const [users, setUsers] = useState<{ name: string; email: string }[]>([]);
-	const [selectedUser, setSelectedUser] = useState<string>("");
-
-	const [branches, setBranches] = useState<string[]>([]);
-	const [selectedBranch, setSelectedBranch] = useState<string>("");
 
 	const [commits, _setCommits] = useState<Commit[]>([]);
 	const commitsRef = useRef(commits);
@@ -48,74 +44,21 @@ export default function App() {
 		channel.viewChanges(selectedRepo?.path || "", sortedRefs);
 	}
 
-	const requestBranches = useCallback(async () => {
-		const branches = await channel.getBranches({
-			repo: selectedRepo?.path,
-		});
-		setBranches(["", ...branches!]);
-	}, [channel, selectedRepo?.path]);
+	const subscribeSwitcher = useCallback(() => {
+		channel.subscribeSwitcher((batchedCommits: BatchedCommits) =>
+			dealBatchedCommits(batchedCommits)
+		);
+	}, [channel, dealBatchedCommits]);
 
-	const requestUsers = useCallback(async () => {
-		const users = await channel.getAuthors({ repo: selectedRepo?.path });
-		setUsers([{ name: "", email: "" }, ...users!]);
-	}, [channel, selectedRepo?.path]);
-
-	const handleRepoChange = useCallback(
-		async (repo: { name: string; path: string; label: string }) => {
-			const { name, path } = repo;
-			setSelectedRepo({ name, path });
-		},
-		[]
-	);
-
-	const handleBranchChange = useCallback(
-		(branch: string) => {
-			setSelectedBranch(branch);
-			channel.getCommits(
-				(batchedCommits: BatchedCommits) =>
-					dealBatchedCommits(batchedCommits),
-				{
-					repo: selectedRepo?.path,
-					ref: branch,
-					author: selectedUser,
-				}
-			);
-		},
-		[channel, dealBatchedCommits, selectedRepo?.path, selectedUser]
-	);
-
-	const handleUserChange = useCallback(
-		(user: string) => {
-			setSelectedUser(user);
-			channel.getCommits(
-				(batchedCommits: BatchedCommits) =>
-					dealBatchedCommits(batchedCommits),
-				{
-					repo: selectedRepo?.path,
-					ref: selectedBranch,
-					author: user,
-				}
-			);
-		},
-		[channel, dealBatchedCommits, selectedBranch, selectedRepo?.path]
-	);
-
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	const handleSearch = useCallback(
-		debounce((keyword: string) => {
-			channel.getCommits(
-				(batchedCommits: BatchedCommits) =>
-					dealBatchedCommits(batchedCommits),
-				{
-					repo: selectedRepo?.path,
-					ref: selectedBranch,
-					author: selectedUser,
-					keyword,
-				}
-			);
-		}, 1000),
-		[selectedRepo, selectedBranch, selectedUser]
-	);
+	const onFilterAuthor = useCallback(() => {
+		channel.filterAuthor(
+			(batchedCommits: BatchedCommits) =>
+				dealBatchedCommits(batchedCommits),
+			{
+				repo: selectedRepo?.path,
+			}
+		);
+	}, [channel, dealBatchedCommits, selectedRepo?.path]);
 
 	useEffect(() => {
 		channel.onReposChange(async (repos) => {
@@ -138,9 +81,6 @@ export default function App() {
 			return;
 		}
 
-		requestBranches().then(() => setSelectedBranch(""));
-		requestUsers().then(() => setSelectedUser(""));
-
 		channel.getCommits(
 			(batchedCommits: BatchedCommits) =>
 				dealBatchedCommits(batchedCommits),
@@ -148,24 +88,18 @@ export default function App() {
 				repo: selectedRepo?.path,
 			}
 		);
-	}, [
-		channel,
-		dealBatchedCommits,
-		requestBranches,
-		requestUsers,
-		selectedRepo?.path,
-	]);
+
+		subscribeSwitcher();
+	}, [channel, dealBatchedCommits, selectedRepo?.path, subscribeSwitcher]);
 
 	const getCommitList = () => {
 		return commits.map((commit) => ({
 			id: commit.hash,
 			content: (
 				<div className={style.commit}>
-					{!selectedUser && (
-						<span>
-							<GitGraph data={commit.graph!} />
-						</span>
-					)}
+					<span className={style.graph}>
+						<GitGraph data={commit.graph!} />
+					</span>
 					<span className={style.hash}>
 						{commit.hash.slice(0, 6)}
 					</span>
@@ -187,60 +121,34 @@ export default function App() {
 
 	return (
 		<div className={style.container}>
-			<div className={style["operations-bar"]}>
-				<div className={style["filter-container"]}>
-					<div>Repo:</div>
-					<Select
-						value={{
-							name: selectedRepo.name,
-							path: selectedRepo.path,
-							label: selectedRepo.name,
-						}}
-						options={repos.map(({ name, path }) => ({
-							name,
-							path,
-							label: name,
-						}))}
-						onChange={(value) => {
-							handleRepoChange(value!);
-						}}
-					/>
-					<div>Branch:</div>
-					<Select
-						value={{
-							branch: selectedBranch,
-							label: selectedBranch || "All Branches",
-						}}
-						options={branches.map((branch) => ({
-							branch,
-							label: branch || "All Branches",
-						}))}
-						onChange={(value) => {
-							handleBranchChange(value!.branch);
-						}}
-					/>
-					<div>User:</div>
-					<Select
-						value={{
-							user: selectedUser,
-							label: selectedUser || "All Users",
-						}}
-						options={users.map(({ name }) => ({
-							user: name,
-							label: name || "All Users",
-						}))}
-						onChange={(value) => {
-							handleUserChange(value!.user);
-						}}
-					/>
+			<div className={style["commit-headers"]}>
+				<div className={(style["header-item"], style.graph)}>Graph</div>
+				<div className={classNames(style["header-item"], style.hash)}>
+					<span>Hash</span>
 				</div>
-				<div>
-					<input
-						placeholder="Search..."
-						onChange={(event) => {
-							handleSearch(event.target.value);
-						}}
-					/>
+				<div
+					className={classNames(style["header-item"], style.message)}
+				>
+					<span>Message</span>
+				</div>
+				<div
+					className={classNames(
+						style["header-item"],
+						style["author-name"]
+					)}
+				>
+					<span>Author</span>
+					<VSCodeButton appearance="icon" onClick={onFilterAuthor}>
+						<span className="codicon codicon-filter"></span>
+					</VSCodeButton>
+				</div>
+				<div
+					className={classNames(
+						style["header-item"],
+						style["commit-date"]
+					)}
+				>
+					<span>Date</span>
 				</div>
 			</div>
 			<div className={style["commits-area"]}>

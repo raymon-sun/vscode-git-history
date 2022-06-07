@@ -95,26 +95,22 @@ export class GitService {
 
 	async getCommits(options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%aN%n%aE%n%at%n%ct%n%P%n%B";
+		const { repo, author, keyword, ref, maxLength, count, skip } =
+			options || {};
 		const args = [
 			"log",
 			`--format=${COMMIT_FORMAT}`,
 			"-z",
-			"--all",
+			ref || "--all",
 			"--author-date-order",
 		];
 
-		const { repo, author, keyword, ref, maxLength, count, skip } =
-			options || {};
 		if (author) {
 			args.push(`--author=${author || ""}`);
 		}
 
 		if (keyword) {
 			args.push(`--grep=${keyword}`);
-		}
-
-		if (ref) {
-			args.push(ref);
 		}
 
 		if (maxLength) {

@@ -13,7 +13,12 @@ import { FileTreeProvider } from "../../providers/file-tree";
 
 import { BatchedCommits, LogOptions } from "../../git/types";
 
+import { RESET_COMMAND } from "../../commands/switch";
+
+import { FILTER_AUTHOR_COMMAND } from "../../commands/filter";
+
 import { link } from "./link";
+import state from "./state";
 
 @injectable()
 export class Source {
@@ -47,38 +52,30 @@ export class Source {
 		});
 	}
 
-	@link("promise")
-	getRepositories() {
-		const repositories = (this.git.getRepositories() || []).map(
-			(repoPath) => ({
-				name: parse(repoPath).base,
-				path: repoPath,
-			})
-		);
-		return Promise.resolve(repositories);
-	}
-
 	@link("subscription")
 	async subscribeSwitcher(handler: (batchedCommits: BatchedCommits) => void) {
 		this.switchSubscriber = handler;
 	}
 
+	@link("promise")
+	resetLog() {
+		return commands.executeCommand<string>(RESET_COMMAND);
+	}
+
 	@link("subscription")
-	async filterAuthor(
-		handler: (batchedCommits: BatchedCommits) => void,
-		options?: LogOptions
-	) {
+	async filterAuthor(handler: (batchedCommits: BatchedCommits) => void) {
 		const [author] = await commands.executeCommand<string>(
-			"git-cruise.log.filter.author"
+			FILTER_AUTHOR_COMMAND
 		);
 
-		this.getCommits(handler, { ...options, author });
+		state.logOptions.author = author;
+		this.getCommits(handler, state.logOptions);
 	}
 
 	@link("subscription")
 	async getCommits(
 		handler: (batchedCommits: BatchedCommits) => void,
-		options?: LogOptions
+		options: LogOptions
 	) {
 		const BATCH_SIZE = 5000;
 		const firstBatchCommits = await this.git.getCommits({
@@ -91,7 +88,12 @@ export class Source {
 				await this.git.getCommitsTotalCount(options)
 			);
 
-			handler({ totalCount, batchNumber: 0, commits: firstBatchCommits });
+			handler({
+				totalCount,
+				batchNumber: 0,
+				commits: firstBatchCommits,
+				options,
+			});
 
 			for (let i = BATCH_SIZE; i < totalCount; i = i + BATCH_SIZE) {
 				const commits =
@@ -105,6 +107,7 @@ export class Source {
 					totalCount,
 					batchNumber: Math.floor(i / BATCH_SIZE),
 					commits,
+					options,
 				});
 			}
 		} else {
@@ -112,6 +115,7 @@ export class Source {
 				totalCount: firstBatchCommits?.length || 0,
 				batchNumber: 0,
 				commits: firstBatchCommits || [],
+				options,
 			});
 		}
 	}

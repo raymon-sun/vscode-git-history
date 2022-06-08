@@ -51,14 +51,10 @@ export default function App() {
 	}, [channel, dealBatchedCommits]);
 
 	const onFilterAuthor = useCallback(() => {
-		channel.filterAuthor(
-			(batchedCommits: BatchedCommits) =>
-				dealBatchedCommits(batchedCommits),
-			{
-				repo: selectedRepo?.path,
-			}
+		channel.filterAuthor((batchedCommits: BatchedCommits) =>
+			dealBatchedCommits(batchedCommits)
 		);
-	}, [channel, dealBatchedCommits, selectedRepo?.path]);
+	}, [channel, dealBatchedCommits]);
 
 	useEffect(() => {
 		channel.onReposChange(async (repos) => {
@@ -81,15 +77,8 @@ export default function App() {
 			return;
 		}
 
-		channel.getCommits(
-			(batchedCommits: BatchedCommits) =>
-				dealBatchedCommits(batchedCommits),
-			{
-				repo: selectedRepo?.path,
-			}
-		);
-
 		subscribeSwitcher();
+		channel.resetLog();
 	}, [channel, dealBatchedCommits, selectedRepo?.path, subscribeSwitcher]);
 
 	const getCommitList = () => {

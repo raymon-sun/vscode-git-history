@@ -22,6 +22,7 @@ export interface BatchedCommits {
 	totalCount: number;
 	batchNumber: number;
 	commits: Commit[];
+	options: LogOptions;
 }
 
 export interface Change {

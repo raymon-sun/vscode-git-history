@@ -62,8 +62,14 @@
 			},
 			{
 				"category": "Git Cruise",
+				"command": "git-cruise.log.reset",
+				"title": "Reset Log",
+				"icon": "$(discard)"
+			},
+			{
+				"category": "Git Cruise",
 				"command": "git-cruise.log.refresh",
-				"title": "Git Log",
+				"title": "Refresh Log",
 				"icon": "$(refresh)"
 			},
 			{
@@ -89,6 +95,11 @@
 			"view/title": [
 				{
 					"command": "git-cruise.log.refresh",
+					"when": "view =~ /git-cruise.log/",
+					"group": "navigation@4"
+				},
+				{
+					"command": "git-cruise.log.reset",
 					"when": "view =~ /git-cruise.log/",
 					"group": "navigation@4"
 				},

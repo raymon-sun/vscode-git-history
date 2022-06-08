@@ -14,6 +14,7 @@ export function getFilterCommandsDisposable() {
 				(await gitService.getAuthors({}))?.map(({ name }) => name) ||
 					[],
 				{
+					title: "Authors Select",
 					placeHolder: "Input author name here",
 					canPickMany: true,
 					onDidSelectItem: (item) =>

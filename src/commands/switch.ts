@@ -38,6 +38,7 @@ export function getSwitchCommandsDisposable() {
 			const repo = await window.showQuickPick(
 				gitService.getRepositories() || [],
 				{
+					title: "Repository Select",
 					placeHolder: "Input repo name here",
 					onDidSelectItem: (item) =>
 						window.showInformationMessage(`Focus ${item}`),
@@ -56,6 +57,7 @@ export function getSwitchCommandsDisposable() {
 			const branch = await window.showQuickPick(
 				(await gitService.getBranches({})) || [],
 				{
+					title: "Branch Select",
 					placeHolder: "Input ref here",
 					onDidSelectItem: (item) =>
 						window.showInformationMessage(`Focus ${item}`),

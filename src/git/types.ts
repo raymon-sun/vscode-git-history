@@ -11,7 +11,7 @@ export interface GitOptions {
 
 export interface LogOptions extends GitOptions {
 	ref?: string;
-	author?: string;
+	authors?: string[];
 	keyword?: string;
 	maxLength?: number;
 	count?: number;

@@ -3,6 +3,8 @@ import { commands, window } from "vscode";
 import { container } from "../container/inversify.config";
 import { GitService } from "../git/service";
 
+import state from "../views/data/state";
+
 export const FILTER_AUTHOR_COMMAND = "git-cruise.log.filter.author";
 
 export function getFilterCommandsDisposable() {
@@ -10,9 +12,13 @@ export function getFilterCommandsDisposable() {
 
 	return [
 		commands.registerCommand(FILTER_AUTHOR_COMMAND, async () => {
-			return window.showQuickPick(
-				(await gitService.getAuthors({}))?.map(({ name }) => name) ||
-					[],
+			const selectedItems = await window.showQuickPick(
+				(
+					await gitService.getAuthors(state.logOptions)
+				)?.map(({ name }) => ({
+					label: name,
+					picked: state.logOptions.authors?.includes(name),
+				})) || [],
 				{
 					title: "Authors Select",
 					placeHolder: "Input author name here",
@@ -21,6 +27,8 @@ export function getFilterCommandsDisposable() {
 						window.showInformationMessage(`Focus ${item}`),
 				}
 			);
+
+			return selectedItems?.map(({ label }) => label);
 		}),
 	];
 }

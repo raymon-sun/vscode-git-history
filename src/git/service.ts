@@ -95,7 +95,7 @@ export class GitService {
 
 	async getCommits(options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%aN%n%aE%n%at%n%ct%n%P%n%B";
-		const { repo, author, keyword, ref, maxLength, count, skip } =
+		const { repo, authors, keyword, ref, maxLength, count, skip } =
 			options || {};
 		const args = [
 			"log",
@@ -105,8 +105,8 @@ export class GitService {
 			"--author-date-order",
 		];
 
-		if (author) {
-			args.push(`--author=${author || ""}`);
+		if (authors && authors.length) {
+			args.push(...authors.map((author) => `--author=${author}`));
 		}
 
 		if (keyword) {

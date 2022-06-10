@@ -64,11 +64,9 @@ export class Source {
 
 	@link("subscription")
 	async filterAuthor(handler: (batchedCommits: BatchedCommits) => void) {
-		const [author] = await commands.executeCommand<string>(
+		state.logOptions.authors = await commands.executeCommand<string[]>(
 			FILTER_AUTHOR_COMMAND
 		);
-
-		state.logOptions.author = author;
 		this.getCommits(handler, state.logOptions);
 	}
 

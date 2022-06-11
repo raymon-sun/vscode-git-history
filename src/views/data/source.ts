@@ -119,9 +119,9 @@ export class Source {
 	}
 
 	@link("promise")
-	async viewChanges(repo: string, refs: string[]) {
+	async viewChanges(refs: string[]) {
 		const changesCollection = await this.git.getChangesCollection(
-			repo,
+			state.logOptions.repo || "",
 			refs
 		);
 		const newFileTree = resolveChangesCollection(

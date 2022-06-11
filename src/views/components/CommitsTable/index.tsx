@@ -22,11 +22,6 @@ import style from "./index.module.scss";
 
 const CommitsTable: FC = () => {
 	const channel = useContext(ChannelContext)!;
-	const [repos, setRepos] = useState<{ name: string; path: string }[]>([]);
-	const [selectedRepo, setSelectedRepo] = useState<{
-		name: string;
-		path: string;
-	}>();
 
 	const [commits, _setCommits] = useState<Commit[]>([]);
 	const commitsRef = useRef(commits);
@@ -47,7 +42,7 @@ const CommitsTable: FC = () => {
 	}, []);
 
 	function diff(sortedRefs: string[]) {
-		channel.viewChanges(selectedRepo?.path || "", sortedRefs);
+		channel.viewChanges(sortedRefs);
 	}
 
 	const subscribeSwitcher = useCallback(() => {
@@ -63,29 +58,9 @@ const CommitsTable: FC = () => {
 	}, [channel, dealBatchedCommits]);
 
 	useEffect(() => {
-		channel.onReposChange(async (repos) => {
-			console.log("webview on repos change", repos);
-			setRepos(repos);
-		});
-	}, [channel]);
-
-	useEffect(() => {
-		if (selectedRepo) {
-			return;
-		}
-		channel.getDefaultRepository().then((repo) => {
-			repo && setSelectedRepo(repo);
-		});
-	}, [channel, repos, selectedRepo]);
-
-	useEffect(() => {
-		if (!selectedRepo?.path) {
-			return;
-		}
-
 		subscribeSwitcher();
 		channel.resetLog();
-	}, [channel, dealBatchedCommits, selectedRepo?.path, subscribeSwitcher]);
+	}, [channel, dealBatchedCommits, subscribeSwitcher]);
 
 	const getCommitList = () => {
 		return commits.map((commit) => ({
@@ -109,10 +84,6 @@ const CommitsTable: FC = () => {
 			),
 		}));
 	};
-
-	if (!selectedRepo) {
-		return null;
-	}
 
 	return (
 		<div className={style.container}>

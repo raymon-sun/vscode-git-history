@@ -13,6 +13,14 @@
 		display: flex;
 		align-items: center;
 
+		&:not(:first-child)::before {
+			content: "";
+			display: block;
+			width: 6px;
+			height: 12px;
+			border-left: 1px solid var(--vscode-foreground);
+		}
+
 		> span {
 			margin-right: 8px;
 		}

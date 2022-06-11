@@ -117,7 +117,9 @@ const CommitsTable: FC = () => {
 	return (
 		<div className={style.container}>
 			<div className={style["commit-headers"]}>
-				<div className={(style["header-item"], style.graph)}>Graph</div>
+				<div className={classNames(style["header-item"], style.graph)}>
+					Graph
+				</div>
 				<div className={classNames(style["header-item"], style.hash)}>
 					<span>Hash</span>
 				</div>

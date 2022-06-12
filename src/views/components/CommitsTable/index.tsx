@@ -1,16 +1,7 @@
-import {
-	FC,
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { FC, useCallback, useContext, useEffect } from "react";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 
 import classNames from "classnames";
-
-import { Commit } from "../../../git/commit";
 
 import { BatchedCommits } from "../../../git/types";
 
@@ -19,27 +10,12 @@ import { ChannelContext } from "../../data/channel";
 import GitGraph from "../GitGraph";
 
 import style from "./index.module.scss";
+import { useBatchCommits } from "./useBatchCommits";
 
 const CommitsTable: FC = () => {
 	const channel = useContext(ChannelContext)!;
 
-	const [commits, _setCommits] = useState<Commit[]>([]);
-	const commitsRef = useRef(commits);
-	const setCommits = (commits: Commit[]) => {
-		commitsRef.current = commits;
-		_setCommits(commits);
-	};
-	const [commitsCount, setCommitsCount] = useState<number>(0);
-
-	const dealBatchedCommits = useCallback((batchedCommits: BatchedCommits) => {
-		const { commits: newCommits, batchNumber, totalCount } = batchedCommits;
-		setCommitsCount(totalCount);
-		setCommits(
-			batchNumber === 0
-				? newCommits
-				: commitsRef.current.concat(newCommits)
-		);
-	}, []);
+	const { commits, commitsCount, setBatchedCommits } = useBatchCommits();
 
 	function diff(sortedRefs: string[]) {
 		channel.viewChanges(sortedRefs);
@@ -47,20 +23,20 @@ const CommitsTable: FC = () => {
 
 	const subscribeSwitcher = useCallback(() => {
 		channel.subscribeSwitcher((batchedCommits: BatchedCommits) =>
-			dealBatchedCommits(batchedCommits)
+			setBatchedCommits(batchedCommits)
 		);
-	}, [channel, dealBatchedCommits]);
+	}, [channel, setBatchedCommits]);
 
 	const onFilterAuthor = useCallback(() => {
 		channel.filterAuthor((batchedCommits: BatchedCommits) =>
-			dealBatchedCommits(batchedCommits)
+			setBatchedCommits(batchedCommits)
 		);
-	}, [channel, dealBatchedCommits]);
+	}, [channel, setBatchedCommits]);
 
 	useEffect(() => {
 		subscribeSwitcher();
 		channel.resetLog();
-	}, [channel, dealBatchedCommits, subscribeSwitcher]);
+	}, [channel, setBatchedCommits, subscribeSwitcher]);
 
 	const getCommitList = () => {
 		return commits.map((commit) => ({

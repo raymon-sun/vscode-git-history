@@ -38,29 +38,6 @@ const CommitsTable: FC = () => {
 		channel.resetLog();
 	}, [channel, setBatchedCommits, subscribeSwitcher]);
 
-	const getCommitList = () => {
-		return commits.map((commit) => ({
-			id: commit.hash,
-			content: (
-				<div className={style.commit}>
-					<span className={style.graph}>
-						<GitGraph data={commit.graph!} />
-					</span>
-					<span className={style.hash}>
-						{commit.hash.slice(0, 6)}
-					</span>
-					<span className={style.message}>{commit.message}</span>
-					<span className={style["author-name"]}>
-						{commit.authorName}
-					</span>
-					<span className={style["commit-date"]}>
-						{commit.commitDate}
-					</span>
-				</div>
-			),
-		}));
-	};
-
 	return (
 		<div className={style.container}>
 			<div className={style["commit-headers"]}>
@@ -97,7 +74,28 @@ const CommitsTable: FC = () => {
 			</div>
 			<div className={style["commits-area"]}>
 				<PickableList
-					list={getCommitList()}
+					list={commits.map((commit) => ({
+						id: commit.hash,
+						content: (
+							<div className={style.commit}>
+								<span className={style.graph}>
+									<GitGraph data={commit.graph!} />
+								</span>
+								<span className={style.hash}>
+									{commit.hash.slice(0, 6)}
+								</span>
+								<span className={style.message}>
+									{commit.message}
+								</span>
+								<span className={style["author-name"]}>
+									{commit.authorName}
+								</span>
+								<span className={style["commit-date"]}>
+									{commit.commitDate}
+								</span>
+							</div>
+						),
+					}))}
 					size={commitsCount}
 					onPick={(ids) => diff(ids)}
 				/>

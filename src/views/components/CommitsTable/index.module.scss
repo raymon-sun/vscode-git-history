@@ -14,6 +14,7 @@
 		align-items: center;
 
 		&:not(:first-child)::before {
+			cursor: col-resize;
 			content: "";
 			display: block;
 			width: 6px;

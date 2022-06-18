@@ -18,7 +18,7 @@ export function useColumnResize(
 	const [draggingSizes, setDraggingSizes] = useState(sizes);
 
 	const dragBind = useDrag(({ type, movement: [mx], args: [index] }) => {
-		if (type === "pointerup") {
+		if (type === "pointerdown") {
 			setSizes(draggingSizes);
 			return;
 		}
@@ -26,14 +26,12 @@ export function useColumnResize(
 		const newSizes = [...sizes];
 		newSizes[index] = newSizes[index] - mx;
 		newSizes[index - 1] = newSizes[index - 1] + mx;
-		if (
-			newSizes[index] < columns[index].minWidth ||
-			newSizes[index - 1] < columns[index - 1].minWidth
-		) {
-			return;
-		}
 
-		setDraggingSizes(newSizes);
+		const isExceedSize =
+			newSizes[index] < columns[index].minWidth ||
+			newSizes[index - 1] < columns[index - 1].minWidth;
+
+		!isExceedSize && setDraggingSizes(newSizes);
 	});
 
 	return {

@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { useDrag } from "@use-gesture/react";
 import { sortedIndex } from "lodash";
 import classNames from "classnames";
@@ -11,13 +11,19 @@ import style from "./index.module.scss";
 
 type Id = string;
 
-interface Props {
-	list: { id: Id; content: string | ReactNode }[];
+interface Props<T> {
+	list: T[];
+	keyProp: keyof T;
+	itemRender: (o: T) => ReactNode;
 	size?: number;
 	onPick?: (ids: Id[]) => void;
 }
 
-const PickableList: FC<Props> = ({ list, size, onPick }) => {
+// TODO: make Record<string,string> to generic
+const PickableList = <T extends Record<string, any>>(
+	props: Props<T> & { children?: ReactNode }
+) => {
+	const { list, keyProp, itemRender, size, onPick } = props;
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const dragContainerRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +66,7 @@ const PickableList: FC<Props> = ({ list, size, onPick }) => {
 
 			setPickedItems({
 				...existedItems,
-				[list![dragStartIndex].id]: dragStartIndex,
+				[list![dragStartIndex][keyProp]]: dragStartIndex,
 			});
 			return;
 		}
@@ -89,7 +95,7 @@ const PickableList: FC<Props> = ({ list, size, onPick }) => {
 				index <= Math.max(dragStartIndex, currentIndex);
 				index++
 			) {
-				const { id } = list![index];
+				const id = list![index][keyProp];
 				if (!Object.prototype.hasOwnProperty.call(currentItems, id)) {
 					currentItems[id] = index;
 				}
@@ -123,7 +129,7 @@ const PickableList: FC<Props> = ({ list, size, onPick }) => {
 								list[virtualRow.index] &&
 								Object.prototype.hasOwnProperty.call(
 									pickedItems,
-									list[virtualRow.index].id
+									list[virtualRow.index][keyProp]
 								),
 						})}
 						style={{
@@ -135,7 +141,8 @@ const PickableList: FC<Props> = ({ list, size, onPick }) => {
 							transform: `translateY(${virtualRow.start}px)`,
 						}}
 					>
-						{list[virtualRow.index]?.content}
+						{list[virtualRow.index] &&
+							itemRender(list[virtualRow.index])}
 					</div>
 				))}
 			</div>

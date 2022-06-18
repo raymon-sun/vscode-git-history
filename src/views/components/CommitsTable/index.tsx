@@ -1,5 +1,6 @@
 import { FC, useCallback, useContext, useEffect } from "react";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
+import { useMeasure } from "react-use";
 
 import classNames from "classnames";
 
@@ -7,14 +8,20 @@ import { BatchedCommits } from "../../../git/types";
 
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
-import GitGraph from "../GitGraph";
+
+import { Commit } from "../../../git/commit";
+
+import { useBatchCommits } from "./useBatchCommits";
+import { useColumnResize } from "./useColumnResize";
+
+import { HEADERS } from "./constants";
 
 import style from "./index.module.scss";
-import { useBatchCommits } from "./useBatchCommits";
 
-const CommitsTable: FC = () => {
+const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const channel = useContext(ChannelContext)!;
 
+	const { columns } = useColumnResize(HEADERS, totalWidth);
 	const { commits, commitsCount, setBatchedCommits } = useBatchCommits();
 
 	function diff(sortedRefs: string[]) {
@@ -39,67 +46,71 @@ const CommitsTable: FC = () => {
 	}, [channel, setBatchedCommits, subscribeSwitcher]);
 
 	return (
-		<div className={style.container}>
+		<>
 			<div className={style["commit-headers"]}>
-				<div className={classNames(style["header-item"], style.graph)}>
-					Graph
-				</div>
-				<div className={classNames(style["header-item"], style.hash)}>
-					<span>Hash</span>
-				</div>
-				<div
-					className={classNames(style["header-item"], style.message)}
-				>
-					<span>Message</span>
-				</div>
-				<div
-					className={classNames(
-						style["header-item"],
-						style["author-name"]
-					)}
-				>
-					<span>Author</span>
-					<VSCodeButton appearance="icon" onClick={onFilterAuthor}>
-						<span className="codicon codicon-filter"></span>
-					</VSCodeButton>
-				</div>
-				<div
-					className={classNames(
-						style["header-item"],
-						style["commit-date"]
-					)}
-				>
-					<span>Date</span>
-				</div>
+				{columns.map(
+					(
+						{ id, label, filterable, hasDivider, size, dragBind },
+						index
+					) => (
+						<div
+							key={id}
+							className={classNames(style["header-item"])}
+							style={{
+								width: `${size}px`,
+							}}
+						>
+							{hasDivider && (
+								<div
+									{...dragBind(index)}
+									className={style.divider}
+								/>
+							)}
+							<span>{label}</span>
+							{filterable && (
+								<VSCodeButton
+									appearance="icon"
+									onClick={onFilterAuthor}
+								>
+									<span className="codicon codicon-filter"></span>
+								</VSCodeButton>
+							)}
+						</div>
+					)
+				)}
 			</div>
 			<div className={style["commits-area"]}>
 				<PickableList
-					list={commits.map((commit) => ({
-						id: commit.hash,
-						content: (
-							<div className={style.commit}>
-								<span className={style.graph}>
-									<GitGraph data={commit.graph!} />
+					list={commits}
+					keyProp="hash"
+					itemRender={(commit: Commit) => (
+						<div className={style.commit}>
+							{columns.map(({ id, size, transformer }) => (
+								<span
+									style={{
+										width: `${size}px`,
+									}}
+									key={id}
+								>
+									{transformer(commit)}
 								</span>
-								<span className={style.hash}>
-									{commit.hash.slice(0, 6)}
-								</span>
-								<span className={style.message}>
-									{commit.message}
-								</span>
-								<span className={style["author-name"]}>
-									{commit.authorName}
-								</span>
-								<span className={style["commit-date"]}>
-									{commit.commitDate}
-								</span>
-							</div>
-						),
-					}))}
+							))}
+						</div>
+					)}
 					size={commitsCount}
 					onPick={(ids) => diff(ids)}
 				/>
 			</div>
+		</>
+	);
+};
+
+const CommitsTable: FC = () => {
+	const [ref, { width }] = useMeasure<HTMLDivElement>();
+
+	return (
+		<div ref={ref} className={style.container}>
+			{width && <CommitsTableInner totalWidth={width} />}
 		</div>
 	);
 };

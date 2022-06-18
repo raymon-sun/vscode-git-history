@@ -19,7 +19,6 @@ interface Props<T> {
 	onPick?: (ids: Id[]) => void;
 }
 
-// TODO: make Record<string,string> to generic
 const PickableList = <T extends Record<string, any>>(
 	props: Props<T> & { children?: ReactNode }
 ) => {

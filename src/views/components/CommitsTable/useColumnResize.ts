@@ -1,5 +1,5 @@
 import { useDrag } from "@use-gesture/react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { sum } from "lodash";
 
 import { IHeader } from "./constants";
@@ -14,16 +14,24 @@ export function useColumnResize(
 		dragBind: ReturnType<typeof useDrag>;
 	})[];
 } {
-	const [sizes, setSizes] = useState(getSizes(columns, totalWidth));
-	const [draggingSizes, setDraggingSizes] = useState(sizes);
+	const sizes = useMemo(
+		() => getSizes(columns, totalWidth),
+		[columns, totalWidth]
+	);
+	const [dragStartSizes, setDragStartSizes] = useState(sizes);
+	const [realtimeSizes, setRealTimeSizes] = useState(sizes);
+
+	useEffect(() => {
+		setRealTimeSizes(sizes);
+	}, [sizes]);
 
 	const dragBind = useDrag(({ type, movement: [mx], args: [index] }) => {
 		if (type === "pointerdown") {
-			setSizes(draggingSizes);
+			setDragStartSizes(realtimeSizes);
 			return;
 		}
 
-		const newSizes = [...sizes];
+		const newSizes = [...dragStartSizes];
 		newSizes[index] = newSizes[index] - mx;
 		newSizes[index - 1] = newSizes[index - 1] + mx;
 
@@ -31,14 +39,14 @@ export function useColumnResize(
 			newSizes[index] < columns[index].minWidth ||
 			newSizes[index - 1] < columns[index - 1].minWidth;
 
-		!isExceedSize && setDraggingSizes(newSizes);
+		!isExceedSize && setRealTimeSizes(newSizes);
 	});
 
 	return {
 		columns: columns.map((column, index) => ({
 			...column,
 			hasDivider: index !== 0,
-			size: draggingSizes[index],
+			size: realtimeSizes[index],
 			dragBind,
 		})),
 	};

@@ -47,8 +47,8 @@ export const HEADERS: IHeader[] = [
 	{
 		id: "date",
 		label: "Date/Time",
-		width: 144,
-		minWidth: 144,
+		width: 164,
+		minWidth: 164,
 		transformer: (commit) => commit.commitDate,
 	},
 ];

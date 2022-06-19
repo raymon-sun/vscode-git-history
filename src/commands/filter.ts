@@ -23,8 +23,6 @@ export function getFilterCommandsDisposable() {
 					title: "Authors Select",
 					placeHolder: "Input author name here",
 					canPickMany: true,
-					onDidSelectItem: (item) =>
-						window.showInformationMessage(`Focus ${item}`),
 				}
 			);
 

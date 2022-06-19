@@ -1,23 +1,12 @@
+body {
+	padding: 0;
+	color: var(--vscode-foreground);
+}
+
 #root {
 	height: 100vh;
-	color: var(--vscode-foreground);
 
 	* {
 		box-sizing: border-box;
-	}
-
-	input {
-		height: 26px;
-		padding: 4px;
-		padding-left: 8px;
-		border: none;
-		outline: 1px solid var(--vscode-input-background);
-		background-color: var(--vscode-input-background);
-		color: var(--vscode-foreground);
-
-		&:focus {
-			outline: none;
-			outline-offset: -1px;
-		}
 	}
 }

@@ -2,12 +2,17 @@
 	overflow: overlay !important;
 	height: 100%;
 	user-select: none;
+
+	// Display left and right outline at picked item
+	padding: 1px;
 }
 
 .item {
 	width: 100%;
 
 	&.picked {
-		background-color: var(--vscode-list-highlightForeground);
+		background-color: var(--vscode-list-activeSelectionBackground);
+		color: var(--vscode-list-activeSelectionForeground);
+		outline: 1px solid var(--vscode-list-focusOutline);
 	}
 }

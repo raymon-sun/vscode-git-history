@@ -85,7 +85,13 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 									appearance="icon"
 									onClick={onFilterAuthor}
 								>
-									<span className="codicon codicon-filter"></span>
+									<span
+										className={`codicon codicon-filter${
+											options.authors?.length
+												? "-filled"
+												: ""
+										}`}
+									/>
 								</VSCodeButton>
 							)}
 						</div>

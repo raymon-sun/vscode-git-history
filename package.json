@@ -1,7 +1,7 @@
 {
 	"name": "vscode-git-cruise",
-	"displayName": "Git Cruise",
-	"description": "view changes between multiple commits",
+	"displayName": "Git Log",
+	"description": "git log panel",
 	"keywords": [
 		"git",
 		"log",
@@ -11,7 +11,7 @@
 		"graph",
 		"branch"
 	],
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-cruise",

@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 
 import type { Commit } from "../../../git/commit";
-import type { BatchedCommits } from "../../../git/types";
+import type { BatchedCommits, LogOptions } from "../../../git/types";
 
 export function useBatchCommits() {
 	const [commits, _setCommits] = useState<Commit[]>([]);
@@ -10,10 +10,17 @@ export function useBatchCommits() {
 		commitsRef.current = commits;
 		_setCommits(commits);
 	};
+	const [options, setOptions] = useState<LogOptions>({});
 	const [commitsCount, setCommitsCount] = useState<number>(0);
 
 	const setBatchedCommits = useCallback((batchedCommits: BatchedCommits) => {
-		const { commits: newCommits, batchNumber, totalCount } = batchedCommits;
+		const {
+			commits: newCommits,
+			batchNumber,
+			totalCount,
+			options,
+		} = batchedCommits;
+		setOptions(options);
 		setCommitsCount(totalCount);
 		setCommits(
 			batchNumber === 0
@@ -22,5 +29,5 @@ export function useBatchCommits() {
 		);
 	}, []);
 
-	return { commits, commitsCount, setBatchedCommits };
+	return { commits, commitsCount, options, setBatchedCommits };
 }

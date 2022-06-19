@@ -1,4 +1,4 @@
-import { FC, useCallback, useContext, useEffect } from "react";
+import { FC, useCallback, useContext, useEffect, useMemo } from "react";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { useMeasure } from "react-use";
 
@@ -18,11 +18,13 @@ import { HEADERS } from "./constants";
 
 import style from "./index.module.scss";
 
+const GRAPH_COLUMN_ID = "graph";
+
 const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const channel = useContext(ChannelContext)!;
 
-	const { columns } = useColumnResize(HEADERS, totalWidth);
-	const { commits, commitsCount, setBatchedCommits } = useBatchCommits();
+	const { commits, commitsCount, options, setBatchedCommits } =
+		useBatchCommits();
 
 	function diff(sortedRefs: string[]) {
 		channel.viewChanges(sortedRefs);
@@ -39,6 +41,17 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 			setBatchedCommits(batchedCommits)
 		);
 	}, [channel, setBatchedCommits]);
+
+	const headers = useMemo(() => {
+		const { authors } = options;
+		if (authors?.length) {
+			return HEADERS.filter(({ id }) => id !== GRAPH_COLUMN_ID);
+		}
+
+		return HEADERS;
+	}, [options]);
+
+	const { columns } = useColumnResize(headers, totalWidth);
 
 	useEffect(() => {
 		subscribeSwitcher();

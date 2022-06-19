@@ -12,8 +12,13 @@ export default function App() {
 	const [isRepoInitialized, setIsRepoInitialized] = useState(false);
 
 	useEffect(() => {
-		channel.onReposChange(() => {
-			setIsRepoInitialized(true);
+		channel.getDefaultRepository().then((defaultRepo) => {
+			console.log(defaultRepo);
+			setIsRepoInitialized(!!defaultRepo);
+		});
+
+		channel.onReposChange((repos) => {
+			setIsRepoInitialized(!!repos?.length);
 		});
 	}, [channel]);
 

@@ -1,7 +1,7 @@
 {
 	"name": "vscode-git-cruise",
 	"displayName": "Git Log",
-	"description": "git log panel",
+	"description": "Git log panel",
 	"keywords": [
 		"git",
 		"log",
@@ -10,7 +10,7 @@
 		"graph",
 		"branch"
 	],
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-log",

@@ -1,4 +1,4 @@
-# git-cruise README
+# git-log README
 
 A VScode Extension for merging and listing the changes of multiple commits
 

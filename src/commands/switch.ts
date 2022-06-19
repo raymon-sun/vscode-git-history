@@ -5,10 +5,10 @@ import { GitService } from "../git/service";
 import { Source } from "../views/data/source";
 import state from "../views/data/state";
 
-export const RESET_COMMAND = "git-cruise.log.reset";
-export const REFRESH_COMMAND = "git-cruise.log.refresh";
-export const SWITCH_REPO_COMMAND = "git-cruise.log.switch.repo";
-export const SWITCH_BRANCH_COMMAND = "git-cruise.log.switch.branch";
+export const RESET_COMMAND = "git-log.log.reset";
+export const REFRESH_COMMAND = "git-log.log.refresh";
+export const SWITCH_REPO_COMMAND = "git-log.log.switch.repo";
+export const SWITCH_BRANCH_COMMAND = "git-log.log.switch.branch";
 
 export function getSwitchCommandsDisposable() {
 	const gitService = container.get(GitService);

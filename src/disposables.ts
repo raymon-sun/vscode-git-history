@@ -30,7 +30,7 @@ export class DisposableController {
 				this.versionedFileProvider
 			),
 			window.registerTreeDataProvider(
-				"git-cruise.files",
+				"git-log.files",
 				this.fileTreeProvider
 			),
 			window.registerFileDecorationProvider(

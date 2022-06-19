@@ -6,7 +6,6 @@
 		"git",
 		"log",
 		"diff",
-		"cruise",
 		"history",
 		"graph",
 		"branch"
@@ -14,7 +13,7 @@
 	"version": "0.0.6",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
-	"repository": "https://github.com/raymon-sun/vscode-git-cruise",
+	"repository": "https://github.com/raymon-sun/vscode-git-log",
 	"publisher": "GuodongSun",
 	"engines": {
 		"vscode": "^1.67.0"
@@ -23,30 +22,30 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:git-cruise.log"
+		"onView:git-log.log"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"viewsContainers": {
 			"panel": [
 				{
-					"id": "gitCruiseLog",
+					"id": "gitLogView",
 					"title": "Git",
 					"icon": "assets/icons/files.svg"
 				}
 			]
 		},
 		"views": {
-			"gitCruiseLog": [
+			"gitLogView": [
 				{
 					"type": "webview",
-					"id": "git-cruise.log",
+					"id": "git-log.log",
 					"name": "Log",
 					"contextualTitle": "Git",
 					"visibility": "visible"
 				},
 				{
-					"id": "git-cruise.files",
+					"id": "git-log.files",
 					"name": "Changes",
 					"icon": "assets/icons/files.svg",
 					"contextualTitle": "Git"
@@ -55,38 +54,38 @@
 		},
 		"commands": [
 			{
-				"category": "Git Cruise",
-				"command": "git-cruise.log",
+				"category": "Git Log",
+				"command": "git-log.log",
 				"title": "Log",
 				"icon": "$(list-flat)"
 			},
 			{
-				"category": "Git Cruise",
-				"command": "git-cruise.log.reset",
+				"category": "Git Log",
+				"command": "git-log.log.reset",
 				"title": "Reset Log",
 				"icon": "$(discard)"
 			},
 			{
-				"category": "Git Cruise",
-				"command": "git-cruise.log.refresh",
+				"category": "Git Log",
+				"command": "git-log.log.refresh",
 				"title": "Refresh Log",
 				"icon": "$(refresh)"
 			},
 			{
-				"category": "Git Cruise",
-				"command": "git-cruise.log.switch.repo",
+				"category": "Git Log",
+				"command": "git-log.log.switch.repo",
 				"title": "Switch Repository",
 				"icon": "$(repo)"
 			},
 			{
-				"category": "Git Cruise",
-				"command": "git-cruise.log.switch.branch",
+				"category": "Git Log",
+				"command": "git-log.log.switch.branch",
 				"title": "Switch Repository",
 				"icon": "$(git-branch)"
 			},
 			{
-				"category": "Git Cruise",
-				"command": "git-cruise.log.filter",
+				"category": "Git Log",
+				"command": "git-log.log.filter",
 				"title": "Git Log",
 				"icon": "$(filter)"
 			}
@@ -94,23 +93,23 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "git-cruise.log.refresh",
-					"when": "view =~ /git-cruise.log/",
+					"command": "git-log.log.refresh",
+					"when": "view =~ /git-log.log/",
 					"group": "navigation@4"
 				},
 				{
-					"command": "git-cruise.log.reset",
-					"when": "view =~ /git-cruise.log/",
+					"command": "git-log.log.reset",
+					"when": "view =~ /git-log.log/",
 					"group": "navigation@4"
 				},
 				{
-					"command": "git-cruise.log.switch.repo",
-					"when": "view =~ /git-cruise.log/",
+					"command": "git-log.log.switch.repo",
+					"when": "view =~ /git-log.log/",
 					"group": "navigation@4"
 				},
 				{
-					"command": "git-cruise.log.switch.branch",
-					"when": "view =~ /git-cruise.log/",
+					"command": "git-log.log.switch.branch",
+					"when": "view =~ /git-log.log/",
 					"group": "navigation@4"
 				}
 			]

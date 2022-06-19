@@ -47,7 +47,7 @@ export class WebviewProvider implements WebviewViewProvider {
 			<head>
 				<meta charset="UTF-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>Git Cruise Log</title>
+				<title>Git Log</title>
 			</head>
 			<body>
 				<div id="root"></div>

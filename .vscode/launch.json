@@ -14,7 +14,7 @@
 			"preLaunchTask": "npm: watch",
 			"sourceMaps": true,
 			"sourceMapPathOverrides": {
-				"webpack://vscode-git-cruise/./src/*": "${workspaceRoot}/src/*"
+				"webpack://vscode-git-log/./src/*": "${workspaceRoot}/src/*"
 			}
 		},
 		{

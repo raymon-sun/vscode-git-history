@@ -5,7 +5,7 @@ import { GitService } from "../git/service";
 
 import state from "../views/data/state";
 
-export const FILTER_AUTHOR_COMMAND = "git-cruise.log.filter.author";
+export const FILTER_AUTHOR_COMMAND = "git-log.log.filter.author";
 
 export function getFilterCommandsDisposable() {
 	const gitService = container.get(GitService);

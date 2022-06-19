@@ -13,12 +13,11 @@ export default function App() {
 
 	useEffect(() => {
 		channel.getDefaultRepository().then((defaultRepo) => {
-			console.log(defaultRepo);
-			setIsRepoInitialized(!!defaultRepo);
+			!!defaultRepo && setIsRepoInitialized(true);
 		});
 
 		channel.onReposChange((repos) => {
-			setIsRepoInitialized(!!repos?.length);
+			!!repos?.length && setIsRepoInitialized(true);
 		});
 	}, [channel]);
 

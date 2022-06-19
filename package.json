@@ -10,7 +10,7 @@
 		"graph",
 		"branch"
 	],
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-log",
@@ -80,7 +80,7 @@
 			{
 				"category": "Git Log",
 				"command": "git-log.log.switch.branch",
-				"title": "Switch Repository",
+				"title": "Switch Branch",
 				"icon": "$(git-branch)"
 			},
 			{

@@ -8,9 +8,8 @@ An VScode extension to view git log and changes between multiple commits
 
 ## Release Notes
 
-### 0.0.8
+### 0.1.0
 
-you can view the merged changes of multiple commits and diff with one of them
+You can view the merged changes of multiple commits and diff with one of them.
 
 ---
-

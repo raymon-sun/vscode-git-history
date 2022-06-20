@@ -15,7 +15,10 @@ import { BatchedCommits, LogOptions } from "../../git/types";
 
 import { RESET_COMMAND } from "../../commands/switch";
 
-import { FILTER_AUTHOR_COMMAND } from "../../commands/filter";
+import {
+	FILTER_AUTHOR_COMMAND,
+	FILTER_MESSAGE_COMMAND,
+} from "../../commands/filter";
 
 import { link } from "./link";
 import state from "./state";
@@ -60,6 +63,14 @@ export class Source {
 	@link("promise")
 	resetLog() {
 		return commands.executeCommand<string>(RESET_COMMAND);
+	}
+
+	@link("subscription")
+	async filterMessage(handler: (batchedCommits: BatchedCommits) => void) {
+		state.logOptions.keyword = await commands.executeCommand<string>(
+			FILTER_MESSAGE_COMMAND
+		);
+		this.getCommits(handler, state.logOptions);
 	}
 
 	@link("subscription")

@@ -2,8 +2,6 @@ import { FC, useCallback, useContext, useEffect, useMemo } from "react";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { useMeasure } from "react-use";
 
-import classNames from "classnames";
-
 import { BatchedCommits } from "../../../git/types";
 
 import PickableList from "../PickableList";
@@ -36,16 +34,28 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		);
 	}, [channel, setBatchedCommits]);
 
-	const onFilterAuthor = useCallback(() => {
-		channel.filterAuthor((batchedCommits: BatchedCommits) =>
-			setBatchedCommits(batchedCommits)
-		);
-	}, [channel, setBatchedCommits]);
+	const onFilter = useCallback(
+		(prop: string) => {
+			switch (prop) {
+				case "message":
+					channel.filterMessage((batchedCommits: BatchedCommits) =>
+						setBatchedCommits(batchedCommits)
+					);
+					break;
+				case "author":
+					channel.filterAuthor((batchedCommits: BatchedCommits) =>
+						setBatchedCommits(batchedCommits)
+					);
+					break;
+			}
+		},
+		[channel, setBatchedCommits]
+	);
 
 	const headers = useMemo(() => {
-		const { authors } = options;
-		if (authors?.length) {
-			return HEADERS.filter(({ id }) => id !== GRAPH_COLUMN_ID);
+		const { authors, keyword } = options;
+		if (authors?.length || keyword) {
+			return HEADERS.filter(({ prop }) => prop !== GRAPH_COLUMN_ID);
 		}
 
 		return HEADERS;
@@ -63,12 +73,20 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 			<div className={style["commit-headers"]}>
 				{columns.map(
 					(
-						{ id, label, filterable, hasDivider, size, dragBind },
+						{
+							prop,
+							label,
+							filterable,
+							filterLogOption,
+							hasDivider,
+							size,
+							dragBind,
+						},
 						index
 					) => (
 						<div
-							key={id}
-							className={classNames(style["header-item"])}
+							key={prop}
+							className={style["header-item"]}
 							style={{
 								width: `${size}px`,
 							}}
@@ -83,11 +101,15 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 							{filterable && (
 								<VSCodeButton
 									appearance="icon"
-									onClick={onFilterAuthor}
+									onClick={() => onFilter(prop)}
 								>
 									<span
 										className={`codicon codicon-filter${
-											options.authors?.length
+											options[
+												filterLogOption as
+													| "authors"
+													| "keyword"
+											]?.length
 												? "-filled"
 												: ""
 										}`}
@@ -104,12 +126,12 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 					keyProp="hash"
 					itemRender={(commit: Commit) => (
 						<div className={style.commit}>
-							{columns.map(({ id, size, transformer }) => (
+							{columns.map(({ prop, size, transformer }) => (
 								<span
 									style={{
 										width: `${size}px`,
 									}}
-									key={id}
+									key={prop}
 								>
 									{transformer(commit)}
 								</span>

@@ -10,7 +10,7 @@
 		"graph",
 		"branch"
 	],
-	"version": "0.0.9",
+	"version": "0.1.0",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-log",

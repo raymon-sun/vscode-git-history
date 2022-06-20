@@ -1,4 +1,5 @@
 $col-divider-width: 6px;
+$col-padding-right: 8px;
 
 .container {
 	display: flex;
@@ -15,6 +16,7 @@ $col-divider-width: 6px;
 	.header-item {
 		display: flex;
 		align-items: center;
+		padding-right: $col-padding-right;
 
 		&:first-child {
 			padding-left: $col-divider-width;
@@ -28,6 +30,7 @@ $col-divider-width: 6px;
 		}
 
 		> span {
+			flex: 1;
 			margin-right: 8px;
 		}
 	}
@@ -50,7 +53,7 @@ $col-divider-width: 6px;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
-			padding-right: 8px;
+			padding-right: $col-padding-right;
 		}
 	}
 }

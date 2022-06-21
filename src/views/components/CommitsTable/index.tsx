@@ -66,7 +66,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	useEffect(() => {
 		subscribeSwitcher();
 		channel.resetLog();
-	}, [channel, setBatchedCommits, subscribeSwitcher]);
+	}, [channel, subscribeSwitcher]);
 
 	return (
 		<>
@@ -152,7 +152,7 @@ const CommitsTable: FC = () => {
 
 	return (
 		<div ref={ref} className={style.container}>
-			{width && <CommitsTableInner totalWidth={width} />}
+			<CommitsTableInner totalWidth={width} />
 		</div>
 	);
 };

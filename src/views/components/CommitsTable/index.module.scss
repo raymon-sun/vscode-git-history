@@ -50,6 +50,10 @@ $col-padding-right: 8px;
 				padding-left: $col-divider-width;
 			}
 
+			&[data-prop="graph"] {
+				text-overflow: unset;
+			}
+
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;

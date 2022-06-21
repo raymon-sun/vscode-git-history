@@ -131,6 +131,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 									style={{
 										width: `${size}px`,
 									}}
+									data-prop={prop}
 									key={prop}
 								>
 									{transformer(commit)}

@@ -2,9 +2,10 @@ import { Status } from "../types";
 
 import { ChangeItem } from "./tree";
 
-export function mergeStatus(changeStack: ChangeItem[]) {
-	const firstChangeItem = changeStack[0];
-	const lastChangeItem = changeStack[changeStack.length - 1];
+export function mergeStatus(
+	firstChangeItem: ChangeItem,
+	lastChangeItem: ChangeItem
+) {
 	if (lastChangeItem.isDeletedByRename && !lastChangeItem.show) {
 		return;
 	}

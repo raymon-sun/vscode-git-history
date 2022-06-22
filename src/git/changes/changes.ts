@@ -4,6 +4,8 @@ import { Uri } from "vscode";
 
 import { Change, Status } from "../types";
 
+import type { ChangeItem } from "./tree";
+
 export function parseGitChanges(repoPath: string, gitResult: string) {
 	const entries = gitResult.split("\x00");
 	let index = 0;
@@ -76,4 +78,16 @@ export function parseGitChanges(repoPath: string, gitResult: string) {
 	}
 
 	return result;
+}
+
+export function getChangePair(
+	originalChangeStack: ChangeItem[] = [],
+	changeStack: ChangeItem[]
+) {
+	const originalChangeItem = originalChangeStack.find(({ change }) => change);
+
+	return [
+		originalChangeItem || changeStack[0],
+		changeStack[changeStack.length - 1],
+	];
 }

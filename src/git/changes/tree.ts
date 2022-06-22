@@ -4,6 +4,8 @@ import { Uri } from "vscode";
 
 import { Change, Status } from "../types";
 
+import { getChangePair } from "./changes";
+
 import { mergeStatus } from "./status";
 
 export type ChangesCollection = { ref: string; changes: Change[] }[];
@@ -46,7 +48,12 @@ export function resolveChangesCollection(
 
 	let fileTree: PathCollection = {};
 	Object.entries(pathMap).forEach(([path, node]) => {
-		const mergedStatus = mergeStatus(node.changeStack);
+		const { originalChangeStack, changeStack } = node;
+		const [firstChangeItem, lastChangeItem] = getChangePair(
+			originalChangeStack,
+			changeStack
+		);
+		const mergedStatus = mergeStatus(firstChangeItem, lastChangeItem);
 		if (!mergedStatus) {
 			delete pathMap[path];
 			return;

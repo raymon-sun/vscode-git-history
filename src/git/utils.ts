@@ -1,5 +1,7 @@
 import { EXTENSION_SCHEME } from "../constants";
 
+import { getChangePair } from "./changes/changes";
+
 import { FileNode, FolderNode, PathType } from "./changes/tree";
 
 import { Change, Status } from "./types";
@@ -8,13 +10,10 @@ export type ChangesCollection = { ref: string; changes: Change[] }[];
 
 export function getDiffUriPair(node: FileNode) {
 	const { uri, status, originalChangeStack, changeStack } = node;
-	const originalChangeItem = originalChangeStack?.find(
-		({ change }) => change
+	const [{ change: preChange, ref: preRef }, { ref: curRef }] = getChangePair(
+		originalChangeStack,
+		changeStack
 	);
-
-	const { change: preChange, ref: preRef } =
-		originalChangeItem || changeStack[0];
-	const { ref: curRef } = changeStack[changeStack.length - 1];
 
 	const preQuery = {
 		isFileExist: status !== Status.INDEX_ADDED,

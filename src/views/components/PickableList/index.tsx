@@ -5,6 +5,8 @@ import classNames from "classnames";
 
 import { useVirtual } from "react-virtual";
 
+import { checkScrollBarVisible } from "../../utils/element";
+
 import { useIsKeyPressed } from "./event";
 
 import style from "./index.module.scss";
@@ -18,6 +20,9 @@ interface Props<T> {
 	size?: number;
 	onPick?: (ids: Id[]) => void;
 }
+
+const INDEX_PLACEHOLDER = -1;
+const SCROLL_BAR_WIDTH = 10;
 
 const PickableList = <T extends Record<string, any>>(
 	props: Props<T> & { children?: ReactNode }
@@ -35,7 +40,8 @@ const PickableList = <T extends Record<string, any>>(
 	const [pickedItems, setPickedItems] = useState<Record<Id, number>>({});
 	const [containerRect, setContainerRect] = useState<DOMRect | undefined>();
 	const [itemYs, setItemYs] = useState<number[]>([]);
-	const [dragStartIndex, setDragStartIndex] = useState<number>(-1);
+	const [dragStartIndex, setDragStartIndex] =
+		useState<number>(INDEX_PLACEHOLDER);
 	const { checkKeyIsPressed } = useIsKeyPressed();
 
 	useEffect(() => {
@@ -51,6 +57,17 @@ const PickableList = <T extends Record<string, any>>(
 				: {};
 		const firstItemIndex = rowVirtualizer.virtualItems[0].index;
 		if (type === "pointerdown") {
+			const scrollContainerEl = scrollContainerRef.current!;
+			const isPointerOnScrollBar =
+				scrollContainerEl.getBoundingClientRect().width - x <=
+				SCROLL_BAR_WIDTH;
+			if (
+				checkScrollBarVisible(scrollContainerEl) &&
+				isPointerOnScrollBar
+			) {
+				return;
+			}
+
 			const realTimeContainerRect =
 				dragContainerRef.current?.getBoundingClientRect();
 			const realTimeItemYs = Array.from(
@@ -71,6 +88,11 @@ const PickableList = <T extends Record<string, any>>(
 		}
 
 		if (type === "pointerup") {
+			if (dragStartIndex === INDEX_PLACEHOLDER) {
+				return;
+			}
+
+			setDragStartIndex(INDEX_PLACEHOLDER);
 			onPick &&
 				onPick(
 					Object.keys(pickedItems!).sort(

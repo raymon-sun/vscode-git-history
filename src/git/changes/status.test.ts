@@ -75,7 +75,7 @@ suite("#mergeStatus()", () => {
 				isDeletedByRename: false,
 			},
 		];
-		equal(mergeStatus(CHANGE_STACK), undefined);
+		equal(mergeStatus(CHANGE_STACK[0], CHANGE_STACK[2]), undefined);
 	});
 
 	test("should merge the status as deleted when deleted at last", () => {
@@ -99,7 +99,7 @@ suite("#mergeStatus()", () => {
 				},
 			},
 		];
-		equal(mergeStatus(CHANGE_STACK), Status.DELETED);
+		equal(mergeStatus(CHANGE_STACK[0], CHANGE_STACK[1]), Status.DELETED);
 	});
 
 	test("should merge the status as added when added at first", () => {
@@ -123,7 +123,10 @@ suite("#mergeStatus()", () => {
 				},
 			},
 		];
-		equal(mergeStatus(CHANGE_STACK), Status.INDEX_ADDED);
+		equal(
+			mergeStatus(CHANGE_STACK[0], CHANGE_STACK[1]),
+			Status.INDEX_ADDED
+		);
 	});
 
 	test("should merge the status as modified when just modified", () => {
@@ -147,7 +150,7 @@ suite("#mergeStatus()", () => {
 				},
 			},
 		];
-		equal(mergeStatus(CHANGE_STACK), Status.MODIFIED);
+		equal(mergeStatus(CHANGE_STACK[0], CHANGE_STACK[1]), Status.MODIFIED);
 	});
 
 	test("should merge the status as deleted when deleted by rename at last", () => {
@@ -173,7 +176,7 @@ suite("#mergeStatus()", () => {
 				show: false,
 			},
 		];
-		equal(mergeStatus(CHANGE_STACK), undefined);
+		equal(mergeStatus(CHANGE_STACK[0], CHANGE_STACK[1]), undefined);
 	});
 
 	test("should merge the status as deleted when deleted by rename at last but show", () => {
@@ -200,6 +203,6 @@ suite("#mergeStatus()", () => {
 				show: true,
 			},
 		];
-		equal(mergeStatus(CHANGE_STACK), Status.DELETED);
+		equal(mergeStatus(CHANGE_STACK[0], CHANGE_STACK[1]), Status.DELETED);
 	});
 });

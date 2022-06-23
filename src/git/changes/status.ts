@@ -3,16 +3,21 @@ import { Status } from "../types";
 import { ChangeItem } from "./tree";
 
 export function mergeStatus(
-	firstChangeItem: ChangeItem,
-	lastChangeItem: ChangeItem
+	{ change: firstChange }: ChangeItem,
+	{ change: lastChange, show }: ChangeItem
 ) {
-	if (lastChangeItem.isDeletedByRename && !lastChangeItem.show) {
+	if (show === false) {
 		return;
 	}
 
-	const { status: firstStatus = Status.DELETED } =
-		firstChangeItem.change || {};
-	const { status: lastStatus = Status.DELETED } = lastChangeItem.change || {};
+	const {
+		status: firstStatus = Status.DELETED,
+		originalUri: { path: firstPath },
+	} = firstChange || {};
+	const {
+		status: lastStatus = Status.DELETED,
+		renameUri: { path: lastPath } = lastChange.originalUri,
+	} = lastChange || {};
 
 	const firstFileExistStatus = getFileExistStatus(firstStatus);
 	const lastFileExistStatus = getFileExistStatus(lastStatus);
@@ -21,7 +26,7 @@ export function mergeStatus(
 		firstFileExistStatus?.isExistBefore &&
 		lastFileExistStatus?.isExistAfter
 	) {
-		return Status.MODIFIED;
+		return firstPath === lastPath ? Status.MODIFIED : Status.INDEX_RENAMED;
 	}
 
 	if (

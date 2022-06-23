@@ -42,9 +42,7 @@ export class FileTreeProvider implements TreeDataProvider<TreeItem> {
 				element ? (element.children as PathCollection)! : treeData
 			)
 				.sort(compareFileTreeNode)
-				.map(([name, props]) => {
-					return new Path(name, props);
-				})
+				.map(([name, props]) => new Path(name, props))
 		);
 	}
 

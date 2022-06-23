@@ -4,9 +4,9 @@ import { ChangeItem } from "./tree";
 
 export function mergeStatus(
 	{ change: firstChange }: ChangeItem,
-	{ change: lastChange, show }: ChangeItem
+	{ change: lastChange, hidden }: ChangeItem
 ) {
-	if (show === false) {
+	if (hidden) {
 		return;
 	}
 

@@ -173,7 +173,7 @@ suite("#mergeStatus()", () => {
 					status: Status.DELETED,
 				},
 				isDeletedByRename: true,
-				show: false,
+				hidden: true,
 			},
 		];
 		equal(mergeStatus(CHANGE_STACK[0], CHANGE_STACK[1]), undefined);
@@ -200,7 +200,7 @@ suite("#mergeStatus()", () => {
 					status: Status.DELETED,
 				},
 				isDeletedByRename: true,
-				show: true,
+				hidden: false,
 			},
 		];
 		equal(mergeStatus(CHANGE_STACK[0], CHANGE_STACK[1]), Status.DELETED);

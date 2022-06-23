@@ -82,7 +82,7 @@ suite("#getPathMap()", () => {
 			"/src/app.ts"
 		);
 		equal(pathMap["/src/app.ts"].changeStack[0].isDeletedByRename, true);
-		equal(pathMap["/src/app.ts"].changeStack[0].show, false);
+		equal(pathMap["/src/app.ts"].changeStack[0].hidden, true);
 		equal(pathMap["/src/app.ts"].changeStack[1].ref, "1");
 		equal(
 			pathMap["/src/app.ts"].changeStack[1].change.status,
@@ -125,7 +125,7 @@ suite("#getOriginalChangeStackAndUpdateChange()", () => {
 							status: Status.DELETED,
 						},
 						isDeletedByRename: true,
-						show: false,
+						hidden: true,
 					},
 				],
 			},
@@ -142,7 +142,7 @@ suite("#getOriginalChangeStackAndUpdateChange()", () => {
 							status: Status.DELETED,
 						},
 						isDeletedByRename: true,
-						show: false,
+						hidden: true,
 					},
 				],
 				originalChangeStack: [],
@@ -192,7 +192,7 @@ suite("#getOriginalChangeStackAndUpdateChange()", () => {
 			"/assets/enter.svg"
 		);
 		equal(originalChangeStack[0].isDeletedByRename, true);
-		equal(originalChangeStack[0].show, false);
+		equal(originalChangeStack[0].hidden, true);
 
 		equal(originalChangeStack[1].ref, "7");
 		equal(originalChangeStack[1].change.uri.path, "/assets/temp.svg");
@@ -201,7 +201,7 @@ suite("#getOriginalChangeStackAndUpdateChange()", () => {
 			"/assets/enter.svg"
 		);
 		equal(originalChangeStack[1].isDeletedByRename, undefined);
-		equal(originalChangeStack[1].show, undefined);
+		equal(originalChangeStack[1].hidden, undefined);
 
 		equal(originalChangeStack[2].ref, "9");
 		equal(originalChangeStack[2].change.uri.path, "/assets/temp.svg");
@@ -210,6 +210,6 @@ suite("#getOriginalChangeStackAndUpdateChange()", () => {
 			"/assets/temp.svg"
 		);
 		equal(originalChangeStack[2].isDeletedByRename, true);
-		equal(originalChangeStack[2].show, false);
+		equal(originalChangeStack[2].hidden, true);
 	});
 });

@@ -32,7 +32,7 @@ export interface ChangeItem {
 	ref: string;
 	change: Change;
 	isDeletedByRename?: boolean;
-	show?: boolean;
+	hidden?: boolean;
 }
 
 export enum PathType {
@@ -89,7 +89,7 @@ export function getPathMap(changesCollection: ChangesCollection) {
 						ref,
 						change: deleteChange,
 						isDeletedByRename: true,
-						show: false,
+						hidden: true,
 					});
 				} else {
 					pathMap[originalPath] = {
@@ -100,7 +100,7 @@ export function getPathMap(changesCollection: ChangesCollection) {
 								ref,
 								change: deleteChange,
 								isDeletedByRename: true,
-								show: false,
+								hidden: true,
 							},
 						],
 					};
@@ -152,10 +152,10 @@ export function getOriginalChangeStackAndUpdateChange(
 	if (
 		renamedChangeItem.ref === lastOriginalChangeItem.ref &&
 		lastChangeItem.change.status === Status.DELETED &&
-		(!lastChangeItem.isDeletedByRename || lastChangeItem.show)
+		(!lastChangeItem.isDeletedByRename || !lastChangeItem.hidden)
 	) {
-		lastOriginalChangeItem.show = true;
-		lastChangeItem.show = false;
+		lastOriginalChangeItem.hidden = false;
+		lastChangeItem.hidden = true;
 	}
 
 	if (originalChangeStack[0].change.status === Status.INDEX_RENAMED) {

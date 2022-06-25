@@ -69,16 +69,21 @@ export function getSwitchCommandsDisposable() {
 		commands.registerCommand(SWITCH_BRANCH_COMMAND, async () => {
 			const quickPick = window.createQuickPick();
 
-			const items =
+			quickPick.title = "Branch Select";
+			quickPick.placeholder = "Input reference here";
+			quickPick.busy = true;
+
+			quickPick.show();
+
+			const branchItems =
 				((await gitService.getBranches({})) || [])
 					.sort()
 					.map((branch) => ({
 						label: branch,
 					})) || [];
-			quickPick.title = "Branch Select";
-			quickPick.placeholder = "Input reference here";
-			quickPick.items = items;
-			quickPick.activeItems = items.filter(
+
+			quickPick.items = branchItems;
+			quickPick.activeItems = branchItems.filter(
 				({ label }) => label === state.logOptions.ref
 			);
 
@@ -95,7 +100,7 @@ export function getSwitchCommandsDisposable() {
 				quickPick.dispose();
 			});
 
-			quickPick.show();
+			quickPick.busy = false;
 		}),
 	];
 }

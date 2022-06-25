@@ -8,15 +8,16 @@
 		"diff",
 		"history",
 		"graph",
-		"branch"
+		"branch",
+		"scm"
 	],
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-log",
 	"publisher": "GuodongSun",
 	"engines": {
-		"vscode": "^1.67.0"
+		"vscode": "^1.64.0"
 	},
 	"categories": [
 		"Other"

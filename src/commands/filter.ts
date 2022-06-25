@@ -13,7 +13,16 @@ export function getFilterCommandsDisposable() {
 
 	return [
 		commands.registerCommand(FILTER_AUTHOR_COMMAND, async () => {
-			const authors =
+			const quickPick = window.createQuickPick();
+
+			quickPick.title = "Authors Select";
+			quickPick.placeholder = "Input author name here";
+			quickPick.canSelectMany = true;
+			quickPick.busy = true;
+
+			quickPick.show();
+
+			const authorItems =
 				(await gitService.getAuthors(state.logOptions))?.map(
 					({ name }) => ({
 						label: name,
@@ -21,23 +30,18 @@ export function getFilterCommandsDisposable() {
 					})
 				) || [];
 
-			const quickPick = window.createQuickPick();
-
-			quickPick.title = "Authors Select";
-			quickPick.placeholder = "Input author name here";
-			quickPick.canSelectMany = true;
-			quickPick.items = authors;
-			quickPick.selectedItems = authors.filter(({ label }) =>
-				state.logOptions.authors?.includes(label)
-			);
-
 			return new Promise((resolve) => {
 				quickPick.onDidAccept(() => {
 					resolve(quickPick.selectedItems.map(({ label }) => label));
 					quickPick.dispose();
 				});
 
-				quickPick.show();
+				quickPick.items = authorItems;
+				quickPick.selectedItems = authorItems.filter(({ label }) =>
+					state.logOptions.authors?.includes(label)
+				);
+
+				quickPick.busy = false;
 			});
 		}),
 		commands.registerCommand(FILTER_MESSAGE_COMMAND, async () => {

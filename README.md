@@ -1,15 +1,33 @@
-# Git Log README
+# Git Log
 
-An VScode extension to view git log and changes between multiple commits
+Visual git log panel with graph
 
 ## Features
 
-![Usage](./assets/usage/main.png)
+![Usage](./assets/usage/git-log-use-1.gif)
+
+![Usage](./assets/usage/git-log-use-2.gif)
 
 ## Release Notes
 
+### 0.1.2
+
+Optimize filter interaction experience
+
 ### 0.1.1
 
-You can view the merged changes of multiple commits and diff with one of them.
+Fix issues
+
+### 0.1.0
+
+Support for commit graphics
+
+### 0.0.5
+
+Log and changes views are moved to panel by default
+
+### 0.0.1
+
+You can view the merged changes of multiple commits by dragging
 
 ---

@@ -1,7 +1,7 @@
 {
 	"name": "vscode-git-cruise",
 	"displayName": "Git Log",
-	"description": "Git log panel",
+	"description": "New git console in your VScode",
 	"keywords": [
 		"git",
 		"log",
@@ -20,7 +20,8 @@
 		"vscode": "^1.64.0"
 	},
 	"categories": [
-		"Other"
+		"Other",
+		"SCM Providers"
 	],
 	"activationEvents": [
 		"onView:git-log.log"

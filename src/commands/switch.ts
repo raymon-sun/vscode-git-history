@@ -95,7 +95,9 @@ export function getSwitchCommandsDisposable() {
 					return;
 				}
 
-				state.logOptions = { ref };
+				// retain repo
+				const { repo } = state.logOptions;
+				state.logOptions = { repo, ref };
 				source.getCommits(switchSubscriber, state.logOptions);
 				quickPick.dispose();
 			});

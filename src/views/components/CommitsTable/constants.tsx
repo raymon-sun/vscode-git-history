@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { Commit } from "../../../git/commit";
 import GitGraph from "../GitGraph";
+import GitTag from "../GitTag";
 
 type FillRemainWidth = "fill";
 
@@ -30,7 +31,14 @@ export const HEADERS: IHeader[] = [
 		minWidth: 180,
 		filterable: true,
 		filterLogOption: "keyword",
-		transformer: (commit) => commit.message,
+		transformer: ({ refNames, message, graph }) => (
+			<>
+				{refNames.map((refName) => (
+					<GitTag refName={refName} color={graph!.commitColor} />
+				))}
+				<span title={message}>{message}</span>
+			</>
+		),
 	},
 	{
 		prop: "hash",

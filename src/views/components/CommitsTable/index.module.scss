@@ -44,8 +44,21 @@ $col-padding-right: 8px;
 		cursor: pointer;
 		display: flex;
 		line-height: 22px;
+		height: 22px;
 
 		> span {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding-right: $col-padding-right;
+
+			> span {
+				flex: 1;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
 			&:first-child {
 				padding-left: $col-divider-width;
 			}
@@ -54,10 +67,11 @@ $col-padding-right: 8px;
 				text-overflow: unset;
 			}
 
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			padding-right: $col-padding-right;
+			&[data-prop="message"] {
+				text-overflow: unset;
+				display: flex;
+				align-items: center;
+			}
 		}
 	}
 }

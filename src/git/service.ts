@@ -3,7 +3,7 @@ import simpleGit, { SimpleGit } from "simple-git";
 
 import { EventEmitter, workspace } from "vscode";
 
-import { API } from "../typings/git-extension";
+import { API } from "../typings/scmExtension";
 
 import { getBuiltInGitApi, getGitBinPath } from "./api";
 

@@ -1,6 +1,6 @@
 import { Extension, extensions } from "vscode";
 
-import { GitExtension } from "../typings/git-extension";
+import { GitExtension } from "../typings/scmExtension";
 
 export async function getBuiltInGitApi() {
 	try {

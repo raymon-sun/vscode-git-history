@@ -1,6 +1,6 @@
 import { equal } from "assert";
 
-import { Status } from "../../typings/git-extension";
+import { Status } from "../../typings/scmExtension";
 
 import { parseGitChanges } from "./changes";
 

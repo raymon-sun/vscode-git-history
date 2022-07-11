@@ -9,7 +9,7 @@ import {
 	PathCollection,
 	resolveChangesCollection,
 } from "../../git/changes/tree";
-import { FileTreeProvider } from "../../providers/file-tree";
+import { ChangeTreeDataProvider } from "../../providers/changeTreeDataProvider";
 
 import { BatchedCommits, LogOptions } from "../../git/types";
 
@@ -30,7 +30,7 @@ export class Source {
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
 		private git: GitService,
-		private fileTreeProvider: FileTreeProvider
+		private ChangeTreeDataProvider: ChangeTreeDataProvider
 	) {}
 
 	getSwitchSubscriber() {
@@ -156,6 +156,6 @@ export class Source {
 
 	private updateTreeView(fileTree: PathCollection) {
 		this.context.globalState.update("changedFileTree", fileTree);
-		this.fileTreeProvider.refresh();
+		this.ChangeTreeDataProvider.refresh();
 	}
 }

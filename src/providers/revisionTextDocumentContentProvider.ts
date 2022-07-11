@@ -4,7 +4,9 @@ import { TextDocumentContentProvider, Uri } from "vscode";
 import { GitService } from "../git/service";
 
 @injectable()
-export class VersionedFileProvider implements TextDocumentContentProvider {
+export class RevisionTextDocumentContentProvider
+	implements TextDocumentContentProvider
+{
 	constructor(private git: GitService) {}
 
 	async provideTextDocumentContent(uri: Uri) {

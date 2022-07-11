@@ -21,7 +21,7 @@ import {
 } from "../git/changes/tree";
 
 @injectable()
-export class FileTreeProvider implements TreeDataProvider<TreeItem> {
+export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 	private _onDidChangeTreeData = new EventEmitter<void>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 

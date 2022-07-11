@@ -1,20 +1,20 @@
 import { window, workspace } from "vscode";
 import { injectable } from "inversify";
 
-import { VersionedFileProvider } from "./providers/versioned-file";
-import { FileTreeProvider } from "./providers/file-tree";
-import { GitStatusDecorationProvider } from "./providers/decoration";
+import { RevisionTextDocumentContentProvider } from "./providers/revisionTextDocumentContentProvider";
+import { ChangeTreeDataProvider } from "./providers/changeTreeDataProvider";
+import { GitStatusFileDecorationProvider } from "./providers/gitStatusFileDecorationProvider";
 import { EXTENSION_SCHEME } from "./constants";
-import { WebviewProvider } from "./providers/view";
+import { LogWebviewViewProvider } from "./providers/logWebviewViewProvider";
 import { getCommandDisposables } from "./commands";
 
 @injectable()
 export class DisposableController {
 	constructor(
-		private webviewProvider: WebviewProvider,
-		private versionedFileProvider: VersionedFileProvider,
-		private fileTreeProvider: FileTreeProvider,
-		private gitStatusDecorationProvider: GitStatusDecorationProvider
+		private webviewProvider: LogWebviewViewProvider,
+		private versionedFileProvider: RevisionTextDocumentContentProvider,
+		private ChangeTreeDataProvider: ChangeTreeDataProvider,
+		private GitStatusFileDecorationProvider: GitStatusFileDecorationProvider
 	) {}
 
 	createDisposables() {
@@ -31,10 +31,10 @@ export class DisposableController {
 			),
 			window.registerTreeDataProvider(
 				"git-log.files",
-				this.fileTreeProvider
+				this.ChangeTreeDataProvider
 			),
 			window.registerFileDecorationProvider(
-				this.gitStatusDecorationProvider
+				this.GitStatusFileDecorationProvider
 			),
 		];
 	}

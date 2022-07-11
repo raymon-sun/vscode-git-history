@@ -15,7 +15,7 @@ import { Source } from "../views/data/source";
 import { linksMap } from "../views/data/link";
 
 @injectable()
-export class WebviewProvider implements WebviewViewProvider {
+export class LogWebviewViewProvider implements WebviewViewProvider {
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
 		private source: Source

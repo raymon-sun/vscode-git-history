@@ -5,7 +5,7 @@ import { EXTENSION_SCHEME } from "../constants";
 import { getColor, getStatusText, Status } from "../git/types";
 
 @injectable()
-export class GitStatusDecorationProvider implements FileDecorationProvider {
+export class GitStatusFileDecorationProvider implements FileDecorationProvider {
 	private readonly STATUS_BADGE_MAP: { [key in Status]?: string } = {
 		[Status.INDEX_ADDED]: "U",
 		[Status.INDEX_RENAMED]: "R",

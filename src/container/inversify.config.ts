@@ -3,12 +3,12 @@ import { ExtensionContext } from "vscode";
 import { Container } from "inversify";
 
 import { GitService } from "../git/service";
-import { FileTreeProvider } from "../providers/file-tree";
-import { VersionedFileProvider } from "../providers/versioned-file";
+import { ChangeTreeDataProvider } from "../providers/changeTreeDataProvider";
+import { RevisionTextDocumentContentProvider } from "../providers/revisionTextDocumentContentProvider";
 import { Source } from "../views/data/source";
 import { DisposableController } from "../disposables";
-import { GitStatusDecorationProvider } from "../providers/decoration";
-import { WebviewProvider } from "../providers/view";
+import { GitStatusFileDecorationProvider } from "../providers/gitStatusFileDecorationProvider";
+import { LogWebviewViewProvider } from "../providers/logWebviewViewProvider";
 
 import { TYPES } from "./types";
 
@@ -22,19 +22,21 @@ function initializeContainer(context: ExtensionContext) {
 	container.bind<Source>(Source).toSelf().inSingletonScope();
 	container.bind<GitService>(GitService).toSelf().inSingletonScope();
 	container
-		.bind<WebviewProvider>(WebviewProvider)
+		.bind<LogWebviewViewProvider>(LogWebviewViewProvider)
 		.toSelf()
 		.inSingletonScope();
 	container
-		.bind<FileTreeProvider>(FileTreeProvider)
+		.bind<ChangeTreeDataProvider>(ChangeTreeDataProvider)
 		.toSelf()
 		.inSingletonScope();
 	container
-		.bind<VersionedFileProvider>(VersionedFileProvider)
+		.bind<RevisionTextDocumentContentProvider>(
+			RevisionTextDocumentContentProvider
+		)
 		.toSelf()
 		.inSingletonScope();
 	container
-		.bind<GitStatusDecorationProvider>(GitStatusDecorationProvider)
+		.bind<GitStatusFileDecorationProvider>(GitStatusFileDecorationProvider)
 		.toSelf()
 		.inSingletonScope();
 	container

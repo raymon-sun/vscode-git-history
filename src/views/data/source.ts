@@ -9,7 +9,7 @@ import {
 	PathCollection,
 	resolveChangesCollection,
 } from "../../git/changes/tree";
-import { ChangeTreeDataProvider } from "../../providers/changeTreeDataProvider";
+import { ChangeTreeDataProvider } from "../../providers/changeTreeData";
 
 import { BatchedCommits, LogOptions } from "../../git/types";
 

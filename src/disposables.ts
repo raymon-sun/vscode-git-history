@@ -1,11 +1,11 @@
 import { window, workspace } from "vscode";
 import { injectable } from "inversify";
 
-import { RevisionTextDocumentContentProvider } from "./providers/revisionTextDocumentContentProvider";
-import { ChangeTreeDataProvider } from "./providers/changeTreeDataProvider";
-import { GitStatusFileDecorationProvider } from "./providers/gitStatusFileDecorationProvider";
+import { RevisionTextDocumentContentProvider } from "./providers/revisionTextDocumentContent";
+import { ChangeTreeDataProvider } from "./providers/changeTreeData";
+import { GitStatusFileDecorationProvider } from "./providers/gitStatusFileDecoration";
 import { EXTENSION_SCHEME } from "./constants";
-import { LogWebviewViewProvider } from "./providers/logWebviewViewProvider";
+import { LogWebviewViewProvider } from "./providers/logWebviewView";
 import { getCommandDisposables } from "./commands";
 
 @injectable()

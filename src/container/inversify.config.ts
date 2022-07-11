@@ -3,12 +3,12 @@ import { ExtensionContext } from "vscode";
 import { Container } from "inversify";
 
 import { GitService } from "../git/service";
-import { ChangeTreeDataProvider } from "../providers/changeTreeDataProvider";
-import { RevisionTextDocumentContentProvider } from "../providers/revisionTextDocumentContentProvider";
+import { ChangeTreeDataProvider } from "../providers/changeTreeData";
+import { RevisionTextDocumentContentProvider } from "../providers/revisionTextDocumentContent";
 import { Source } from "../views/data/source";
 import { DisposableController } from "../disposables";
-import { GitStatusFileDecorationProvider } from "../providers/gitStatusFileDecorationProvider";
-import { LogWebviewViewProvider } from "../providers/logWebviewViewProvider";
+import { GitStatusFileDecorationProvider } from "../providers/gitStatusFileDecoration";
+import { LogWebviewViewProvider } from "../providers/logWebviewView";
 
 import { TYPES } from "./types";
 

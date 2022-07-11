@@ -34,7 +34,11 @@ export const HEADERS: IHeader[] = [
 		transformer: ({ refNames, message, graph }) => (
 			<>
 				{refNames.map((refName) => (
-					<GitTag refName={refName} color={graph!.commitColor} />
+					<GitTag
+						key={refName}
+						refName={refName}
+						color={graph!.commitColor}
+					/>
 				))}
 				<span title={message}>{message}</span>
 			</>

@@ -30,7 +30,7 @@ export class DisposableController {
 				this.versionedFileProvider
 			),
 			window.registerTreeDataProvider(
-				"git-log.files",
+				`${EXTENSION_SCHEME}.changes`,
 				this.ChangeTreeDataProvider
 			),
 			window.registerFileDecorationProvider(

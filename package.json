@@ -9,7 +9,10 @@
 		"history",
 		"graph",
 		"branch",
-		"scm"
+		"commit",
+		"scm",
+		"flow",
+		"tag"
 	],
 	"version": "0.1.3",
 	"license": "MIT",
@@ -47,7 +50,7 @@
 					"visibility": "visible"
 				},
 				{
-					"id": "git-log.files",
+					"id": "git-log.changes",
 					"name": "Changes",
 					"icon": "assets/icons/files.svg",
 					"contextualTitle": "Git"

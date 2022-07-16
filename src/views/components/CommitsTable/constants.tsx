@@ -25,8 +25,8 @@ export const HEADERS: IHeader[] = [
 		transformer: (commit) => <GitGraph data={commit.graph!} />,
 	},
 	{
-		prop: "message",
-		label: "Message",
+		prop: "description",
+		label: "Description",
 		width: "fill",
 		minWidth: 180,
 		filterable: true,

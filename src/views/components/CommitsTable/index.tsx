@@ -52,6 +52,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		[channel, setBatchedCommits]
 	);
 
+	// hidden graph when the commit list is filtered
 	const headers = useMemo(() => {
 		const { authors, keyword } = options;
 		if (authors?.length || keyword) {

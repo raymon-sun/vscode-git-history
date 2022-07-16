@@ -36,7 +36,7 @@
 				{
 					"id": "gitLogView",
 					"title": "Git",
-					"icon": "assets/icons/files.svg"
+					"icon": "$(history)"
 				}
 			]
 		},
@@ -46,13 +46,14 @@
 					"type": "webview",
 					"id": "git-log.log",
 					"name": "Log",
+					"icon": "$(history)",
 					"contextualTitle": "Git",
 					"visibility": "visible"
 				},
 				{
 					"id": "git-log.changes",
 					"name": "Changes",
-					"icon": "assets/icons/files.svg",
+					"icon": "$(list-unordered)",
 					"contextualTitle": "Git"
 				}
 			]
@@ -62,7 +63,7 @@
 				"category": "Git Log",
 				"command": "git-log.log",
 				"title": "Log",
-				"icon": "$(list-flat)"
+				"icon": "$(history)"
 			},
 			{
 				"category": "Git Log",

@@ -1,4 +1,4 @@
-import { commands, window } from "vscode";
+import { commands, ThemeIcon, window } from "vscode";
 
 import { container } from "../container/inversify.config";
 import { GitService } from "../git/service";
@@ -13,12 +13,26 @@ export function getFilterCommandsDisposable() {
 
 	return [
 		commands.registerCommand(FILTER_AUTHOR_COMMAND, async () => {
-			const quickPick = window.createQuickPick();
+			const CLEAR_ALL_SELECTIONS_ID = "clear-all";
 
+			const quickPick = window.createQuickPick();
 			quickPick.title = "Select Authors";
 			quickPick.placeholder = "Input author name here";
 			quickPick.canSelectMany = true;
 			quickPick.busy = true;
+			quickPick.buttons = [
+				{
+					iconPath: new ThemeIcon(CLEAR_ALL_SELECTIONS_ID),
+					tooltip: "Clear all selections",
+				},
+			];
+
+			// TODO: set config
+			quickPick.onDidTriggerButton(({ iconPath }) => {
+				if ((iconPath as ThemeIcon).id === CLEAR_ALL_SELECTIONS_ID) {
+					quickPick.selectedItems = [];
+				}
+			});
 
 			quickPick.show();
 

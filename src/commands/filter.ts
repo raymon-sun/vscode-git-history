@@ -15,7 +15,7 @@ export function getFilterCommandsDisposable() {
 		commands.registerCommand(FILTER_AUTHOR_COMMAND, async () => {
 			const quickPick = window.createQuickPick();
 
-			quickPick.title = "Authors Select";
+			quickPick.title = "Select Authors";
 			quickPick.placeholder = "Input author name here";
 			quickPick.canSelectMany = true;
 			quickPick.busy = true;
@@ -24,8 +24,9 @@ export function getFilterCommandsDisposable() {
 
 			const authorItems =
 				(await gitService.getAuthors(state.logOptions))?.map(
-					({ name }) => ({
+					({ name, email }) => ({
 						label: name,
+						description: email,
 						picked: state.logOptions.authors?.includes(name),
 					})
 				) || [];

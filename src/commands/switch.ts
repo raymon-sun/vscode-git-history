@@ -44,7 +44,7 @@ export function getSwitchCommandsDisposable() {
 					.map((repo) => ({
 						label: repo,
 					})) || [];
-			quickPick.title = "Repository Select";
+			quickPick.title = "Switch Repository";
 			quickPick.placeholder = "Input repo name here";
 			quickPick.items = items;
 			quickPick.activeItems = items.filter(
@@ -69,7 +69,7 @@ export function getSwitchCommandsDisposable() {
 		commands.registerCommand(SWITCH_BRANCH_COMMAND, async () => {
 			const quickPick = window.createQuickPick();
 
-			quickPick.title = "Branch Select";
+			quickPick.title = "Switch Branch";
 			quickPick.placeholder = "Input reference here";
 			quickPick.busy = true;
 

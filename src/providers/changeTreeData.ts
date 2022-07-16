@@ -34,12 +34,14 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 	}
 
 	getChildren(element?: Path) {
-		const treeData =
-			this.context.globalState.get<PathCollection>("changedFileTree")!;
 		// TODO: order by type and name
 		return Promise.resolve(
 			Object.entries(
-				element ? (element.children as PathCollection)! : treeData
+				element
+					? (element.children as PathCollection)!
+					: this.context.globalState.get<PathCollection>(
+							"changedFileTree"
+					  )!
 			)
 				.sort(compareFileTreeNode)
 				.map(([name, props]) => new Path(name, props))

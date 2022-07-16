@@ -91,15 +91,15 @@ export function getSwitchCommandsDisposable() {
 
 			const refs = (await gitService.getRefs(state.logOptions)) || [];
 			const localBranchRefs: typeof refs = [];
-			const originBranchRefs: typeof refs = [];
+			const remoteBranchRefs: typeof refs = [];
 			const otherRefs = refs.filter((ref) => {
 				if (ref.type === "heads") {
 					localBranchRefs.push(ref);
 					return false;
 				}
 
-				if (ref.type === "remotes" && ref.name.startsWith("origin/")) {
-					originBranchRefs.push(ref);
+				if (ref.type === "remotes") {
+					remoteBranchRefs.push(ref);
 					return false;
 				}
 
@@ -107,7 +107,7 @@ export function getSwitchCommandsDisposable() {
 			});
 			const branchItems: QuickPickRefItem[] = [
 				...localBranchRefs,
-				...originBranchRefs,
+				...remoteBranchRefs,
 				...otherRefs,
 			].map(({ type, name, hash }) => ({
 				label: `$(${REF_TYPE_DETAIL_MAP[type].icon}) ${name}`,

@@ -12,6 +12,8 @@ export interface Commit {
 	graph?: CommitGraphData;
 }
 
+const REFS_SEPARATOR = ", ";
+
 export function parseGitCommits(data: string): Commit[] {
 	const commitRegex =
 		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)/gm;
@@ -53,7 +55,7 @@ export function parseGitCommits(data: string): Commit[] {
 		// Stop excessive memory usage by using substr -- https://bugs.chromium.org/p/v8/issues/detail?id=2869
 		const commit: Commit = {
 			hash: ` ${ref}`.substr(1),
-			refNames: refNames ? refNames.split(",") : [],
+			refNames: refNames ? refNames.split(REFS_SEPARATOR) : [],
 			message: ` ${message}`.substr(1),
 			parents: parents ? parents.split(" ") : [],
 			authorDate: new Date(Number(authorDate) * 1000).toLocaleString(),

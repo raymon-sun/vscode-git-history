@@ -1,4 +1,4 @@
-import { commands, window } from "vscode";
+import { commands, QuickPickItem, window } from "vscode";
 
 import { container } from "../container/inversify.config";
 import { GitService } from "../git/service";
@@ -9,6 +9,20 @@ export const RESET_COMMAND = "git-log.log.reset";
 export const REFRESH_COMMAND = "git-log.log.refresh";
 export const SWITCH_REPO_COMMAND = "git-log.log.switch.repo";
 export const SWITCH_BRANCH_COMMAND = "git-log.log.switch.branch";
+
+const REF_TYPE_DETAIL_MAP: Record<
+	string,
+	{ icon: string; descriptionPrefix: string }
+> = {
+	heads: {
+		icon: "git-branch",
+		descriptionPrefix: "",
+	},
+	remotes: { icon: "git-branch", descriptionPrefix: "Remote branch at " },
+	tags: { icon: "tag", descriptionPrefix: "Tag at " },
+};
+
+type QuickPickRefItem = { ref: string } & QuickPickItem;
 
 export function getSwitchCommandsDisposable() {
 	const gitService = container.get(GitService);
@@ -45,7 +59,7 @@ export function getSwitchCommandsDisposable() {
 						label: repo,
 					})) || [];
 			quickPick.title = "Switch Repository";
-			quickPick.placeholder = "Input repo name here";
+			quickPick.placeholder = "Search repo by path";
 			quickPick.items = items;
 			quickPick.activeItems = items.filter(
 				({ label }) => label === state.logOptions.repo
@@ -67,29 +81,56 @@ export function getSwitchCommandsDisposable() {
 			quickPick.show();
 		}),
 		commands.registerCommand(SWITCH_BRANCH_COMMAND, async () => {
-			const quickPick = window.createQuickPick();
+			const quickPick = window.createQuickPick<QuickPickRefItem>();
 
 			quickPick.title = "Switch Branch";
-			quickPick.placeholder = "Input reference here";
+			quickPick.placeholder = "Search ref by name or hash";
 			quickPick.busy = true;
 
 			quickPick.show();
 
-			const branchItems =
-				((await gitService.getBranches({})) || [])
-					.sort()
-					.map((branch) => ({
-						label: branch,
-					})) || [];
+			const refs = (await gitService.getRefs(state.logOptions)) || [];
+			const localBranchRefs: typeof refs = [];
+			const originBranchRefs: typeof refs = [];
+			const otherRefs = refs.filter((ref) => {
+				if (ref.type === "heads") {
+					localBranchRefs.push(ref);
+					return false;
+				}
+
+				if (ref.type === "remotes" && ref.name.startsWith("origin/")) {
+					originBranchRefs.push(ref);
+					return false;
+				}
+
+				return true;
+			});
+			const branchItems: QuickPickRefItem[] = [
+				...localBranchRefs,
+				...originBranchRefs,
+				...otherRefs,
+			].map(({ type, name, hash }) => ({
+				label: `$(${REF_TYPE_DETAIL_MAP[type].icon}) ${name}`,
+				description: `${
+					REF_TYPE_DETAIL_MAP[type].descriptionPrefix
+				}${hash.substring(0, 8)}`,
+				ref: name,
+			}));
+
+			// first item to select all branches
+			branchItems.unshift({
+				label: "$(check-all) All branches",
+				ref: "",
+			});
 
 			quickPick.items = branchItems;
 			quickPick.activeItems = branchItems.filter(
-				({ label }) => label === state.logOptions.ref
+				({ ref }) => ref === (state.logOptions.ref || "")
 			);
 
 			quickPick.onDidChangeSelection((selection) => {
 				const [item] = selection;
-				const { label: ref } = item;
+				const { ref } = item;
 				const switchSubscriber = source.getSwitchSubscriber();
 				if (!switchSubscriber) {
 					return;

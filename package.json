@@ -14,7 +14,7 @@
 		"flow",
 		"tag"
 	],
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-log",

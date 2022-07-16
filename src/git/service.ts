@@ -58,12 +58,29 @@ export class GitService {
 		);
 	}
 
-	getBranches(options: GitOptions) {
+	getRefs(options: GitOptions) {
 		const { repo = this.rootRepoPath } = options;
 		return this.git
 			?.cwd(repo)
-			.raw("branch", "--format=%(refname:short)")
-			.then((res) => res.split("\n").filter((branch) => !!branch));
+			.raw(
+				"for-each-ref",
+				"--sort",
+				"-committerdate",
+				"--format=%(objectname) %(refname)"
+			)
+			.then((res) => {
+				const refs = res.split("\n");
+				// delete last empty item
+				refs.pop();
+
+				return refs.map((ref) => {
+					const [, hash, type, name] =
+						ref.match(
+							/^([A-Fa-f0-9]+) refs\/(heads|remotes|tags)\/(.*)$/
+						) || [];
+					return { hash, type, name };
+				});
+			});
 	}
 
 	getAuthors(options: GitOptions) {

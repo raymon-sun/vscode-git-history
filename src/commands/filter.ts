@@ -17,7 +17,7 @@ export function getFilterCommandsDisposable() {
 
 			const quickPick = window.createQuickPick();
 			quickPick.title = "Select Authors";
-			quickPick.placeholder = "Input author name here";
+			quickPick.placeholder = "Search author by name or email";
 			quickPick.canSelectMany = true;
 			quickPick.busy = true;
 			quickPick.buttons = [

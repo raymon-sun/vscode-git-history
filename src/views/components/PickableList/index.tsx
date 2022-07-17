@@ -57,7 +57,7 @@ const PickableList = <T extends Record<string, any>>(
 		setPickedItems({});
 	}, [list]);
 
-	const dragBind = useDrag(({ type, xy }) => {
+	const dragBind = useDrag(({ type, xy, target }) => {
 		const [x, y] = xy;
 
 		const existedItems =
@@ -67,6 +67,14 @@ const PickableList = <T extends Record<string, any>>(
 		const firstItemIndex = virtualItems[0].index;
 		if (type === "pointerdown") {
 			const scrollContainerEl = scrollContainerRef.current!;
+
+			const isPointerOnButton = !!(target as HTMLElement).closest(
+				"[data-button]"
+			);
+			if (isPointerOnButton) {
+				return;
+			}
+
 			const isPointerOnScrollBar =
 				scrollContainerEl.getBoundingClientRect().width - x <=
 				SCROLL_BAR_WIDTH;
@@ -118,6 +126,10 @@ const PickableList = <T extends Record<string, any>>(
 			y > containerRect.y &&
 			y < containerRect.y + containerRect.height
 		) {
+			if (dragStartIndex === INDEX_PLACEHOLDER) {
+				return;
+			}
+
 			const currentIndex = firstItemIndex + sortedIndex(itemYs, y) - 1;
 			const currentItems = { ...existedItems };
 			for (

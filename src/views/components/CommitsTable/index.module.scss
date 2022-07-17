@@ -72,6 +72,19 @@ $col-padding-right: 8px;
 				display: flex;
 				align-items: center;
 			}
+
+			&[data-prop="hash"] {
+				text-overflow: unset;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+
+				&:not(:hover) {
+					vscode-button {
+						display: none;
+					}
+				}
+			}
 		}
 	}
 }

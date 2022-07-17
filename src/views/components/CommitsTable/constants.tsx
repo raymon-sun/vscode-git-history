@@ -1,3 +1,4 @@
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import type { ReactNode } from "react";
 
 import { Commit } from "../../../git/commit";
@@ -51,7 +52,19 @@ export const HEADERS: IHeader[] = [
 		width: 100,
 		minWidth: 100,
 		locatable: true,
-		transformer: (commit) => commit.hash.slice(0, 6),
+		transformer: ({ hash }) => (
+			<>
+				<span>{hash.slice(0, 6)}</span>
+				<VSCodeButton
+					data-button
+					appearance="icon"
+					onClick={() => navigator.clipboard.writeText(hash)}
+					title="Copy hash"
+				>
+					<span className="codicon codicon-copy" />
+				</VSCodeButton>
+			</>
+		),
 	},
 	{
 		prop: "author",

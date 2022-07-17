@@ -37,7 +37,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const onFilter = useCallback(
 		(prop: string) => {
 			switch (prop) {
-				case "message":
+				case "description":
 					channel.filterMessage((batchedCommits: BatchedCommits) =>
 						setBatchedCommits(batchedCommits)
 					);

@@ -69,6 +69,9 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 						commit.hash.startsWith(hash)
 					);
 
+					if (index === -1) {
+						channel.showWarningMessage("No commit matched!");
+					}
 					setLocationIndex(index);
 					break;
 			}

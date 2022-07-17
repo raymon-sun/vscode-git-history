@@ -1,7 +1,7 @@
 import { parse } from "path";
 
 import { inject, injectable } from "inversify";
-import { commands, ExtensionContext, workspace } from "vscode";
+import { window, commands, ExtensionContext, workspace } from "vscode";
 
 import { TYPES } from "../../container/types";
 import { GitService } from "../../git/service";
@@ -86,6 +86,11 @@ export class Source {
 	@link("promise")
 	async inputHash() {
 		return commands.executeCommand<string>(INPUT_HASH_COMMAND);
+	}
+
+	@link("promise")
+	async showWarningMessage(message: string) {
+		window.showWarningMessage(message);
 	}
 
 	@link("subscription")

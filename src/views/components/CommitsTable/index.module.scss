@@ -70,14 +70,32 @@ $col-padding-right: 8px;
 			&[data-prop="description"] {
 				text-overflow: unset;
 				display: flex;
+				justify-content: space-between;
 				align-items: center;
+
+				> span:first-child {
+					display: flex;
+					align-items: center;
+
+					> span:last-child {
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
+				}
+
+				&:not(:hover) {
+					vscode-button {
+						display: none;
+					}
+				}
 			}
 
 			&[data-prop="hash"] {
 				text-overflow: unset;
 				display: flex;
-				align-items: center;
 				justify-content: space-between;
+				align-items: center;
 
 				&:not(:hover) {
 					vscode-button {

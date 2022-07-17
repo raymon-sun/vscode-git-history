@@ -35,14 +35,24 @@ export const HEADERS: IHeader[] = [
 		filterLogOption: "keyword",
 		transformer: ({ refNames, message, graph }) => (
 			<>
-				{refNames.map((refName) => (
-					<GitTag
-						key={refName}
-						refName={refName}
-						color={graph!.commitColor}
-					/>
-				))}
-				<span title={message}>{message}</span>
+				<span>
+					{refNames.map((refName) => (
+						<GitTag
+							key={refName}
+							refName={refName}
+							color={graph!.commitColor}
+						/>
+					))}
+					<span title={message}>{message}</span>
+				</span>
+				<VSCodeButton
+					data-button
+					appearance="icon"
+					onClick={() => navigator.clipboard.writeText(message)}
+					title="Copy Message"
+				>
+					<span className="codicon codicon-copy" />
+				</VSCodeButton>
 			</>
 		),
 	},
@@ -59,7 +69,7 @@ export const HEADERS: IHeader[] = [
 					data-button
 					appearance="icon"
 					onClick={() => navigator.clipboard.writeText(hash)}
-					title="Copy hash"
+					title="Copy Hash"
 				>
 					<span className="codicon codicon-copy" />
 				</VSCodeButton>

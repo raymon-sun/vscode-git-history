@@ -72,7 +72,12 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 					if (index === -1) {
 						channel.showWarningMessage("No commit matched!");
 					}
+
 					setLocationIndex(index);
+					// destroy location index after the blink animation finished
+					setTimeout(() => {
+						setLocationIndex(undefined);
+					}, 1500);
 					break;
 			}
 		},

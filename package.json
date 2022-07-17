@@ -1,7 +1,7 @@
 {
 	"name": "vscode-git-cruise",
 	"displayName": "Git Log",
-	"description": "Git log viewer in your VS Code",
+	"description": "Git history viewer in your VS Code",
 	"keywords": [
 		"git",
 		"log",

@@ -61,6 +61,7 @@ export function getFilterCommandsDisposable() {
 		}),
 		commands.registerCommand(FILTER_MESSAGE_COMMAND, async () => {
 			const inputBox = window.createInputBox();
+			inputBox.placeholder = "Input message keywords to filter commits";
 			inputBox.value = state.logOptions.keyword || "";
 
 			return new Promise((resolve) => {

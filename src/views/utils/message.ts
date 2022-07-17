@@ -34,7 +34,7 @@ window.addEventListener(
 
 export async function sendMessage<T extends IMessage>(
 	message: any,
-	timeout = 5000
+	timeout?: number
 ) {
 	return new Promise<T>((resolve, reject) => {
 		const id = messageId++;
@@ -46,11 +46,13 @@ export async function sendMessage<T extends IMessage>(
 			resolve(res);
 		};
 
-		setTimeout(() => {
-			if (!isReSolved) {
-				reject();
-			}
-		}, timeout);
+		if (timeout) {
+			setTimeout(() => {
+				if (!isReSolved) {
+					reject();
+				}
+			}, timeout);
+		}
 	});
 }
 

@@ -15,4 +15,24 @@
 		color: var(--vscode-list-activeSelectionForeground);
 		outline: 1px solid var(--vscode-list-focusOutline);
 	}
+
+	@keyframes blink {
+		0% {
+			background-color: transparent;
+		}
+
+		50% {
+			background-color: var(--vscode-list-highlightForeground);
+		}
+
+		100% {
+			background-color: transparent;
+		}
+	}
+
+	&.located {
+		animation-name: blink;
+		animation-delay: 0.1s;
+		animation-duration: 1.4s;
+	}
 }

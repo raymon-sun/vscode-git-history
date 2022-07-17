@@ -1,4 +1,11 @@
-import { FC, useCallback, useContext, useEffect, useMemo } from "react";
+import {
+	FC,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { useMeasure } from "react-use";
 
@@ -52,6 +59,23 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		[channel, setBatchedCommits]
 	);
 
+	const [locationIndex, setLocationIndex] = useState<number>();
+	const onLocate = useCallback(
+		async (prop: string) => {
+			switch (prop) {
+				case "hash":
+					const hash = await channel.inputHash();
+					const index = commits.findIndex((commit) =>
+						commit.hash.startsWith(hash)
+					);
+
+					setLocationIndex(index);
+					break;
+			}
+		},
+		[channel, commits]
+	);
+
 	// hidden graph when the commit list is filtered
 	const headers = useMemo(() => {
 		const { authors, keyword } = options;
@@ -78,6 +102,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 							prop,
 							label,
 							filterable,
+							locatable,
 							filterLogOption,
 							hasDivider,
 							size,
@@ -117,6 +142,14 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 									/>
 								</VSCodeButton>
 							)}
+							{locatable && (
+								<VSCodeButton
+									appearance="icon"
+									onClick={() => onLocate(prop)}
+								>
+									<span className="codicon codicon-search" />
+								</VSCodeButton>
+							)}
 						</div>
 					)
 				)}
@@ -125,6 +158,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 				<PickableList
 					list={commits}
 					keyProp="hash"
+					locationIndex={locationIndex}
 					itemRender={(commit: Commit) => (
 						<div className={style.commit}>
 							{columns.map(({ prop, size, transformer }) => (

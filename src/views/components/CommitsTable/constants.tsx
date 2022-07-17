@@ -12,6 +12,7 @@ export interface IHeader {
 	width: number | FillRemainWidth;
 	minWidth: number;
 	filterable?: boolean;
+	locatable?: boolean;
 	filterLogOption?: string;
 	transformer: (commit: Commit) => ReactNode | string;
 }
@@ -49,6 +50,7 @@ export const HEADERS: IHeader[] = [
 		label: "Hash",
 		width: 100,
 		minWidth: 100,
+		locatable: true,
 		transformer: (commit) => commit.hash.slice(0, 6),
 	},
 	{

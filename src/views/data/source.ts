@@ -20,6 +20,8 @@ import {
 	FILTER_MESSAGE_COMMAND,
 } from "../../commands/filter";
 
+import { INPUT_HASH_COMMAND } from "../../commands/input";
+
 import { link } from "./link";
 import state from "./state";
 
@@ -79,6 +81,11 @@ export class Source {
 			FILTER_AUTHOR_COMMAND
 		);
 		this.getCommits(handler, state.logOptions);
+	}
+
+	@link("promise")
+	async inputHash() {
+		return commands.executeCommand<string>(INPUT_HASH_COMMAND);
 	}
 
 	@link("subscription")

@@ -16,6 +16,7 @@ type Id = string;
 interface Props<T> {
 	list: T[];
 	keyProp: keyof T;
+	locationIndex?: number;
 	itemRender: (o: T) => ReactNode;
 	size?: number;
 	onPick?: (ids: Id[]) => void;
@@ -27,11 +28,11 @@ const SCROLL_BAR_WIDTH = 10;
 const PickableList = <T extends Record<string, any>>(
 	props: Props<T> & { children?: ReactNode }
 ) => {
-	const { list, keyProp, itemRender, size, onPick } = props;
+	const { list, keyProp, locationIndex, itemRender, size, onPick } = props;
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const dragContainerRef = useRef<HTMLDivElement>(null);
 
-	const rowVirtualizer = useVirtual({
+	const { virtualItems, totalSize, scrollToIndex } = useVirtual({
 		size: size ?? list.length,
 		parentRef: scrollContainerRef,
 		overscan: 10,
@@ -45,6 +46,14 @@ const PickableList = <T extends Record<string, any>>(
 	const { checkKeyIsPressed } = useIsKeyPressed();
 
 	useEffect(() => {
+		if (typeof locationIndex !== "number") {
+			return;
+		}
+
+		scrollToIndex(locationIndex || 0, { align: "center" });
+	}, [scrollToIndex, locationIndex]);
+
+	useEffect(() => {
 		setPickedItems({});
 	}, [list]);
 
@@ -55,7 +64,7 @@ const PickableList = <T extends Record<string, any>>(
 			checkKeyIsPressed("Meta") || checkKeyIsPressed("Control")
 				? pickedItems
 				: {};
-		const firstItemIndex = rowVirtualizer.virtualItems[0].index;
+		const firstItemIndex = virtualItems[0].index;
 		if (type === "pointerdown") {
 			const scrollContainerEl = scrollContainerRef.current!;
 			const isPointerOnScrollBar =
@@ -136,12 +145,12 @@ const PickableList = <T extends Record<string, any>>(
 			<div
 				ref={dragContainerRef}
 				style={{
-					height: `${rowVirtualizer.totalSize}px`,
+					height: `${totalSize}px`,
 					width: "100%",
 					position: "relative",
 				}}
 			>
-				{rowVirtualizer.virtualItems.map((virtualRow) => (
+				{virtualItems.map((virtualRow) => (
 					<div
 						key={virtualRow.index}
 						ref={virtualRow.measureRef}
@@ -152,6 +161,7 @@ const PickableList = <T extends Record<string, any>>(
 									pickedItems,
 									list[virtualRow.index][keyProp]
 								),
+							[style.located]: virtualRow.index === locationIndex,
 						})}
 						style={{
 							position: "absolute",

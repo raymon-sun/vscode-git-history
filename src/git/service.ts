@@ -69,17 +69,23 @@ export class GitService {
 				"--format=%(objectname) %(refname)"
 			)
 			.then((res) => {
-				const refs = res.split("\n");
-				// delete last empty item
-				refs.pop();
+				const refs: { hash: string; type: string; name: string }[] = [];
+				res.split("\n").forEach((item) => {
+					if (!item) {
+						return;
+					}
 
-				return refs.map((ref) => {
 					const [, hash, type, name] =
-						ref.match(
+						item.match(
 							/^([A-Fa-f0-9]+) refs\/(heads|remotes|tags)\/(.*)$/
 						) || [];
-					return { hash, type, name };
+
+					if (hash && type && name) {
+						refs.push({ hash, type, name });
+					}
 				});
+
+				return refs;
 			});
 	}
 

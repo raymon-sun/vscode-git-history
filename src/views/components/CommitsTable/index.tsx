@@ -66,7 +66,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 				case "hash":
 					const hash = await channel.inputHash();
 					const index = commits.findIndex((commit) =>
-						commit.hash.startsWith(hash)
+						commit.hash.startsWith(hash || "")
 					);
 
 					if (index === -1) {

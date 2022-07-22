@@ -53,10 +53,10 @@ $col-padding-right: 8px;
 			padding-right: $col-padding-right;
 
 			> span {
-				flex: 1;
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
+				padding-right: $col-padding-right;
 			}
 
 			&:first-child {
@@ -70,7 +70,7 @@ $col-padding-right: 8px;
 			&[data-prop="description"] {
 				text-overflow: unset;
 				display: flex;
-				justify-content: space-between;
+				justify-content: flex-start;
 				align-items: center;
 
 				> span:first-child {
@@ -94,7 +94,7 @@ $col-padding-right: 8px;
 			&[data-prop="hash"] {
 				text-overflow: unset;
 				display: flex;
-				justify-content: space-between;
+				justify-content: flex-start;
 				align-items: center;
 
 				&:not(:hover) {

@@ -10,6 +10,10 @@
 .item {
 	width: 100%;
 
+	&:hover {
+		background-color: var(--vscode-list-hoverBackground);
+	}
+
 	&.picked {
 		background-color: var(--vscode-list-activeSelectionBackground);
 		color: var(--vscode-list-activeSelectionForeground);

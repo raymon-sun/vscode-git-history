@@ -1,4 +1,4 @@
-import { CommitGraphData, getGraphPrinter } from "./graph";
+import { CommitGraphData } from "./graph";
 
 export interface Commit {
 	readonly hash: string;
@@ -29,7 +29,6 @@ export function parseGitCommits(data: string): Commit[] {
 	let message;
 	let match;
 
-	const graphPrinter = getGraphPrinter();
 	do {
 		match = commitRegex.exec(data);
 		if (match === null) {
@@ -63,8 +62,6 @@ export function parseGitCommits(data: string): Commit[] {
 			authorEmail: ` ${authorEmail}`.substr(1),
 			commitDate: new Date(Number(commitDate) * 1000).toLocaleString(),
 		};
-
-		commit.graph = graphPrinter.print(commit, commits.length, commits);
 
 		commits.push(commit);
 	} while (true);

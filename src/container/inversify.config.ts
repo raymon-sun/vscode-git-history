@@ -3,6 +3,7 @@ import { ExtensionContext } from "vscode";
 import { Container } from "inversify";
 
 import { GitService } from "../git/service";
+import { GitGraph } from "../git/graph";
 import { ChangeTreeDataProvider } from "../providers/changeTreeData";
 import { RevisionTextDocumentContentProvider } from "../providers/revisionTextDocumentContent";
 import { Source } from "../views/data/source";
@@ -21,6 +22,7 @@ function initializeContainer(context: ExtensionContext) {
 
 	container.bind<Source>(Source).toSelf().inSingletonScope();
 	container.bind<GitService>(GitService).toSelf().inSingletonScope();
+	container.bind<GitGraph>(GitGraph).toSelf().inSingletonScope();
 	container
 		.bind<LogWebviewViewProvider>(LogWebviewViewProvider)
 		.toSelf()

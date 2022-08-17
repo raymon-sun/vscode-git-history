@@ -5,6 +5,7 @@ import { window, commands, ExtensionContext, workspace } from "vscode";
 
 import { TYPES } from "../../container/types";
 import { GitService } from "../../git/service";
+import { GitGraph } from "../../git/graph";
 import {
 	PathCollection,
 	resolveChangesCollection,
@@ -32,6 +33,7 @@ export class Source {
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
 		private git: GitService,
+		private graph: GitGraph,
 		private ChangeTreeDataProvider: ChangeTreeDataProvider
 	) {}
 
@@ -98,43 +100,54 @@ export class Source {
 		handler: (batchedCommits: BatchedCommits) => void,
 		options: LogOptions
 	) {
-		const BATCH_SIZE = 5000;
+		const FIRST_BATCH_SIZE = 300;
 		const firstBatchCommits = await this.git.getCommits({
 			...options,
-			count: BATCH_SIZE,
+			count: FIRST_BATCH_SIZE,
 		});
 
-		if (firstBatchCommits && firstBatchCommits.length === BATCH_SIZE) {
+		let _batchNumber = 0;
+
+		this.graph.registerHandler(handler);
+
+		const BATCH_SIZE = 3000;
+		if (
+			firstBatchCommits &&
+			firstBatchCommits.length === FIRST_BATCH_SIZE
+		) {
 			const totalCount = Number(
 				await this.git.getCommitsTotalCount(options)
 			);
 
-			handler({
+			this.graph.attachGraphAndPost({
 				totalCount,
-				batchNumber: 0,
+				batchNumber: _batchNumber,
 				commits: firstBatchCommits,
 				options,
 			});
 
-			for (let i = BATCH_SIZE; i < totalCount; i = i + BATCH_SIZE) {
-				const commits =
-					(await this.git.getCommits({
+			for (let i = FIRST_BATCH_SIZE; i < totalCount; i = i + BATCH_SIZE) {
+				const batchNumber = ++_batchNumber;
+
+				this.git
+					.getCommits({
 						...options,
 						count: BATCH_SIZE,
 						skip: i,
-					})) || [];
-
-				handler({
-					totalCount,
-					batchNumber: Math.floor(i / BATCH_SIZE),
-					commits,
-					options,
-				});
+					})
+					.then((commits) =>
+						this.graph.attachGraphAndPost({
+							totalCount,
+							batchNumber,
+							commits,
+							options,
+						})
+					);
 			}
 		} else {
-			handler({
+			this.graph.attachGraphAndPost({
 				totalCount: firstBatchCommits?.length || 0,
-				batchNumber: 0,
+				batchNumber: _batchNumber,
 				commits: firstBatchCommits || [],
 				options,
 			});

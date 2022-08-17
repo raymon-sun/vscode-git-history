@@ -1,3 +1,5 @@
+import { Pool, spawn, Worker } from "threads";
+
 import { injectable } from "inversify";
 import simpleGit, { SimpleGit } from "simple-git";
 
@@ -8,9 +10,9 @@ import { API } from "../typings/scmExtension";
 import { getBuiltInGitApi, getGitBinPath } from "./api";
 
 import { GitOptions, LogOptions } from "./types";
-import { parseGitCommits } from "./commit";
 import { parseGitChanges } from "./changes/changes";
 import { getUser } from "./utils";
+import type { GitWorker } from "./worker";
 
 @injectable()
 export class GitService {
@@ -20,6 +22,7 @@ export class GitService {
 
 	private storedRepos: string[] = [];
 	private readonly reposEvent = new EventEmitter<string[]>();
+	private pool = Pool(() => spawn<GitWorker>(new Worker("./worker")), 8);
 
 	constructor() {
 		this.initializeGitApi();
@@ -30,7 +33,10 @@ export class GitService {
 
 		const gitBinPath = await getGitBinPath();
 
-		this.git = simpleGit(this.rootRepoPath, { binary: gitBinPath });
+		this.git = simpleGit(this.rootRepoPath, {
+			binary: gitBinPath,
+			maxConcurrentProcesses: 10,
+		});
 
 		this.initializeReposEvents();
 	}
@@ -151,7 +157,9 @@ export class GitService {
 		return await this.git
 			?.cwd(repo || this.rootRepoPath)
 			.raw(args)
-			.then((res) => parseGitCommits(res))
+			.then((res) =>
+				this.pool.queue(({ parseGitCommits }) => parseGitCommits(res))
+			)
 			.catch((err) => console.log(err));
 	}
 

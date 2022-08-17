@@ -1,122 +1,181 @@
+import { injectable } from "inversify";
+
+import { getLastItem } from "../views/utils/common";
+
 import { Commit } from "./commit";
 
-export function getGraphPrinter() {
-	const colorPicker = getColorPicker();
+import { BatchedCommits } from "./types";
+
+@injectable()
+export class GitGraph {
+	private batchedCommitsCollection: BatchedCommits[] = [];
+	private postIndex = 0;
+	private postHandler?: (batchedCommits: BatchedCommits) => void;
+
+	private colorPicker = getColorPicker();
+
 	/** record chains cross current commit */
-	let curChains: IChain[] = [];
-	return {
-		print(commit: Commit, index: number, commits: Commit[]) {
-			const { hash, parents } = commit;
-			const lines = getCurrentLines(commits[index - 1]);
+	private curChains: IChain[] = [];
 
-			const [firstParent, ...forkParents] = parents;
-			let commitPosition: number;
-			let commitColor: string;
+	registerHandler(postHandler: (batchedCommits: BatchedCommits) => void) {
+		this.clear();
+		this.postHandler = postHandler;
+	}
 
-			const indexList = getIndexList(curChains, hash);
-			if (indexList.length) {
-				// not first node of a chain
-				const [firstIndex, ...otherIndexList] = indexList;
-				commitPosition = firstIndex;
-				commitColor = curChains[firstIndex].color;
-				curChains[firstIndex].hash = hash;
-				curChains[firstIndex].parent = firstParent;
+	attachGraphAndPost(batchedCommits: BatchedCommits) {
+		const { batchNumber } = batchedCommits;
+		this.batchedCommitsCollection[batchNumber] = batchedCommits;
 
-				const mergedIndexList = firstParent
-					? otherIndexList
-					: indexList;
-				if (mergedIndexList.length) {
-					// remove merged chains
-					curChains = curChains.filter(
-						(_, i) => !mergedIndexList.includes(i)
-					);
+		while (this.currentBatchedCommits) {
+			const lastCommit = getLastItem(
+				this.batchedCommitsCollection[this.postIndex - 1]?.commits
+			);
 
-					let bottomIndex = 0;
-					lines.forEach((line, index) => {
-						if (mergedIndexList.includes(index)) {
-							line.bottom = -1;
-						} else {
-							line.bottom = bottomIndex;
-							bottomIndex++;
-						}
-					});
-				}
-			} else {
-				commitColor = colorPicker.get();
-				commitPosition = curChains.length;
-				if (firstParent) {
-					curChains.push({
-						hash,
-						parent: firstParent,
-						color: commitColor,
-					});
-				}
+			this.setGraphToCommits(
+				this.currentBatchedCommits.commits,
+				lastCommit
+			);
+			this.postHandler?.(this.currentBatchedCommits);
+			this.postIndex++;
+		}
+	}
 
-				// first node of a chain
-				lines.push({
-					top: -1,
-					bottom: firstParent ? curChains.length - 1 : -1,
+	private clear() {
+		this.postIndex = 0;
+		this.batchedCommitsCollection = [];
+	}
+
+	private get currentBatchedCommits() {
+		return this.batchedCommitsCollection[this.postIndex];
+	}
+
+	private setGraphToCommits(commits: Commit[], lastCommit?: Commit) {
+		commits.reduce((pre, commit) => {
+			commit.graph = this.print(commit, pre);
+			return commit;
+		}, lastCommit);
+	}
+
+	private print(commit: Commit, preCommit?: Commit) {
+		const { hash, parents } = commit;
+		const lines = this.getCurrentLines(preCommit);
+
+		const [firstParent, ...forkParents] = parents;
+		let commitPosition: number;
+		let commitColor: string;
+
+		const indexList = this.getIndexList(this.curChains, hash);
+		if (indexList.length) {
+			// not first node of a chain
+			const [firstIndex, ...otherIndexList] = indexList;
+			commitPosition = firstIndex;
+			commitColor = this.curChains[firstIndex].color;
+			this.curChains[firstIndex].hash = hash;
+			this.curChains[firstIndex].parent = firstParent;
+
+			const mergedIndexList = firstParent ? otherIndexList : indexList;
+			if (mergedIndexList.length) {
+				// remove merged chains
+				this.curChains = this.curChains.filter(
+					(_, i) => !mergedIndexList.includes(i)
+				);
+
+				let bottomIndex = 0;
+				lines.forEach((line, index) => {
+					if (mergedIndexList.includes(index)) {
+						line.bottom = -1;
+					} else {
+						line.bottom = bottomIndex;
+						bottomIndex++;
+					}
+				});
+			}
+		} else {
+			commitColor = this.colorPicker.get();
+			commitPosition = this.curChains.length;
+			if (firstParent) {
+				this.curChains.push({
+					hash,
+					parent: firstParent,
 					color: commitColor,
 				});
 			}
 
-			// handle multiple parents of the node
-			forkParents.forEach((parent) => {
-				const hasSameParent =
-					curChains.findIndex((chain) => chain.parent === parent) !==
-					-1;
-				if (hasSameParent) {
-					// flow into the existed chain
-					const [firstIndex] = getIndexList(curChains, parent);
-					const firstChain = curChains[firstIndex];
+			// first node of a chain
+			lines.push({
+				top: -1,
+				bottom: firstParent ? this.curChains.length - 1 : -1,
+				color: commitColor,
+			});
+		}
 
-					const color = firstChain.color;
-					if (firstIndex !== undefined) {
-						lines.push({
-							top: -1,
-							bottom: firstIndex,
-							color,
-						});
-					}
-				} else {
-					// new chain
-					commitColor = colorPicker.get();
-					curChains.push({
-						hash,
-						parent,
-						color: commitColor,
-					});
+		// handle multiple parents of the node
+		forkParents.forEach((parent) => {
+			const hasSameParent =
+				this.curChains.findIndex((chain) => chain.parent === parent) !==
+				-1;
+			if (hasSameParent) {
+				// flow into the existed chain
+				const [firstIndex] = this.getIndexList(this.curChains, parent);
+				const firstChain = this.curChains[firstIndex];
 
+				const color = firstChain.color;
+				if (firstIndex !== undefined) {
 					lines.push({
 						top: -1,
-						bottom: curChains.length - 1,
-						color: commitColor,
+						bottom: firstIndex,
+						color,
 					});
 				}
-			});
+			} else {
+				// new chain
+				commitColor = this.colorPicker.get();
+				this.curChains.push({
+					hash,
+					parent,
+					color: commitColor,
+				});
 
-			return { commitPosition, commitColor, lines };
-		},
-	};
-}
-
-function getCurrentLines(preCommit?: Commit) {
-	const existedBottoms: number[] = [];
-	const preLines = preCommit?.graph?.lines || [];
-	return preLines
-		.filter(({ bottom }) => {
-			if (existedBottoms.includes(bottom)) {
-				return false;
+				lines.push({
+					top: -1,
+					bottom: this.curChains.length - 1,
+					color: commitColor,
+				});
 			}
+		});
 
-			existedBottoms.push(bottom);
-			return bottom !== -1;
-		})
-		.map(({ bottom, color }) => ({
-			top: bottom,
-			bottom,
-			color,
-		}));
+		return { commitPosition, commitColor, lines };
+	}
+
+	private getCurrentLines(preCommit?: Commit) {
+		const existedBottoms: number[] = [];
+		const preLines = preCommit?.graph?.lines || [];
+		return preLines
+			.filter(({ bottom }) => {
+				if (existedBottoms.includes(bottom)) {
+					return false;
+				}
+
+				existedBottoms.push(bottom);
+				return bottom !== -1;
+			})
+			.map(({ bottom, color }) => ({
+				top: bottom,
+				bottom,
+				color,
+			}));
+	}
+
+	private getIndexList(chains: IChain[], hash: string) {
+		const indexList: number[] = [];
+		chains.forEach(({ parent }, index) => {
+			if (parent === hash) {
+				indexList.push(index);
+			}
+		});
+
+		return indexList;
+	}
 }
 
 function getColorPicker() {
@@ -141,17 +200,6 @@ function getColorPicker() {
 			return colors[index];
 		},
 	};
-}
-
-function getIndexList(chains: IChain[], hash: string) {
-	const indexList: number[] = [];
-	chains.forEach(({ parent }, index) => {
-		if (parent === hash) {
-			indexList.push(index);
-		}
-	});
-
-	return indexList;
 }
 
 interface IChain {

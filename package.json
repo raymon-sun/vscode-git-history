@@ -161,6 +161,7 @@
 		"stylelint-config-prettier": "^9.0.3",
 		"stylelint-config-standard-scss": "^2.0.1",
 		"stylelint-prettier": "^2.0.0",
+		"threads-plugin": "^1.4.0",
 		"ts-loader": "^9.2.6",
 		"typescript": "^4.4.4",
 		"typescript-plugin-css-modules": "^3.4.0",
@@ -183,6 +184,7 @@
 		"react-virtual": "^2.8.2",
 		"reflect-metadata": "^0.1.13",
 		"simple-git": "^2.47.0",
+		"threads": "^1.7.0",
 		"vscode-nls": "^5.0.0",
 		"which": "^2.0.2"
 	},

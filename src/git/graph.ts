@@ -43,6 +43,7 @@ export class GitGraph {
 	private clear() {
 		this.postIndex = 0;
 		this.batchedCommitsCollection = [];
+		this.curChains = [];
 	}
 
 	private get currentBatchedCommits() {
@@ -51,12 +52,12 @@ export class GitGraph {
 
 	private setGraphToCommits(commits: Commit[], lastCommit?: Commit) {
 		commits.reduce((pre, commit) => {
-			commit.graph = this.print(commit, pre);
+			commit.graph = this.getGraphSlice(commit, pre);
 			return commit;
 		}, lastCommit);
 	}
 
-	private print(commit: Commit, preCommit?: Commit) {
+	private getGraphSlice(commit: Commit, preCommit?: Commit) {
 		const { hash, parents } = commit;
 		const lines = this.getCurrentLines(preCommit);
 

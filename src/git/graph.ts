@@ -2,6 +2,8 @@ import { injectable } from "inversify";
 
 import { getLastItem } from "../views/utils/common";
 
+import { attach_graph } from "./pkg/git_graph";
+
 import { Commit } from "./commit";
 
 import { BatchedCommits } from "./types";
@@ -27,13 +29,14 @@ export class GitGraph {
 		this.batchedCommitsCollection[batchNumber] = batchedCommits;
 
 		while (this.currentBatchedCommits) {
-			const lastCommit = getLastItem(
-				this.batchedCommitsCollection[this.postIndex - 1]?.commits
-			);
+			const lastLines =
+				getLastItem(
+					this.batchedCommitsCollection[this.postIndex - 1]?.commits
+				)?.graph?.lines || [];
 
-			this.setGraphToCommits(
+			this.setGraphToCommitsByWasm(
 				this.currentBatchedCommits.commits,
-				lastCommit
+				lastLines
 			);
 			this.postHandler?.(this.currentBatchedCommits);
 			this.postIndex++;
@@ -50,16 +53,29 @@ export class GitGraph {
 		return this.batchedCommitsCollection[this.postIndex];
 	}
 
-	private setGraphToCommits(commits: Commit[], lastCommit?: Commit) {
+	private setGraphToCommits(commits: Commit[], lastLines: CommitGraphLine[]) {
 		commits.reduce((pre, commit) => {
 			commit.graph = this.getGraphSlice(commit, pre);
-			return commit;
-		}, lastCommit);
+			return commit.graph.lines;
+		}, lastLines);
 	}
 
-	private getGraphSlice(commit: Commit, preCommit?: Commit) {
+	private setGraphToCommitsByWasm(
+		commits: Commit[],
+		lastLines: CommitGraphLine[]
+	) {
+		const { graphicCommits, chains } = attach_graph(
+			commits,
+			lastLines,
+			this.curChains
+		);
+		this.currentBatchedCommits.commits = graphicCommits;
+		this.curChains = chains;
+	}
+
+	private getGraphSlice(commit: Commit, lastLines: CommitGraphLine[]) {
 		const { hash, parents } = commit;
-		const lines = this.getCurrentLines(preCommit);
+		const lines = this.getCurrentLines(lastLines);
 
 		const [firstParent, ...forkParents] = parents;
 		let commitPosition: number;
@@ -148,9 +164,8 @@ export class GitGraph {
 		return { commitPosition, commitColor, lines };
 	}
 
-	private getCurrentLines(preCommit?: Commit) {
+	private getCurrentLines(preLines: CommitGraphLine[]) {
 		const existedBottoms: number[] = [];
-		const preLines = preCommit?.graph?.lines || [];
 		return preLines
 			.filter(({ bottom }) => {
 				if (existedBottoms.includes(bottom)) {

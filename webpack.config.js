@@ -6,6 +6,7 @@ const path = require("path");
 
 const { merge } = require("webpack-merge");
 const ThreadsPlugin = require("threads-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 /**@type {import('webpack').Configuration}*/
 const baseConfig = {
@@ -46,7 +47,17 @@ const extensionConfig = {
 		filename: "extension.js",
 		libraryTarget: "commonjs2",
 	},
-	plugins: [new ThreadsPlugin()],
+	plugins: [
+		new ThreadsPlugin(),
+		new CopyPlugin({
+			patterns: [
+				{
+					from: "./src/git/pkg/git_graph_bg.wasm",
+					to: path.resolve(__dirname, "dist"),
+				},
+			],
+		}),
+	],
 	externals: {
 		vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
 		// modules added here also need to be added in the .vsceignore file

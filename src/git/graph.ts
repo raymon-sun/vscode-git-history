@@ -34,7 +34,7 @@ export class GitGraph {
 					this.batchedCommitsCollection[this.postIndex - 1]?.commits
 				)?.graph?.lines || [];
 
-			this.setGraphToCommitsByWasm(
+			this.setGraphToCommits(
 				this.currentBatchedCommits.commits,
 				lastLines
 			);
@@ -47,6 +47,7 @@ export class GitGraph {
 		this.postIndex = 0;
 		this.batchedCommitsCollection = [];
 		this.curChains = [];
+		this.colorPicker.reset();
 	}
 
 	private get currentBatchedCommits() {
@@ -214,6 +215,9 @@ function getColorPicker() {
 			}
 
 			return colors[index];
+		},
+		reset() {
+			index = -1;
 		},
 	};
 }

@@ -14,6 +14,8 @@ import { parseGitChanges } from "./changes/changes";
 import { getUser } from "./utils";
 import type { GitWorker } from "./worker";
 
+const LOG_TYPE_ARGS = ["--branches", "--remotes", "--tags"];
+
 @injectable()
 export class GitService {
 	private gitExt?: API;
@@ -130,7 +132,8 @@ export class GitService {
 			"log",
 			`--format=${COMMIT_FORMAT}`,
 			"-z",
-			ref || "--all",
+			...LOG_TYPE_ARGS,
+			...(ref ? [ref] : []),
 			"--author-date-order",
 		];
 
@@ -165,7 +168,7 @@ export class GitService {
 
 	async getCommitsTotalCount(options?: LogOptions) {
 		const { repo } = options || {};
-		const args = ["rev-list", "--all", "--count"];
+		const args = ["rev-list", ...LOG_TYPE_ARGS, "--count"];
 		return await this.git
 			?.cwd(repo || this.rootRepoPath)
 			.raw(args)

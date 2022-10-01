@@ -30,7 +30,6 @@ $col-padding-right: 8px;
 		}
 
 		> span {
-			flex: 1;
 			margin-right: 8px;
 		}
 	}
@@ -50,6 +49,7 @@ $col-padding-right: 8px;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
+			padding-left: $col-divider-width;
 			padding-right: $col-padding-right;
 
 			> span {
@@ -57,10 +57,6 @@ $col-padding-right: 8px;
 				overflow: hidden;
 				text-overflow: ellipsis;
 				padding-right: $col-padding-right;
-			}
-
-			&:first-child {
-				padding-left: $col-divider-width;
 			}
 
 			&[data-prop="graph"] {

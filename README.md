@@ -10,6 +10,10 @@ Visual git log panel with graph
 
 ## Release Notes
 
+### 0.1.8
+
+Fix issues
+
 ### 0.1.2
 
 Optimize filter interaction experience

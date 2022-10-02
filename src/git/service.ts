@@ -132,8 +132,7 @@ export class GitService {
 			"log",
 			`--format=${COMMIT_FORMAT}`,
 			"-z",
-			...LOG_TYPE_ARGS,
-			...(ref ? [ref] : []),
+			...(ref ? [ref] : LOG_TYPE_ARGS),
 			"--author-date-order",
 		];
 
@@ -167,8 +166,19 @@ export class GitService {
 	}
 
 	async getCommitsTotalCount(options?: LogOptions) {
-		const { repo } = options || {};
-		const args = ["rev-list", ...LOG_TYPE_ARGS, "--count"];
+		const { repo, ref, authors, keyword } = options || {};
+
+		// TODO: reuse arguments assembly process in getCommits
+		const args = ["rev-list", ...(ref ? [ref] : LOG_TYPE_ARGS), "--count"];
+
+		if (authors && authors.length) {
+			args.push(...authors.map((author) => `--author=${author}`));
+		}
+
+		if (keyword) {
+			args.push(`--grep=${keyword}`);
+		}
+
 		return await this.git
 			?.cwd(repo || this.rootRepoPath)
 			.raw(args)

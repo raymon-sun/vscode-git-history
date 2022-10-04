@@ -1,37 +1,50 @@
 # Git Log
 
-Visual git log panel with graph
+[![Version](https://vsmarketplacebadge.apphb.com/version/guodongsun.vscode-git-cruise.svg)](https://marketplace.visualstudio.com/items?itemName=guodongsun.vscode-git-cruise)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs/guodongsun.vscode-git-cruise.svg)](https://marketplace.visualstudio.com/items?itemName=guodongsun.vscode-git-cruise)
 
-## Features
+Provides a visual git log panel to help you browse git history easily.
 
-![Usage](./assets/usage/git-log-use-1.gif)
+It brings you the following main features
 
-![Usage](./assets/usage/git-log-use-2.gif)
+🗞️ full git history
 
-## Release Notes
+🩺 diff batch commits
 
-### 0.1.8
+〽️ commit chain graph
 
-Fix issues
+🔍 quick search
 
-### 0.1.2
+## Usage
 
-Optimize filter interaction experience
+### Git History
 
-### 0.1.1
+![Usage](./assets/usage/full-history.gif)
 
-Fix issues
+- scroll once to see all commits in git history even if the amount of commits is huge
 
-### 0.1.0
+### Commit Changes
 
-Support for commit graphics
+![Usage](./assets/usage/changes.gif)
 
-### 0.0.5
+- click a commit to check the changes
+- select multiple commits with `Ctrl`/`⌘` pressed,and then you will see the merged changes from the selected commits
+- drag through the commits to quickly select them
 
-Log and changes views are moved to panel by default
+### Commit Chain Graph
 
-### 0.0.1
+![Usage](./assets/usage/graph.gif)
 
-You can view the merged changes of multiple commits by dragging
+### Others
 
----
+![Usage](./assets/usage/search.gif)
+
+- search for hash in all commits and navigate to the location
+- filter the commits by authors/message
+- switch to another branch or repo in your workspace
+- drag the header to set a comfortable size for columns
+- and more,coming soon..
+
+## Release History
+
+See [CHANGELOG.md](CHANGELOG.md).

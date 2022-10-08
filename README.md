@@ -3,9 +3,9 @@
 [![Version](https://vsmarketplacebadge.apphb.com/version/guodongsun.vscode-git-cruise.svg)](https://marketplace.visualstudio.com/items?itemName=guodongsun.vscode-git-cruise)
 [![Installs](https://vsmarketplacebadge.apphb.com/installs/guodongsun.vscode-git-cruise.svg)](https://marketplace.visualstudio.com/items?itemName=guodongsun.vscode-git-cruise)
 
-Provides a visual git log panel to help you browse git history easily.
+the extension provides a visual git log panel to help you browse git history easily.
 
-It brings you the following main features
+It brings the following main features
 
 🗞️ full git history
 

@@ -98,7 +98,8 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 
 	useEffect(() => {
 		subscribeSwitcher();
-		channel.resetLog();
+
+		channel.autoRefreshLog();
 	}, [channel, subscribeSwitcher]);
 
 	return (

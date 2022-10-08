@@ -4,6 +4,10 @@ All notable changes to the "git-log" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.1.12
+
+- Support auto refresh log
+
 ## 0.1.8
 
 - Fix issues

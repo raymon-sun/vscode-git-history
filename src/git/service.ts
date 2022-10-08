@@ -5,13 +5,14 @@ import simpleGit, { SimpleGit } from "simple-git";
 
 import { EventEmitter, workspace } from "vscode";
 
-import { API } from "../typings/scmExtension";
+import { API, Repository } from "../typings/scmExtension";
 
 import { getBuiltInGitApi, getGitBinPath } from "./api";
 
 import { GitOptions, LogOptions } from "./types";
 import { parseGitChanges } from "./changes/changes";
 import { getUser } from "./utils";
+
 import type { GitWorker } from "./worker";
 
 const LOG_TYPE_ARGS = ["--branches", "--remotes", "--tags"];
@@ -217,5 +218,16 @@ export class GitService {
 		this.reposEvent.event((repos) => {
 			handler(repos);
 		});
+	}
+
+	// can only be called once
+	/** different from #onReposChange,
+	 * the handler should be fired when the contents of repository changes,
+	 * such as index/stash/commit/push
+	 */
+	onDidRepoChange(handler: (repository: Repository) => void) {
+		this.gitExt?.repositories?.forEach((repository) =>
+			repository.state.onDidChange(() => handler(repository))
+		);
 	}
 }

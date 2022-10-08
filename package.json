@@ -1,7 +1,7 @@
 {
 	"name": "vscode-git-cruise",
 	"displayName": "Git Log",
-	"description": "Git history viewer in your VS Code",
+	"description": "Git history panel in your VS Code",
 	"keywords": [
 		"git",
 		"log",
@@ -14,7 +14,7 @@
 		"flow",
 		"tag"
 	],
-	"version": "0.1.11",
+	"version": "0.1.12",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-log",

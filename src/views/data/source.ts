@@ -3,6 +3,8 @@ import { parse } from "path";
 import { inject, injectable } from "inversify";
 import { window, commands, ExtensionContext, workspace } from "vscode";
 
+import { debounce } from "lodash";
+
 import { TYPES } from "../../container/types";
 import { GitService } from "../../git/service";
 import { GitGraph } from "../../git/graph";
@@ -14,7 +16,7 @@ import { ChangeTreeDataProvider } from "../../providers/changeTreeData";
 
 import { BatchedCommits, LogOptions } from "../../git/types";
 
-import { RESET_COMMAND } from "../../commands/switch";
+import { REFRESH_COMMAND, RESET_COMMAND } from "../../commands/switch";
 
 import {
 	FILTER_AUTHOR_COMMAND,
@@ -165,6 +167,34 @@ export class Source {
 			workspace.workspaceFolders![0].uri.path
 		);
 		this.updateTreeView(newFileTree);
+	}
+
+	@link("promise")
+	async autoRefreshLog() {
+		const DEBOUNCE_INTERVAL = 12000;
+		const debouncedRefresh = debounce(
+			() => commands.executeCommand<string>(REFRESH_COMMAND),
+			DEBOUNCE_INTERVAL,
+			{ leading: true }
+		);
+
+		if (!state.logOptions.repo) {
+			state.logOptions = {
+				repo: await this.git.getDefaultRepository(),
+			};
+		}
+		debouncedRefresh();
+
+		setTimeout(
+			() =>
+				this.git.onDidRepoChange((repository) => {
+					const { rootUri } = repository;
+					if (rootUri.fsPath === state.logOptions.repo) {
+						debouncedRefresh();
+					}
+				}),
+			DEBOUNCE_INTERVAL
+		);
 	}
 
 	@link("subscription")

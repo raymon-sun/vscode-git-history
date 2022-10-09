@@ -53,10 +53,6 @@ const PickableList = <T extends Record<string, any>>(
 		scrollToIndex(locationIndex || 0, { align: "center" });
 	}, [scrollToIndex, locationIndex]);
 
-	useEffect(() => {
-		setPickedItems({});
-	}, [list]);
-
 	const dragBind = useDrag(({ type, xy, target }) => {
 		const [x, y] = xy;
 

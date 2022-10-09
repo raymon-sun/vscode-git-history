@@ -3,17 +3,17 @@
 [![Version](https://vsmarketplacebadge.apphb.com/version/guodongsun.vscode-git-cruise.svg)](https://marketplace.visualstudio.com/items?itemName=guodongsun.vscode-git-cruise)
 [![Installs](https://vsmarketplacebadge.apphb.com/installs/guodongsun.vscode-git-cruise.svg)](https://marketplace.visualstudio.com/items?itemName=guodongsun.vscode-git-cruise)
 
-the extension provides a visual git log panel to help you browse git history easily.
+The extension provides a visual git log panel to help you browse git history easily.
 
 It brings the following main features
 
-🗞️ full git history
+🗞️ Full git history
 
-🩺 diff batch commits
+🩺 Diff batch commits
 
-〽️ commit chain graph
+〽️ Commit chain graph
 
-🔍 quick search
+🔍 Quick search
 
 ## Usage
 
@@ -21,15 +21,15 @@ It brings the following main features
 
 ![Usage](./assets/usage/full-history.gif)
 
-- scroll once to see all commits in git history even if the amount of commits is huge
+- Scroll once to see all commits in git history even if the amount of commits is huge
 
 ### Commit Changes
 
 ![Usage](./assets/usage/changes.gif)
 
-- click a commit to check the changes
-- select multiple commits with `Ctrl`/`⌘` pressed,and then you will see the merged changes from the selected commits
-- drag through the commits to quickly select them
+- Click a commit to check the changes
+- Select multiple commits with `Ctrl`/`⌘` pressed,and then you will see the merged changes from the selected commits
+- Drag through the commits to quickly select them
 
 ### Commit Chain Graph
 
@@ -39,11 +39,11 @@ It brings the following main features
 
 ![Usage](./assets/usage/search.gif)
 
-- search for hash in all commits and navigate to the location
-- filter the commits by authors/message
-- switch to another branch or repo in your workspace
-- drag the header to set a comfortable size for columns
-- and more,coming soon..
+- Search for hash in all commits and navigate to the location
+- Filter the commits by authors/message
+- Switch to another branch or repo in your workspace
+- Drag the header to set a comfortable size for columns
+- And more,coming soon..
 
 ## Release History
 

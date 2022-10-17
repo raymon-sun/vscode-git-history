@@ -105,7 +105,9 @@ export class GitService {
 			});
 	}
 
-	getAuthors(options: GitOptions) {
+	getAuthors(
+		options: GitOptions
+	): Promise<{ name: string; email: string; isSelf?: true }[]> {
 		const { repo = this.rootRepoPath } = options;
 		return Promise.allSettled([
 			this.git?.cwd(repo)?.raw("shortlog", "-ens", "HEAD"),

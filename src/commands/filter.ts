@@ -15,7 +15,10 @@ export function getFilterCommandsDisposable() {
 		commands.registerCommand(FILTER_AUTHOR_COMMAND, async () => {
 			const CLEAR_ALL_SELECTIONS_ID = "clear-all";
 
-			const quickPick = window.createQuickPick();
+			const quickPick = window.createQuickPick<{
+				label: string;
+				value: string;
+			}>();
 			quickPick.title = "Select Authors";
 			quickPick.placeholder = "Search author by name or email";
 			quickPick.canSelectMany = true;
@@ -38,22 +41,23 @@ export function getFilterCommandsDisposable() {
 
 			const authorItems =
 				(await gitService.getAuthors(state.logOptions))?.map(
-					({ name, email }) => ({
-						label: name,
+					({ name, email, isSelf }) => ({
+						label: name + (isSelf ? " (You)" : ""),
 						description: email,
+						value: `${name} <${email}>`,
 						picked: state.logOptions.authors?.includes(name),
 					})
 				) || [];
 
 			return new Promise((resolve) => {
 				quickPick.onDidAccept(() => {
-					resolve(quickPick.selectedItems.map(({ label }) => label));
+					resolve(quickPick.selectedItems.map(({ value }) => value));
 					quickPick.dispose();
 				});
 
 				quickPick.items = authorItems;
-				quickPick.selectedItems = authorItems.filter(({ label }) =>
-					state.logOptions.authors?.includes(label)
+				quickPick.selectedItems = authorItems.filter(({ value }) =>
+					state.logOptions.authors?.includes(value)
 				);
 
 				quickPick.busy = false;

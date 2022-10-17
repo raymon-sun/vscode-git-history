@@ -11,7 +11,7 @@ import { getBuiltInGitApi, getGitBinPath } from "./api";
 
 import { GitOptions, LogOptions } from "./types";
 import { parseGitChanges } from "./changes/changes";
-import { getUser } from "./utils";
+import { parseGitAuthors, parseGitConfig } from "./utils";
 
 import type { GitWorker } from "./worker";
 
@@ -52,6 +52,13 @@ export class GitService {
 
 		this.gitExt?.onDidOpenRepository(handler);
 		this.gitExt?.onDidCloseRepository(handler);
+	}
+
+	getConfig(repo: string) {
+		return this.git
+			?.cwd(repo)
+			?.raw("config", "--list")
+			.then((res) => parseGitConfig(res));
 	}
 
 	getDefaultRepository() {
@@ -100,18 +107,38 @@ export class GitService {
 
 	getAuthors(options: GitOptions) {
 		const { repo = this.rootRepoPath } = options;
-		return this.git
-			?.cwd(repo)
-			?.raw("shortlog", "-ens", "HEAD")
-			.then((res) => {
-				const shortlogs = res.split("\n");
-				return shortlogs
-					.filter((shortlog) => !!shortlog)
-					.map((shortlog) => getUser(shortlog));
-			})
-			.catch((err) => {
-				console.log(err);
-			});
+		return Promise.allSettled([
+			this.git?.cwd(repo)?.raw("shortlog", "-ens", "HEAD"),
+			this.getConfig(repo),
+		]).then(([settledShortLogResult, settledConfigResult]) => {
+			if (
+				settledShortLogResult.status !== "fulfilled" ||
+				settledConfigResult.status !== "fulfilled"
+			) {
+				return [];
+			}
+
+			const allAuthors = parseGitAuthors(
+				settledShortLogResult.value || ""
+			);
+
+			const selfAuthor = {
+				name: settledConfigResult.value?.["user.name"] || "",
+				email: settledConfigResult.value?.["user.email"] || "",
+				isSelf: true,
+			};
+
+			const otherAuthors = allAuthors.filter(
+				({ name, email }) =>
+					name !== selfAuthor.name || email !== selfAuthor.email
+			);
+
+			if (otherAuthors.length === allAuthors.length) {
+				return allAuthors;
+			}
+
+			return [selfAuthor, ...otherAuthors];
+		});
 	}
 
 	async show(commitHash: string, filePath: string) {

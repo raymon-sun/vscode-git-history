@@ -2,9 +2,47 @@ import { deepStrictEqual } from "assert";
 
 import { FileNode, FolderNode, PathType } from "./changes/tree";
 
-import { compareFileTreeNode, getUser } from "./utils";
+import {
+	parseGitConfig,
+	parseGitAuthors,
+	compareFileTreeNode,
+	getUser,
+} from "./utils";
 
 suite("Git utils", () => {
+	test("should parse the output to config object", () => {
+		deepStrictEqual(
+			parseGitConfig(`user.name=rabbit
+user.email=MonsHuygens@moon.com`),
+			{
+				"user.name": "rabbit",
+				"user.email": "MonsHuygens@moon.com",
+			}
+		);
+	});
+
+	test("should parse the output to author list", () => {
+		deepStrictEqual(
+			parseGitAuthors(`100	rabbit <MonsHuygens@moon.com>
+50	elephant <MonsGanau@moon.com>
+42	panda <MonsPico@moon.com>`),
+			[
+				{
+					name: "rabbit",
+					email: "MonsHuygens@moon.com",
+				},
+				{
+					name: "elephant",
+					email: "MonsGanau@moon.com",
+				},
+				{
+					name: "panda",
+					email: "MonsPico@moon.com",
+				},
+			]
+		);
+	});
+
 	test("should sort the given file nodes", () => {
 		deepStrictEqual(
 			compareFileTreeNode(

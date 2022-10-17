@@ -8,6 +8,47 @@ import { Change, Status } from "./types";
 
 export type ChangesCollection = { ref: string; changes: Change[] }[];
 
+export function parseGitConfig(data: string) {
+	const configRex = /(.*)=(.*)\n?/gm;
+
+	const config: Record<string, string> = {};
+
+	let key;
+	let value;
+	let match;
+	do {
+		match = configRex.exec(data);
+		if (match === null) {
+			break;
+		}
+
+		[, key, value] = match;
+		config[key] = value;
+	} while (true);
+
+	return config;
+}
+
+export function parseGitAuthors(data: string) {
+	const authorRex = / *[0-9]+\t(.+) +<(.*)>\n?/gm;
+	const authors: { name: string; email: string }[] = [];
+
+	let name;
+	let email;
+	let match;
+	do {
+		match = authorRex.exec(data);
+		if (match === null) {
+			break;
+		}
+
+		[, name, email] = match;
+		authors.push({ name, email });
+	} while (true);
+
+	return authors;
+}
+
 export function getDiffUriPair(node: FileNode) {
 	const { uri, status, originalChangeStack, changeStack } = node;
 	const [{ change: preChange, ref: preRef }, { ref: curRef }] = getChangePair(
@@ -54,6 +95,7 @@ export function sanitizePath(path: string): string {
 	);
 }
 
+/** @deprecated */
 export function getUser(shortLog: string) {
 	const matches = shortLog.match(/ *[0-9]+\t(.+) +<(.*)>/);
 	return {

@@ -4,6 +4,11 @@ All notable changes to the "git-log" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.1.14
+
+- Pin yourself in authors selector
+- Precise filter for selected author and email
+
 ## 0.1.12
 
 - Support auto refresh log

@@ -3,6 +3,7 @@ import { TextDocumentContentProvider, Uri } from "vscode";
 
 import { GitService } from "../git/service";
 
+/** @deprecated */
 @injectable()
 export class RevisionTextDocumentContentProvider
 	implements TextDocumentContentProvider

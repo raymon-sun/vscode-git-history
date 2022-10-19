@@ -1,10 +1,11 @@
-import { EXTENSION_SCHEME } from "../constants";
+import { container } from "../container/inversify.config";
 
 import { getChangePair } from "./changes/changes";
 
 import { FileNode, FolderNode, PathType } from "./changes/tree";
+import { GitService } from "./service";
 
-import { Change, Status } from "./types";
+import { Change } from "./types";
 
 export type ChangesCollection = { ref: string; changes: Change[] }[];
 
@@ -50,31 +51,17 @@ export function parseGitAuthors(data: string) {
 }
 
 export function getDiffUriPair(node: FileNode) {
-	const { uri, status, originalChangeStack, changeStack } = node;
+	const gitService = container.get(GitService);
+
+	const { uri, originalChangeStack, changeStack } = node;
 	const [{ change: preChange, ref: preRef }, { ref: curRef }] = getChangePair(
 		originalChangeStack,
 		changeStack
 	);
 
-	const preQuery = {
-		isFileExist: status !== Status.INDEX_ADDED,
-		ref: `${preRef}~`,
-	};
-
-	const curQuery = {
-		isFileExist: status !== Status.DELETED,
-		ref: curRef,
-	};
-
 	return [
-		preChange!.originalUri.with({
-			scheme: EXTENSION_SCHEME,
-			query: JSON.stringify(preQuery),
-		}),
-		uri.with({
-			scheme: EXTENSION_SCHEME,
-			query: JSON.stringify(curQuery),
-		}),
+		gitService.toGitUri(preChange.originalUri, `${preRef}~`),
+		gitService.toGitUri(uri, curRef),
 	];
 }
 

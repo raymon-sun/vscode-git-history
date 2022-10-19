@@ -3,7 +3,7 @@ import { Pool, spawn, Worker } from "threads";
 import { injectable } from "inversify";
 import simpleGit, { SimpleGit } from "simple-git";
 
-import { EventEmitter, workspace } from "vscode";
+import { EventEmitter, Uri, workspace } from "vscode";
 
 import { API, Repository } from "../typings/scmExtension";
 
@@ -220,6 +220,7 @@ export class GitService {
 			refs.map((ref) =>
 				this.getChangesByRef(repoPath, ref).then((changes) => ({
 					ref,
+					repoPath,
 					changes,
 				}))
 			)
@@ -258,5 +259,10 @@ export class GitService {
 		this.gitExt?.repositories?.forEach((repository) =>
 			repository.state.onDidChange(() => handler(repository))
 		);
+	}
+
+	// TODO: pr options params to vscode
+	toGitUri(uri: Uri, ref: string) {
+		return this.gitExt?.toGitUri(uri, ref);
 	}
 }

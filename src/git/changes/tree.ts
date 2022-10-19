@@ -8,7 +8,11 @@ import { getChangePair } from "./changes";
 
 import { mergeStatus } from "./status";
 
-export type ChangesCollection = { ref: string; changes: Change[] }[];
+export type ChangesCollection = {
+	ref: string;
+	repoPath: string;
+	changes: Change[];
+}[];
 
 export interface PathCollection {
 	[folderOrFileName: string]: FolderNode | FileNode;
@@ -23,6 +27,7 @@ export interface FolderNode {
 export interface FileNode {
 	type: PathType.FILE;
 	uri: Uri;
+	repoPath: string;
 	status?: Status;
 	changeStack: ChangeItem[];
 	originalChangeStack?: ChangeItem[];
@@ -68,7 +73,7 @@ export function resolveChangesCollection(
 export function getPathMap(changesCollection: ChangesCollection) {
 	const pathMap: Record<string, FileNode> = {};
 	const renamedPaths: string[] = [];
-	changesCollection.reverse().forEach(({ ref, changes }) => {
+	changesCollection.reverse().forEach(({ ref, repoPath, changes }) => {
 		changes.forEach((change) => {
 			const { status, uri, originalUri } = change;
 			const { path } = uri;
@@ -94,6 +99,7 @@ export function getPathMap(changesCollection: ChangesCollection) {
 				} else {
 					pathMap[originalPath] = {
 						type: PathType.FILE,
+						repoPath,
 						uri: originalUri,
 						changeStack: [
 							{
@@ -114,6 +120,7 @@ export function getPathMap(changesCollection: ChangesCollection) {
 
 			pathMap[path] = {
 				type: PathType.FILE,
+				repoPath,
 				uri,
 				changeStack: [{ ref, change }],
 			};

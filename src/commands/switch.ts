@@ -2,8 +2,8 @@ import { commands, QuickPickItem, window } from "vscode";
 
 import { container } from "../container/inversify.config";
 import { GitService } from "../git/service";
-import { Source } from "../views/data/source";
-import state from "../views/data/state";
+import { Source } from "../views/history/data/source";
+import state from "../views/history/data/state";
 
 export const RESET_COMMAND = "git-log.log.reset";
 export const REFRESH_COMMAND = "git-log.log.refresh";

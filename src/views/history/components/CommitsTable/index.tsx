@@ -9,12 +9,12 @@ import {
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { useMeasure } from "react-use";
 
-import { BatchedCommits } from "../../../git/types";
+import { BatchedCommits } from "../../../../git/types";
 
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
 
-import { Commit } from "../../../git/commit";
+import { Commit } from "../../../../git/commit";
 
 import { useBatchCommits } from "./useBatchCommits";
 import { useColumnResize } from "./useColumnResize";

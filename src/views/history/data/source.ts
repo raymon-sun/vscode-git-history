@@ -5,25 +5,25 @@ import { window, commands, ExtensionContext, workspace } from "vscode";
 
 import { debounce } from "lodash";
 
-import { TYPES } from "../../container/types";
-import { GitService } from "../../git/service";
-import { GitGraph } from "../../git/graph";
+import { TYPES } from "../../../container/types";
+import { GitService } from "../../../git/service";
+import { GitGraph } from "../../../git/graph";
 import {
 	PathCollection,
 	resolveChangesCollection,
-} from "../../git/changes/tree";
-import { ChangeTreeDataProvider } from "../../providers/changeTreeData";
+} from "../../../git/changes/tree";
+import { ChangeTreeDataProvider } from "../../../providers/changeTreeData";
 
-import { BatchedCommits, LogOptions } from "../../git/types";
+import { BatchedCommits, LogOptions } from "../../../git/types";
 
-import { REFRESH_COMMAND, RESET_COMMAND } from "../../commands/switch";
+import { REFRESH_COMMAND, RESET_COMMAND } from "../../../commands/switch";
 
 import {
 	FILTER_AUTHOR_COMMAND,
 	FILTER_MESSAGE_COMMAND,
-} from "../../commands/filter";
+} from "../../../commands/filter";
 
-import { INPUT_HASH_COMMAND } from "../../commands/input";
+import { INPUT_HASH_COMMAND } from "../../../commands/input";
 
 import { link } from "./link";
 import state from "./state";

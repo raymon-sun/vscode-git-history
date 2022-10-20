@@ -6,7 +6,7 @@ import { GitService } from "../git/service";
 import { GitGraph } from "../git/graph";
 import { ChangeTreeDataProvider } from "../providers/changeTreeData";
 import { RevisionTextDocumentContentProvider } from "../providers/revisionTextDocumentContent";
-import { Source } from "../views/data/source";
+import { Source } from "../views/history/data/source";
 import { DisposableController } from "../disposables";
 import { GitStatusFileDecorationProvider } from "../providers/gitStatusFileDecoration";
 import { LogWebviewViewProvider } from "../providers/logWebviewView";

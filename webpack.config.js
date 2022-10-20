@@ -85,7 +85,7 @@ const workerConfig = {
 /**@type {import('webpack').Configuration}*/
 const viewConfig = {
 	target: "web",
-	entry: "./src/views/index.tsx",
+	entry: "./src/views/history/index.tsx",
 	output: {
 		// the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
 		path: path.resolve(__dirname, "dist"),

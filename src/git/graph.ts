@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 
-import { getLastItem } from "../views/utils/common";
+import { getLastItem } from "../views/history/utils/common";
 
 import { attach_graph } from "./pkg/git_graph";
 

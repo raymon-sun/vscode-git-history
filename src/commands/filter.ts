@@ -3,7 +3,7 @@ import { commands, ThemeIcon, window } from "vscode";
 import { container } from "../container/inversify.config";
 import { GitService } from "../git/service";
 
-import state from "../views/data/state";
+import state from "../views/history/data/state";
 
 export const FILTER_AUTHOR_COMMAND = "git-log.log.filter.author";
 export const FILTER_MESSAGE_COMMAND = "git-log.log.filter.message";

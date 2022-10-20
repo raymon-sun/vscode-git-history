@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import type { CommitGraphData } from "../../../git/graph";
+import type { CommitGraphData } from "../../../../git/graph";
 
 interface Props {
 	data: CommitGraphData;

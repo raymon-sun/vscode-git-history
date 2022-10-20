@@ -10,9 +10,9 @@ import {
 } from "vscode";
 
 import { TYPES } from "../container/types";
-import { IRequestMessage } from "../views/utils/message";
-import { Source } from "../views/data/source";
-import { linksMap } from "../views/data/link";
+import { IRequestMessage } from "../views/history/utils/message";
+import { Source } from "../views/history/data/source";
+import { linksMap } from "../views/history/data/link";
 
 @injectable()
 export class LogWebviewViewProvider implements WebviewViewProvider {

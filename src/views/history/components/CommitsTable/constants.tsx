@@ -1,7 +1,7 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import type { ReactNode } from "react";
 
-import { Commit } from "../../../git/commit";
+import { Commit } from "../../../../git/commit";
 import GitGraph from "../GitGraph";
 import GitTag from "../GitTag";
 

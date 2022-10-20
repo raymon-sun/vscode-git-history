@@ -4,6 +4,11 @@ All notable changes to the "git-log" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.1.15
+
+- display bread crumbs in diff editor
+- compatible with other extension in diff editor
+
 ## 0.1.14
 
 - Pin yourself in authors selector

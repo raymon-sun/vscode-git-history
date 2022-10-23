@@ -1,5 +1,7 @@
 # Git Log
 
+English | [简体中文](./README.zh-CN.md)
+
 [![Version](https://vsmarketplacebadge.apphb.com/version/guodongsun.vscode-git-cruise.svg)](https://marketplace.visualstudio.com/items?itemName=guodongsun.vscode-git-cruise)
 [![Installs](https://vsmarketplacebadge.apphb.com/installs/guodongsun.vscode-git-cruise.svg)](https://marketplace.visualstudio.com/items?itemName=guodongsun.vscode-git-cruise)
 

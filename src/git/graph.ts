@@ -2,7 +2,7 @@ import { injectable } from "inversify";
 
 import { getLastItem } from "../views/history/utils/common";
 
-import { attach_graph } from "./pkg/git_graph";
+// import { attach_graph } from "./pkg/git_graph";
 
 import { Commit } from "./commit";
 
@@ -61,18 +61,18 @@ export class GitGraph {
 		}, lastLines);
 	}
 
-	private setGraphToCommitsByWasm(
-		commits: Commit[],
-		lastLines: CommitGraphLine[]
-	) {
-		const { graphicCommits, chains } = attach_graph(
-			commits,
-			lastLines,
-			this.curChains
-		);
-		this.currentBatchedCommits.commits = graphicCommits;
-		this.curChains = chains;
-	}
+	// private setGraphToCommitsByWasm(
+	// 	commits: Commit[],
+	// 	lastLines: CommitGraphLine[]
+	// ) {
+	// 	const { graphicCommits, chains } = attach_graph(
+	// 		commits,
+	// 		lastLines,
+	// 		this.curChains
+	// 	);
+	// 	this.currentBatchedCommits.commits = graphicCommits;
+	// 	this.curChains = chains;
+	// }
 
 	private getGraphSlice(commit: Commit, lastLines: CommitGraphLine[]) {
 		const { hash, parents } = commit;

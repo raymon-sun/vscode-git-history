@@ -1,6 +1,6 @@
 import { commands, window } from "vscode";
 
-export const INPUT_HASH_COMMAND = "git-log.log.input.hash";
+export const INPUT_HASH_COMMAND = "git-history.history.input.hash";
 
 export function getInputCommandsDisposable() {
 	return [

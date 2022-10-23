@@ -1,1 +1,1 @@
-export const EXTENSION_SCHEME = "git-log";
+export const EXTENSION_SCHEME = "git-history";

@@ -5,10 +5,10 @@ import { GitService } from "../git/service";
 import { Source } from "../views/history/data/source";
 import state from "../views/history/data/state";
 
-export const RESET_COMMAND = "git-log.log.reset";
-export const REFRESH_COMMAND = "git-log.log.refresh";
-export const SWITCH_REPO_COMMAND = "git-log.log.switch.repo";
-export const SWITCH_BRANCH_COMMAND = "git-log.log.switch.branch";
+export const RESET_COMMAND = "git-history.history.reset";
+export const REFRESH_COMMAND = "git-history.history.refresh";
+export const SWITCH_REPO_COMMAND = "git-history.history.switch.repo";
+export const SWITCH_BRANCH_COMMAND = "git-history.history.switch.branch";
 
 const REF_TYPE_DETAIL_MAP: Record<
 	string,

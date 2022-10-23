@@ -19,7 +19,7 @@ export class DisposableController {
 		return [
 			...getCommandDisposables(),
 			window.registerWebviewViewProvider(
-				`${EXTENSION_SCHEME}.log`,
+				`${EXTENSION_SCHEME}.history`,
 				this.webviewProvider,
 				{ webviewOptions: { retainContextWhenHidden: true } }
 			),

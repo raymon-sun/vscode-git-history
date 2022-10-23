@@ -1,6 +1,6 @@
 {
 	"name": "vscode-git-cruise",
-	"displayName": "Git Log",
+	"displayName": "Git History",
 	"description": "Git history panel in your VS Code",
 	"keywords": [
 		"git",
@@ -14,10 +14,10 @@
 		"flow",
 		"tag"
 	],
-	"version": "0.1.14",
+	"version": "0.2.0",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
-	"repository": "https://github.com/raymon-sun/vscode-git-log",
+	"repository": "https://github.com/raymon-sun/vscode-git-history",
 	"publisher": "GuodongSun",
 	"engines": {
 		"vscode": "^1.56.0"
@@ -27,31 +27,31 @@
 		"SCM Providers"
 	],
 	"activationEvents": [
-		"onView:git-log.log"
+		"onView:git-history.history"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"viewsContainers": {
 			"panel": [
 				{
-					"id": "gitLogView",
+					"id": "gitHistoryView",
 					"title": "Git",
 					"icon": "$(history)"
 				}
 			]
 		},
 		"views": {
-			"gitLogView": [
+			"gitHistoryView": [
 				{
 					"type": "webview",
-					"id": "git-log.log",
-					"name": "Log",
+					"id": "git-history.history",
+					"name": "History",
 					"icon": "$(history)",
 					"contextualTitle": "Git",
 					"visibility": "visible"
 				},
 				{
-					"id": "git-log.changes",
+					"id": "git-history.changes",
 					"name": "Changes",
 					"icon": "$(list-unordered)",
 					"contextualTitle": "Git"
@@ -60,62 +60,62 @@
 		},
 		"commands": [
 			{
-				"category": "Git Log",
-				"command": "git-log.log",
-				"title": "Log",
+				"category": "Git History",
+				"command": "git-history.history",
+				"title": "History",
 				"icon": "$(history)"
 			},
 			{
-				"category": "Git Log",
-				"command": "git-log.log.reset",
-				"title": "Reset Log",
+				"category": "Git History",
+				"command": "git-history.history.reset",
+				"title": "Reset History",
 				"icon": "$(discard)"
 			},
 			{
-				"category": "Git Log",
-				"command": "git-log.log.refresh",
-				"title": "Refresh Log",
+				"category": "Git History",
+				"command": "git-history.history.refresh",
+				"title": "Refresh History",
 				"icon": "$(refresh)"
 			},
 			{
-				"category": "Git Log",
-				"command": "git-log.log.switch.repo",
+				"category": "Git History",
+				"command": "git-history.history.switch.repo",
 				"title": "Switch Repository",
 				"icon": "$(repo)"
 			},
 			{
-				"category": "Git Log",
-				"command": "git-log.log.switch.branch",
+				"category": "Git History",
+				"command": "git-history.history.switch.branch",
 				"title": "Switch Branch",
 				"icon": "$(git-branch)"
 			},
 			{
-				"category": "Git Log",
-				"command": "git-log.log.filter",
-				"title": "Git Log",
+				"category": "Git History",
+				"command": "git-history.history.filter",
+				"title": "Git History",
 				"icon": "$(filter)"
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
-					"command": "git-log.log.refresh",
-					"when": "view =~ /git-log.log/",
+					"command": "git-history.history.refresh",
+					"when": "view =~ /git-history.history/",
 					"group": "navigation@4"
 				},
 				{
-					"command": "git-log.log.reset",
-					"when": "view =~ /git-log.log/",
+					"command": "git-history.history.reset",
+					"when": "view =~ /git-history.history/",
 					"group": "navigation@4"
 				},
 				{
-					"command": "git-log.log.switch.repo",
-					"when": "view =~ /git-log.log/",
+					"command": "git-history.history.switch.repo",
+					"when": "view =~ /git-history.history/",
 					"group": "navigation@4"
 				},
 				{
-					"command": "git-log.log.switch.branch",
-					"when": "view =~ /git-log.log/",
+					"command": "git-history.history.switch.branch",
+					"when": "view =~ /git-history.history/",
 					"group": "navigation@4"
 				}
 			]

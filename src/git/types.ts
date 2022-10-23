@@ -105,13 +105,13 @@ export function getStatusText(status: Status) {
 		case Status.MODIFIED:
 			return localize("modified", "Modified");
 		case Status.INDEX_ADDED:
-			return localize("index added", "Index Added");
+			return localize("added", "Added");
 		case Status.INDEX_DELETED:
 			return localize("index deleted", "Index Deleted");
 		case Status.DELETED:
 			return localize("deleted", "Deleted");
 		case Status.INDEX_RENAMED:
-			return localize("index renamed", "Index Renamed");
+			return localize("renamed", "Renamed");
 		case Status.INDEX_COPIED:
 			return localize("index copied", "Index Copied");
 		case Status.UNTRACKED:

@@ -7,7 +7,7 @@ import { getColor, getStatusText, Status } from "../../git/types";
 @injectable()
 export class GitStatusFileDecorationProvider implements FileDecorationProvider {
 	private readonly STATUS_BADGE_MAP: { [key in Status]?: string } = {
-		[Status.INDEX_ADDED]: "U",
+		[Status.INDEX_ADDED]: "A",
 		[Status.INDEX_RENAMED]: "R",
 		[Status.MODIFIED]: "M",
 		[Status.DELETED]: "D",

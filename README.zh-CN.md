@@ -1,4 +1,4 @@
-# Git Log
+# Git History
 
 [English](README.md) | 简体中文
 

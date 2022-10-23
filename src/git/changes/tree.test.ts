@@ -17,6 +17,7 @@ suite("#getPathMap()", () => {
 		const CHANGES_COLLECTION: ChangesCollection = [
 			{
 				ref: "1",
+				repoPath: "",
 				changes: [
 					{
 						uri: Uri.parse("/src/app.ts"),
@@ -40,6 +41,7 @@ suite("#getPathMap()", () => {
 			},
 			{
 				ref: "2",
+				repoPath: "",
 				changes: [
 					{
 						uri: Uri.parse("/src/enter.ts"),
@@ -57,6 +59,7 @@ suite("#getPathMap()", () => {
 			},
 			{
 				ref: "3",
+				repoPath: "",
 				changes: [
 					{
 						uri: Uri.parse("/assets/icons/logo.svg"),
@@ -106,6 +109,7 @@ suite("#getOriginalChangeStackAndUpdateChange()", () => {
 			"/assets/temp.svg": {
 				type: PathType.FILE,
 				uri: Uri.parse(""),
+				repoPath: "",
 				changeStack: [
 					{
 						ref: "7",
@@ -132,6 +136,7 @@ suite("#getOriginalChangeStackAndUpdateChange()", () => {
 			"/assets/enter.svg": {
 				type: PathType.FILE,
 				uri: Uri.parse("/assets/enter.svg"),
+				repoPath: "",
 				changeStack: [
 					{
 						ref: "3",

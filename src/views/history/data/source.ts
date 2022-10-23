@@ -1,7 +1,13 @@
 import { parse } from "path";
 
 import { inject, injectable } from "inversify";
-import { window, commands, ExtensionContext, workspace } from "vscode";
+import {
+	window,
+	commands,
+	ExtensionContext,
+	workspace,
+	EventEmitter,
+} from "vscode";
 
 import { debounce } from "lodash";
 
@@ -12,7 +18,7 @@ import {
 	PathCollection,
 	resolveChangesCollection,
 } from "../../../git/changes/tree";
-import { ChangeTreeDataProvider } from "../../../providers/changeTreeData";
+import { ChangeTreeDataProvider } from "../../changes/ChangeTreeDataProvider";
 
 import { BatchedCommits, LogOptions } from "../../../git/types";
 
@@ -32,6 +38,8 @@ import state from "./state";
 export class Source {
 	private switchSubscriber?: (batchedCommits: BatchedCommits) => void;
 
+	private commitsEventEmitter = new EventEmitter<{ totalCount: number }>();
+
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
 		private git: GitService,
@@ -41,6 +49,10 @@ export class Source {
 
 	getSwitchSubscriber() {
 		return this.switchSubscriber;
+	}
+
+	getCommitsEventEmitter() {
+		return this.commitsEventEmitter;
 	}
 
 	@link("promise")
@@ -121,6 +133,8 @@ export class Source {
 				await this.git.getCommitsTotalCount(options)
 			);
 
+			this.commitsEventEmitter.fire({ totalCount });
+
 			this.graph.attachGraphAndPost({
 				totalCount,
 				batchNumber: _batchNumber,
@@ -147,8 +161,10 @@ export class Source {
 					);
 			}
 		} else {
+			const totalCount = firstBatchCommits?.length || 0;
+			this.commitsEventEmitter.fire({ totalCount });
 			this.graph.attachGraphAndPost({
-				totalCount: firstBatchCommits?.length || 0,
+				totalCount,
 				batchNumber: _batchNumber,
 				commits: firstBatchCommits || [],
 				options,

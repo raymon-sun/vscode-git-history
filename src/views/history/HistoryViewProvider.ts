@@ -9,13 +9,14 @@ import {
 	WebviewViewProvider,
 } from "vscode";
 
-import { TYPES } from "../container/types";
-import { IRequestMessage } from "../views/history/utils/message";
-import { Source } from "../views/history/data/source";
-import { linksMap } from "../views/history/data/link";
+import { TYPES } from "../../container/types";
+
+import { IRequestMessage } from "./utils/message";
+import { Source } from "./data/source";
+import { linksMap } from "./data/link";
 
 @injectable()
-export class LogWebviewViewProvider implements WebviewViewProvider {
+export class HistoryWebviewViewProvider implements WebviewViewProvider {
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
 		private source: Source
@@ -23,6 +24,11 @@ export class LogWebviewViewProvider implements WebviewViewProvider {
 
 	resolveWebviewView(webviewView: WebviewView) {
 		const { extensionUri } = this.context;
+
+		this.source.getCommitsEventEmitter().event(({ totalCount }) => {
+			webviewView.description = `${totalCount} commits in total`;
+		});
+
 		webviewView.webview.options = {
 			enableScripts: true,
 			localResourceRoots: [Uri.joinPath(extensionUri, "dist")],

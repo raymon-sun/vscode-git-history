@@ -10,15 +10,15 @@ import {
 } from "vscode";
 import { inject, injectable } from "inversify";
 
-import { TYPES } from "../container/types";
-import { compareFileTreeNode, getDiffUriPair } from "../git/utils";
-import { EXTENSION_SCHEME } from "../constants";
+import { TYPES } from "../../container/types";
+import { compareFileTreeNode, getDiffUriPair } from "../../git/utils";
+import { EXTENSION_SCHEME } from "../../constants";
 import {
 	FileNode,
 	FolderNode,
 	PathCollection,
 	PathType,
-} from "../git/changes/tree";
+} from "../../git/changes/tree";
 
 @injectable()
 export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {

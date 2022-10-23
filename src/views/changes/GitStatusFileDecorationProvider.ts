@@ -1,8 +1,8 @@
 import { injectable } from "inversify";
 import { FileDecoration, FileDecorationProvider, Uri } from "vscode";
 
-import { EXTENSION_SCHEME } from "../constants";
-import { getColor, getStatusText, Status } from "../git/types";
+import { EXTENSION_SCHEME } from "../../constants";
+import { getColor, getStatusText, Status } from "../../git/types";
 
 @injectable()
 export class GitStatusFileDecorationProvider implements FileDecorationProvider {

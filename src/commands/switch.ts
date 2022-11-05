@@ -41,12 +41,13 @@ export function getSwitchCommandsDisposable() {
 			source.getCommits(switchSubscriber, state.logOptions);
 		}),
 		commands.registerCommand(REFRESH_COMMAND, async () => {
-			const switchSubscriber = source.getSwitchSubscriber();
-			if (!switchSubscriber) {
+			const logSubscriber = source.getLogSubscriber();
+			if (!logSubscriber) {
 				return;
 			}
 
-			source.getCommits(switchSubscriber, state.logOptions);
+			// source.getCommits(switchSubscriber, state.logOptions);
+			source.getLog(logSubscriber, state.logOptions);
 		}),
 		commands.registerCommand(SWITCH_REPO_COMMAND, async () => {
 			const quickPick = window.createQuickPick();

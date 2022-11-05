@@ -1,9 +1,10 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import type { ReactNode } from "react";
 
-import { Commit } from "../../../../git/commit";
 import GitGraph from "../GitGraph";
 import GitTag from "../GitTag";
+
+import { IGraphicCommit } from "./GraphicCommitsResolver";
 
 type FillRemainWidth = "fill";
 
@@ -15,7 +16,7 @@ export interface IHeader {
 	filterable?: boolean;
 	locatable?: boolean;
 	filterLogOption?: string;
-	transformer: (commit: Commit) => ReactNode | string;
+	transformer: (commit: IGraphicCommit) => ReactNode | string;
 }
 
 export const HEADERS: IHeader[] = [
@@ -24,7 +25,7 @@ export const HEADERS: IHeader[] = [
 		label: "Graph",
 		width: 70,
 		minWidth: 70,
-		transformer: (commit) => <GitGraph data={commit.graph!} />,
+		transformer: (commit) => <GitGraph data={commit.graphSlice!} />,
 	},
 	{
 		prop: "description",
@@ -33,14 +34,14 @@ export const HEADERS: IHeader[] = [
 		minWidth: 180,
 		filterable: true,
 		filterLogOption: "keyword",
-		transformer: ({ refNames, message, graph }) => (
+		transformer: ({ refNames, message, graphSlice }) => (
 			<>
 				<span>
-					{refNames.map((refName) => (
+					{refNames?.map((refName) => (
 						<GitTag
 							key={refName}
 							refName={refName}
-							color={graph!.commitColor}
+							color={graphSlice!.commitColor}
 						/>
 					))}
 					<span title={message}>{message}</span>
@@ -48,7 +49,7 @@ export const HEADERS: IHeader[] = [
 				<VSCodeButton
 					data-button
 					appearance="icon"
-					onClick={() => navigator.clipboard.writeText(message)}
+					onClick={() => navigator.clipboard.writeText(message || "")}
 					title="Copy Message"
 				>
 					<span className="codicon codicon-copy" />

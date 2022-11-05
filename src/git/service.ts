@@ -195,6 +195,44 @@ export class GitService {
 			.catch((err) => console.log(err));
 	}
 
+	async getLog(options?: LogOptions) {
+		const COMMIT_FORMAT = "%H%n%D%n%aN%n%aE%n%at%n%ct%n%P%n%B";
+		const { repo, authors, keyword, ref, maxLength, count, skip } =
+			options || {};
+		const args = [
+			"log",
+			`--format=${COMMIT_FORMAT}`,
+			"-z",
+			...(ref ? [ref] : LOG_TYPE_ARGS),
+			"--author-date-order",
+		];
+
+		if (authors && authors.length) {
+			args.push(...authors.map((author) => `--author=${author}`));
+		}
+
+		if (keyword) {
+			args.push(`--grep=${keyword}`);
+		}
+
+		if (maxLength) {
+			args.push(`-n${maxLength}`);
+		}
+
+		if (skip) {
+			args.push(`--skip=${skip}`);
+		}
+
+		if (count) {
+			args.push(`-${count}`);
+		}
+
+		return await this.git
+			?.cwd(repo || this.rootRepoPath)
+			.raw(args)
+			.catch((err) => console.log(err));
+	}
+
 	async getCommitsTotalCount(options?: LogOptions) {
 		const { repo, ref, authors, keyword } = options || {};
 

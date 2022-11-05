@@ -25,6 +25,13 @@ export interface BatchedCommits {
 	options: LogOptions;
 }
 
+export interface PagedLog {
+	totalCount: number;
+	pageNumber: number;
+	log: string;
+	options: LogOptions;
+}
+
 export interface Change {
 	/**
 	 * Returns either `originalUri` or `renameUri`, depending

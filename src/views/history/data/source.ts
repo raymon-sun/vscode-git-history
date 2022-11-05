@@ -20,7 +20,7 @@ import {
 } from "../../../git/changes/tree";
 import { ChangeTreeDataProvider } from "../../changes/ChangeTreeDataProvider";
 
-import { BatchedCommits, LogOptions } from "../../../git/types";
+import { BatchedCommits, LogOptions, PagedLog } from "../../../git/types";
 
 import { REFRESH_COMMAND, RESET_COMMAND } from "../../../commands/switch";
 
@@ -37,6 +37,7 @@ import state from "./state";
 @injectable()
 export class Source {
 	private switchSubscriber?: (batchedCommits: BatchedCommits) => void;
+	private logSubscriber?: (pagedLog: PagedLog) => void;
 
 	private commitsEventEmitter = new EventEmitter<{ totalCount: number }>();
 
@@ -49,6 +50,10 @@ export class Source {
 
 	getSwitchSubscriber() {
 		return this.switchSubscriber;
+	}
+
+	getLogSubscriber() {
+		return this.logSubscriber;
 	}
 
 	getCommitsEventEmitter() {
@@ -76,6 +81,11 @@ export class Source {
 	@link("subscription")
 	async subscribeSwitcher(handler: (batchedCommits: BatchedCommits) => void) {
 		this.switchSubscriber = handler;
+	}
+
+	@link("subscription")
+	async subscribeLog(handler: (pagedLog: PagedLog) => void) {
+		this.logSubscriber = handler;
 	}
 
 	@link("promise")
@@ -169,6 +179,62 @@ export class Source {
 				commits: firstBatchCommits || [],
 				options,
 			});
+		}
+	}
+
+	@link("promise")
+	async getLog(
+		handler: (batchedCommits: PagedLog) => void,
+		options: LogOptions
+	) {
+		const FIRST_BATCH_SIZE = 300;
+
+		const [countRes, logRes] = await Promise.allSettled([
+			this.git.getCommitsTotalCount(options),
+			this.git.getLog({
+				...options,
+				count: FIRST_BATCH_SIZE,
+			}),
+		]);
+
+		if (countRes.status === "rejected" || logRes.status === "rejected") {
+			return;
+		}
+
+		const totalCount = Number(countRes.value);
+		this.commitsEventEmitter.fire({ totalCount });
+
+		const log = logRes.value || "";
+
+		let _pageNumber = 0;
+		handler({
+			totalCount,
+			pageNumber: _pageNumber,
+			log,
+			options,
+		});
+
+		if (totalCount <= FIRST_BATCH_SIZE) {
+			return;
+		}
+
+		const BATCH_SIZE = 5000;
+		for (let i = FIRST_BATCH_SIZE; i < totalCount; i = i + BATCH_SIZE) {
+			const pageNumber = ++_pageNumber;
+			this.git
+				.getLog({
+					...options,
+					count: BATCH_SIZE,
+					skip: i,
+				})
+				.then((res) =>
+					handler({
+						totalCount,
+						pageNumber,
+						log: res || "",
+						options,
+					})
+				);
 		}
 	}
 

@@ -9,55 +9,54 @@ import {
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { useMeasure } from "react-use";
 
-import { BatchedCommits } from "../../../../git/types";
+import { PagedLog } from "../../../../git/types";
 
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
 
-import { Commit } from "../../../../git/commit";
-
-import { useBatchCommits } from "./useBatchCommits";
 import { useColumnResize } from "./useColumnResize";
 
 import { HEADERS } from "./constants";
 
 import style from "./index.module.scss";
+import { useCommits } from "./useCommits";
+import { IGraphicCommit } from "./GraphicCommitsResolver";
 
 const GRAPH_COLUMN_ID = "graph";
 
 const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const channel = useContext(ChannelContext)!;
 
-	const { commits, commitsCount, options, setBatchedCommits } =
-		useBatchCommits();
+	// const { commits, commitsCount, options, setBatchedCommits } =
+	// 	useBatchCommits();
+
+	const { commits, commitsCount, options, setPagedLog } = useCommits();
 
 	function diff(sortedRefs: string[]) {
 		channel.viewChanges(sortedRefs);
 	}
 
-	const subscribeSwitcher = useCallback(() => {
-		channel.subscribeSwitcher((batchedCommits: BatchedCommits) =>
-			setBatchedCommits(batchedCommits)
-		);
-	}, [channel, setBatchedCommits]);
+	const subscribeLog = useCallback(() => {
+		channel.subscribeLog((pagedLog: PagedLog) => {
+			console.log(pagedLog);
+			setPagedLog(pagedLog);
+		});
+	}, [channel, setPagedLog]);
 
-	const onFilter = useCallback(
-		(prop: string) => {
-			switch (prop) {
-				case "description":
-					channel.filterMessage((batchedCommits: BatchedCommits) =>
-						setBatchedCommits(batchedCommits)
-					);
-					break;
-				case "author":
-					channel.filterAuthor((batchedCommits: BatchedCommits) =>
-						setBatchedCommits(batchedCommits)
-					);
-					break;
-			}
-		},
-		[channel, setBatchedCommits]
-	);
+	const onFilter = useCallback((prop: string) => {
+		switch (prop) {
+			case "description":
+				// channel.filterMessage((batchedCommits: BatchedCommits) =>
+				// 	setBatchedCommits(batchedCommits)
+				// );
+				break;
+			case "author":
+				// channel.filterAuthor((batchedCommits: BatchedCommits) =>
+				// 	setBatchedCommits(batchedCommits)
+				// );
+				break;
+		}
+	}, []);
 
 	const [locationIndex, setLocationIndex] = useState<number>();
 	const onLocate = useCallback(
@@ -97,10 +96,10 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const { columns } = useColumnResize(headers, totalWidth);
 
 	useEffect(() => {
-		subscribeSwitcher();
+		subscribeLog();
 
 		channel.autoRefreshLog();
-	}, [channel, subscribeSwitcher]);
+	}, [channel, subscribeLog]);
 
 	return (
 		<>
@@ -168,7 +167,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 					list={commits}
 					keyProp="hash"
 					locationIndex={locationIndex}
-					itemRender={(commit: Commit) => (
+					itemRender={(commit: IGraphicCommit) => (
 						<div className={style.commit}>
 							{columns.map(({ prop, size, transformer }) => (
 								<span

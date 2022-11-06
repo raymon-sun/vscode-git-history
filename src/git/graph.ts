@@ -4,9 +4,20 @@ import { getLastItem } from "../views/history/utils/common";
 
 // import { attach_graph } from "./pkg/git_graph";
 
-import { Commit } from "./commit";
+import { ICommit, CommitIndex } from "./commit";
 
-import { BatchedCommits } from "./types";
+import {
+	BatchedCommits,
+	CommitGraphSliceIndex,
+	ICommitGraphLine,
+	ICommitGraphSlice,
+} from "./types";
+
+interface IChain {
+	hash: string;
+	parent: string;
+	color: string;
+}
 
 @injectable()
 export class GitGraph {
@@ -32,7 +43,8 @@ export class GitGraph {
 			const lastLines =
 				getLastItem(
 					this.batchedCommitsCollection[this.postIndex - 1]?.commits
-				)?.graph?.lines || [];
+				)?.[CommitIndex.GRAPH_SLICE]?.[CommitGraphSliceIndex.LINES] ||
+				[];
 
 			this.setGraphToCommits(
 				this.currentBatchedCommits.commits,
@@ -54,10 +66,14 @@ export class GitGraph {
 		return this.batchedCommitsCollection[this.postIndex];
 	}
 
-	private setGraphToCommits(commits: Commit[], lastLines: CommitGraphLine[]) {
+	private setGraphToCommits(
+		commits: ICommit[],
+		lastLines: ICommitGraphLine[]
+	) {
 		commits.reduce((pre, commit) => {
-			commit.graph = this.getGraphSlice(commit, pre);
-			return commit.graph.lines;
+			const graphSlice = this.getGraphSlice(commit, pre);
+			commit.push(graphSlice);
+			return graphSlice[CommitGraphSliceIndex.LINES];
 		}, lastLines);
 	}
 
@@ -74,8 +90,11 @@ export class GitGraph {
 	// 	this.curChains = chains;
 	// }
 
-	private getGraphSlice(commit: Commit, lastLines: CommitGraphLine[]) {
-		const { hash, parents } = commit;
+	private getGraphSlice(
+		commit: ICommit,
+		lastLines: ICommitGraphLine[]
+	): ICommitGraphSlice {
+		const [hash, , , parents] = commit;
 		const lines = this.getCurrentLines(lastLines);
 
 		const [firstParent, ...forkParents] = parents;
@@ -101,9 +120,9 @@ export class GitGraph {
 				let bottomIndex = 0;
 				lines.forEach((line, index) => {
 					if (mergedIndexList.includes(index)) {
-						line.bottom = -1;
+						line[1] = -1;
 					} else {
-						line.bottom = bottomIndex;
+						line[1] = bottomIndex;
 						bottomIndex++;
 					}
 				});
@@ -120,11 +139,11 @@ export class GitGraph {
 			}
 
 			// first node of a chain
-			lines.push({
-				top: -1,
-				bottom: firstParent ? this.curChains.length - 1 : -1,
-				color: commitColor,
-			});
+			lines.push([
+				-1,
+				firstParent ? this.curChains.length - 1 : -1,
+				commitColor,
+			]);
 		}
 
 		// handle multiple parents of the node
@@ -139,11 +158,7 @@ export class GitGraph {
 
 				const color = firstChain.color;
 				if (firstIndex !== undefined) {
-					lines.push({
-						top: -1,
-						bottom: firstIndex,
-						color,
-					});
+					lines.push([-1, firstIndex, color]);
 				}
 			} else {
 				// new chain
@@ -154,33 +169,28 @@ export class GitGraph {
 					color: commitColor,
 				});
 
-				lines.push({
-					top: -1,
-					bottom: this.curChains.length - 1,
-					color: commitColor,
-				});
+				lines.push([-1, this.curChains.length - 1, commitColor]);
 			}
 		});
 
-		return { commitPosition, commitColor, lines };
+		return [commitPosition, commitColor, lines];
 	}
 
-	private getCurrentLines(preLines: CommitGraphLine[]) {
-		const existedBottoms: number[] = [];
-		return preLines
-			.filter(({ bottom }) => {
-				if (existedBottoms.includes(bottom)) {
-					return false;
-				}
+	private getCurrentLines(preLines: ICommitGraphLine[]) {
+		const existedBottoms: Record<number, true> = {};
+		const lines: ICommitGraphLine[] = [];
+		preLines.forEach(([, bottom, color]) => {
+			if (existedBottoms[bottom]) {
+				return;
+			}
 
-				existedBottoms.push(bottom);
-				return bottom !== -1;
-			})
-			.map(({ bottom, color }) => ({
-				top: bottom,
-				bottom,
-				color,
-			}));
+			existedBottoms[bottom] = true;
+			if (bottom !== -1) {
+				lines.push([bottom, bottom, color]);
+			}
+		});
+
+		return lines;
 	}
 
 	private getIndexList(chains: IChain[], hash: string) {
@@ -220,12 +230,6 @@ function getColorPicker() {
 			index = -1;
 		},
 	};
-}
-
-interface IChain {
-	hash: string;
-	parent: string;
-	color: string;
 }
 
 export interface CommitGraphData {

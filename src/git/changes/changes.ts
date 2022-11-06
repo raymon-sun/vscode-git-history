@@ -2,9 +2,21 @@ import path from "path";
 
 import { Uri } from "vscode";
 
-import { Change, Status } from "../types";
+import { Status } from "./status";
 
 import type { ChangeItem } from "./tree";
+
+export interface Change {
+	/**
+	 * Returns either `originalUri` or `renameUri`, depending
+	 * on whether this change is a rename change. When
+	 * in doubt always use `uri` over the other two alternatives.
+	 */
+	readonly uri: Uri;
+	readonly originalUri: Uri;
+	readonly renameUri: Uri | undefined;
+	readonly status: Status;
+}
 
 export function parseGitChanges(repoPath: string, gitResult: string) {
 	const entries = gitResult.split("\x00");

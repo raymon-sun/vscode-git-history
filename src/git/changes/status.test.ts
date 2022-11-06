@@ -2,9 +2,7 @@ import { deepEqual, equal } from "assert";
 
 import { Uri } from "vscode";
 
-import { Status } from "../types";
-
-import { getFileExistStatus, mergeStatus } from "./status";
+import { getFileExistStatus, mergeStatus, Status } from "./status";
 import { ChangeItem } from "./tree";
 
 suite("#getFileExistStatus()", () => {

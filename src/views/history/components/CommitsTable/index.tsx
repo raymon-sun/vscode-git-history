@@ -14,7 +14,7 @@ import { BatchedCommits } from "../../../../git/types";
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
 
-import { Commit } from "../../../../git/commit";
+import { ICommit, CommitIndex } from "../../../../git/commit";
 
 import { useBatchCommits } from "./useBatchCommits";
 import { useColumnResize } from "./useColumnResize";
@@ -66,7 +66,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 				case "hash":
 					const hash = await channel.inputHash();
 					const index = commits.findIndex((commit) =>
-						commit.hash.startsWith(hash || "")
+						commit[CommitIndex.HASH].startsWith(hash || "")
 					);
 
 					if (index === -1) {
@@ -166,9 +166,9 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 			<div className={style["commits-area"]}>
 				<PickableList
 					list={commits}
-					keyProp="hash"
+					keyProp={CommitIndex.HASH}
 					locationIndex={locationIndex}
-					itemRender={(commit: Commit) => (
+					itemRender={(commit: ICommit) => (
 						<div className={style.commit}>
 							{columns.map(({ prop, size, transformer }) => (
 								<span

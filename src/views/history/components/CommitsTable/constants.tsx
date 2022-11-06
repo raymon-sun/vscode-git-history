@@ -1,7 +1,8 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import type { ReactNode } from "react";
 
-import { Commit } from "../../../../git/commit";
+import { ICommit, CommitIndex } from "../../../../git/commit";
+import { CommitGraphSliceIndex } from "../../../../git/types";
 import GitGraph from "../GitGraph";
 import GitTag from "../GitTag";
 
@@ -15,7 +16,7 @@ export interface IHeader {
 	filterable?: boolean;
 	locatable?: boolean;
 	filterLogOption?: string;
-	transformer: (commit: Commit) => ReactNode | string;
+	transformer: (commit: ICommit) => ReactNode | string;
 }
 
 export const HEADERS: IHeader[] = [
@@ -24,7 +25,9 @@ export const HEADERS: IHeader[] = [
 		label: "Graph",
 		width: 70,
 		minWidth: 70,
-		transformer: (commit) => <GitGraph data={commit.graph!} />,
+		transformer: (commit) => (
+			<GitGraph data={commit[CommitIndex.GRAPH_SLICE]!} />
+		),
 	},
 	{
 		prop: "description",
@@ -33,22 +36,32 @@ export const HEADERS: IHeader[] = [
 		minWidth: 180,
 		filterable: true,
 		filterLogOption: "keyword",
-		transformer: ({ refNames, message, graph }) => (
+		transformer: (commit) => (
 			<>
 				<span>
-					{refNames.map((refName) => (
+					{commit[CommitIndex.REF_NAMES].map((refName) => (
 						<GitTag
 							key={refName}
 							refName={refName}
-							color={graph!.commitColor}
+							color={
+								commit[CommitIndex.GRAPH_SLICE]![
+									CommitGraphSliceIndex.COMMIT_COLOR
+								]
+							}
 						/>
 					))}
-					<span title={message}>{message}</span>
+					<span title={commit[CommitIndex.MESSAGE]}>
+						{commit[CommitIndex.MESSAGE]}
+					</span>
 				</span>
 				<VSCodeButton
 					data-button
 					appearance="icon"
-					onClick={() => navigator.clipboard.writeText(message)}
+					onClick={() =>
+						navigator.clipboard.writeText(
+							commit[CommitIndex.MESSAGE]
+						)
+					}
 					title="Copy Message"
 				>
 					<span className="codicon codicon-copy" />
@@ -62,13 +75,15 @@ export const HEADERS: IHeader[] = [
 		width: 100,
 		minWidth: 100,
 		locatable: true,
-		transformer: ({ hash }) => (
+		transformer: (commit) => (
 			<>
-				<span>{hash.slice(0, 6)}</span>
+				<span>{commit[CommitIndex.HASH].slice(0, 6)}</span>
 				<VSCodeButton
 					data-button
 					appearance="icon"
-					onClick={() => navigator.clipboard.writeText(hash)}
+					onClick={() =>
+						navigator.clipboard.writeText(commit[CommitIndex.HASH])
+					}
 					title="Copy Hash"
 				>
 					<span className="codicon codicon-copy" />
@@ -83,13 +98,13 @@ export const HEADERS: IHeader[] = [
 		minWidth: 108,
 		filterable: true,
 		filterLogOption: "authors",
-		transformer: (commit) => commit.authorName,
+		transformer: (commit) => commit[CommitIndex.AUTHOR_NAME],
 	},
 	{
 		prop: "date",
 		label: "Date/Time",
 		width: 164,
 		minWidth: 164,
-		transformer: (commit) => commit.commitDate,
+		transformer: (commit) => commit[CommitIndex.COMMIT_DATE],
 	},
 ];

@@ -1,9 +1,9 @@
 import type { FC } from "react";
 
-import type { CommitGraphData } from "../../../../git/graph";
+import type { ICommitGraphSlice } from "../../../../git/types";
 
 interface Props {
-	data: CommitGraphData;
+	data: ICommitGraphSlice;
 }
 
 const GitGraph: FC<Props> = ({ data }) => {
@@ -17,19 +17,19 @@ const GitGraph: FC<Props> = ({ data }) => {
 
 	const RADIUS = 4;
 
-	const { commitPosition, commitColor, lines } = data;
+	const [commitPosition, commitColor, lines] = data;
 	const commitX = (commitPosition + 1) * UNIT;
 
 	const width =
 		(Math.max(
-			...lines.map(({ top, bottom }) => Math.max(top, bottom)),
+			...lines.map(([top, bottom]) => Math.max(top, bottom)),
 			commitPosition
 		) +
 			2) *
 		UNIT;
 	return (
 		<svg width={Math.max(width, MIN_WIDTH)} height={HEIGHT}>
-			{lines.map(({ top, bottom, color }, index) => {
+			{lines.map(([top, bottom, color], index) => {
 				const topX = (top + 1) * UNIT;
 				const bottomX = (bottom + 1) * UNIT;
 				let points = `${topX},0 ${topX},4 ${bottomX},11 ${bottomX},${HEIGHT}`;

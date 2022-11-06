@@ -2,11 +2,9 @@ import path from "path";
 
 import { Uri } from "vscode";
 
-import { Change, Status } from "../types";
+import { Change, getChangePair } from "./changes";
 
-import { getChangePair } from "./changes";
-
-import { mergeStatus } from "./status";
+import { mergeStatus, Status } from "./status";
 
 export type ChangesCollection = {
 	ref: string;

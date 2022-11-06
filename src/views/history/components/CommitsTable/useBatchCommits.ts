@@ -1,12 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 
-import type { Commit } from "../../../../git/commit";
+import type { ICommit } from "../../../../git/commit";
 import type { BatchedCommits, LogOptions } from "../../../../git/types";
 
 export function useBatchCommits() {
-	const [commits, _setCommits] = useState<Commit[]>([]);
+	const [commits, _setCommits] = useState<ICommit[]>([]);
 	const commitsRef = useRef(commits);
-	const setCommits = (commits: Commit[]) => {
+	const setCommits = (commits: ICommit[]) => {
 		commitsRef.current = commits;
 		_setCommits(commits);
 	};

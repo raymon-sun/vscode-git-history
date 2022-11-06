@@ -14,6 +14,7 @@ import { parseGitChanges } from "./changes/changes";
 import { parseGitAuthors, parseGitConfig } from "./utils";
 
 import type { GitWorker } from "./worker";
+import { ICommit } from "./commit";
 
 const LOG_TYPE_ARGS = ["--branches", "--remotes", "--tags"];
 
@@ -189,8 +190,8 @@ export class GitService {
 		return await this.git
 			?.cwd(repo || this.rootRepoPath)
 			.raw(args)
-			.then((res) =>
-				this.pool.queue(({ parseGitCommits }) => parseGitCommits(res))
+			.then<ICommit[]>((res) =>
+				this.pool.queue(({ parseCommits }) => parseCommits(res))
 			)
 			.catch((err) => console.log(err));
 	}

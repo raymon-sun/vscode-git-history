@@ -2,7 +2,7 @@ import { equal } from "assert";
 
 import { Uri } from "vscode";
 
-import { Status } from "../types";
+import { Status } from "./status";
 
 import {
 	ChangesCollection,

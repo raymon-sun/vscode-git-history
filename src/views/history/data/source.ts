@@ -151,7 +151,7 @@ export class Source {
 						count: BATCH_SIZE,
 						skip: i,
 					})
-					.then((commits) =>
+					.then((commits = []) =>
 						this.graph.attachGraphAndPost({
 							totalCount,
 							batchNumber,

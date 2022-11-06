@@ -1,11 +1,9 @@
 import { container } from "../container/inversify.config";
 
-import { getChangePair } from "./changes/changes";
+import { Change, getChangePair } from "./changes/changes";
 
 import { FileNode, FolderNode, PathType } from "./changes/tree";
 import { GitService } from "./service";
-
-import { Change } from "./types";
 
 export type ChangesCollection = { ref: string; changes: Change[] }[];
 

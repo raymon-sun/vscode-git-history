@@ -231,15 +231,3 @@ function getColorPicker() {
 		},
 	};
 }
-
-export interface CommitGraphData {
-	commitPosition: number;
-	commitColor: string;
-	lines: CommitGraphLine[];
-}
-
-export interface CommitGraphLine {
-	top: number;
-	bottom: number;
-	color: string;
-}

@@ -20,6 +20,15 @@ export type ICommit = [
 	ICommitGraphSlice?
 ];
 
+export type IRoughCommit = [
+	/** hash */
+	string,
+	/** parents */
+	string[],
+	/** commit data */
+	string
+];
+
 export enum CommitIndex {
 	HASH,
 	REF_NAMES,
@@ -34,11 +43,41 @@ export enum CommitIndex {
 
 export const REFS_SEPARATOR = ", ";
 
-export function parseCommits(data: string): ICommit[] {
+export function parseCommits(data: string) {
 	const commitRegex =
 		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)/gm;
 
-	let commits: ICommit[] = [];
+	let commits: IRoughCommit[] = [];
+
+	let commitData;
+	let ref;
+	let parents;
+	let match;
+
+	do {
+		match = commitRegex.exec(data);
+		if (match === null) {
+			break;
+		}
+
+		[commitData, ref, , , , , , parents] = match;
+
+		// Stop excessive memory usage by using substr -- https://bugs.chromium.org/p/v8/issues/detail?id=2869
+		const commit: IRoughCommit = [
+			` ${ref}`.substr(1),
+			parents ? parents.split(" ") : [],
+			commitData,
+		];
+
+		commits.push(commit);
+	} while (true);
+
+	return commits;
+}
+
+export function parseCommit(commitData: string): ICommit {
+	const commitRegex =
+		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)(.*)\n(.*)\n(.*)/g;
 
 	let ref;
 	let refNames;
@@ -48,44 +87,42 @@ export function parseCommits(data: string): ICommit[] {
 	let commitDate;
 	let parents;
 	let message;
+	let commitPosition;
+	let commitColor;
+	let stringifiedLines;
 	let match;
 
-	do {
-		match = commitRegex.exec(data);
-		if (match === null) {
-			break;
-		}
+	match = commitRegex.exec(commitData)!;
 
-		[
-			,
-			ref,
-			refNames,
-			authorName,
-			authorEmail,
-			authorDate,
-			commitDate,
-			parents,
-			message,
-		] = match;
+	[
+		,
+		ref,
+		refNames,
+		authorName,
+		authorEmail,
+		authorDate,
+		commitDate,
+		parents,
+		message,
+		commitPosition,
+		commitColor,
+		stringifiedLines,
+	] = match;
 
-		if (message[message.length - 1] === "\n") {
-			message = message.substr(0, message.length - 1);
-		}
+	if (message[message.length - 1] === "\n") {
+		message = message.substr(0, message.length - 1);
+	}
 
-		// Stop excessive memory usage by using substr -- https://bugs.chromium.org/p/v8/issues/detail?id=2869
-		const commit: ICommit = [
-			` ${ref}`.substr(1),
-			refNames ? refNames.split(REFS_SEPARATOR) : [],
-			` ${message}`.substr(1),
-			parents ? parents.split(" ") : [],
-			new Date(Number(authorDate) * 1000).toLocaleString(),
-			` ${authorName}`.substr(1),
-			` ${authorEmail}`.substr(1),
-			new Date(Number(commitDate) * 1000).toLocaleString(),
-		];
-
-		commits.push(commit);
-	} while (true);
-
-	return commits;
+	// Stop excessive memory usage by using substr -- https://bugs.chromium.org/p/v8/issues/detail?id=2869
+	return [
+		` ${ref}`.substr(1),
+		refNames ? refNames.split(REFS_SEPARATOR) : [],
+		` ${message}`.substr(1),
+		parents ? parents.split(" ") : [],
+		new Date(Number(authorDate) * 1000).toLocaleString(),
+		` ${authorName}`.substr(1),
+		` ${authorEmail}`.substr(1),
+		new Date(Number(commitDate) * 1000).toLocaleString(),
+		[Number(commitPosition), commitColor, JSON.parse(stringifiedLines)],
+	];
 }

@@ -9,12 +9,12 @@ import {
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { useMeasure } from "react-use";
 
-import { BatchedCommits } from "../../../../git/types";
+import type { IBatchedCommits } from "../../../../git/types";
 
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
 
-import { ICommit, CommitIndex } from "../../../../git/commit";
+import { CommitIndex, ICommit, parseCommit } from "../../../../git/commit";
 
 import { useBatchCommits } from "./useBatchCommits";
 import { useColumnResize } from "./useColumnResize";
@@ -36,7 +36,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	}
 
 	const subscribeSwitcher = useCallback(() => {
-		channel.subscribeSwitcher((batchedCommits: BatchedCommits) =>
+		channel.subscribeSwitcher((batchedCommits: IBatchedCommits) =>
 			setBatchedCommits(batchedCommits)
 		);
 	}, [channel, setBatchedCommits]);
@@ -45,12 +45,12 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		(prop: string) => {
 			switch (prop) {
 				case "description":
-					channel.filterMessage((batchedCommits: BatchedCommits) =>
+					channel.filterMessage((batchedCommits: IBatchedCommits) =>
 						setBatchedCommits(batchedCommits)
 					);
 					break;
 				case "author":
-					channel.filterAuthor((batchedCommits: BatchedCommits) =>
+					channel.filterAuthor((batchedCommits: IBatchedCommits) =>
 						setBatchedCommits(batchedCommits)
 					);
 					break;
@@ -166,8 +166,9 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 			<div className={style["commits-area"]}>
 				<PickableList
 					list={commits}
-					keyProp={CommitIndex.HASH}
+					keyLength={40}
 					locationIndex={locationIndex}
+					itemPipe={parseCommit}
 					itemRender={(commit: ICommit) => (
 						<div className={style.commit}>
 							{columns.map(({ prop, size, transformer }) => (

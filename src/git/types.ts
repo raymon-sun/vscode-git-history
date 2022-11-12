@@ -1,4 +1,4 @@
-import { ICommit } from "./commit";
+import { IRoughCommit } from "./commit";
 
 export interface GitOptions {
 	repo?: string;
@@ -13,7 +13,14 @@ export interface LogOptions extends GitOptions {
 	skip?: number;
 }
 
-export type ICommitGraphSlice = [number, string, ICommitGraphLine[]];
+export type ICommitGraphSlice = [
+	/** commit position */
+	number,
+	/** commit color */
+	string,
+	/** lines */
+	(number | string)[]
+];
 
 export type ICommitGraphLine = [
 	/** top */
@@ -33,6 +40,23 @@ export enum CommitGraphSliceIndex {
 export interface BatchedCommits {
 	totalCount: number;
 	batchNumber: number;
-	commits: ICommit[];
+	commits: IRoughCommit[];
 	options: LogOptions;
 }
+
+export type IBatchedCommits = [
+	/** total count */
+	number,
+	/** batch number */
+	number,
+	/** option:ref */
+	string,
+	/** options:authors */
+	string,
+	/** options:keyword */
+	string,
+	/** option:maxLength */
+	number,
+	/** commit data collection */
+	...string[]
+];

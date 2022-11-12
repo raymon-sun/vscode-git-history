@@ -14,9 +14,10 @@ import style from "./index.module.scss";
 type Id = string;
 
 interface Props<T> {
-	list: T[];
-	keyProp: keyof T;
+	list: string[];
+	keyLength: number;
 	locationIndex?: number;
+	itemPipe: (item: string) => T;
 	itemRender: (o: T) => ReactNode;
 	size?: number;
 	onPick?: (ids: Id[]) => void;
@@ -28,7 +29,15 @@ const SCROLL_BAR_WIDTH = 10;
 const PickableList = <T extends Record<string, any>>(
 	props: Props<T> & { children?: ReactNode }
 ) => {
-	const { list, keyProp, locationIndex, itemRender, size, onPick } = props;
+	const {
+		list,
+		keyLength,
+		locationIndex,
+		itemPipe,
+		itemRender,
+		size,
+		onPick,
+	} = props;
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const dragContainerRef = useRef<HTMLDivElement>(null);
 
@@ -93,9 +102,10 @@ const PickableList = <T extends Record<string, any>>(
 			setItemYs(realTimeItemYs);
 			setDragStartIndex(dragStartIndex);
 
+			const id = list![dragStartIndex].slice(0, keyLength);
 			setPickedItems({
 				...existedItems,
-				[list![dragStartIndex][keyProp]]: dragStartIndex,
+				[id]: dragStartIndex,
 			});
 			return;
 		}
@@ -133,7 +143,7 @@ const PickableList = <T extends Record<string, any>>(
 				index <= Math.max(dragStartIndex, currentIndex);
 				index++
 			) {
-				const id = list![index][keyProp];
+				const id = list![index].slice(0, keyLength);
 				if (!Object.prototype.hasOwnProperty.call(currentItems, id)) {
 					currentItems[id] = index;
 				}
@@ -167,7 +177,7 @@ const PickableList = <T extends Record<string, any>>(
 								list[virtualRow.index] &&
 								Object.prototype.hasOwnProperty.call(
 									pickedItems,
-									list[virtualRow.index][keyProp]
+									list[virtualRow.index].slice(0, keyLength)
 								),
 							[style.located]: virtualRow.index === locationIndex,
 						})}
@@ -181,7 +191,7 @@ const PickableList = <T extends Record<string, any>>(
 						}}
 					>
 						{list[virtualRow.index] &&
-							itemRender(list[virtualRow.index])}
+							itemRender(itemPipe(list[virtualRow.index]))}
 					</div>
 				))}
 			</div>

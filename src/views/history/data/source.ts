@@ -20,7 +20,7 @@ import {
 } from "../../../git/changes/tree";
 import { ChangeTreeDataProvider } from "../../changes/ChangeTreeDataProvider";
 
-import { BatchedCommits, LogOptions } from "../../../git/types";
+import type { IBatchedCommits, LogOptions } from "../../../git/types";
 
 import { REFRESH_COMMAND, RESET_COMMAND } from "../../../commands/switch";
 
@@ -36,7 +36,7 @@ import state from "./state";
 
 @injectable()
 export class Source {
-	private switchSubscriber?: (batchedCommits: BatchedCommits) => void;
+	private switchSubscriber?: (batchedCommits: IBatchedCommits) => void;
 
 	private commitsEventEmitter = new EventEmitter<{ totalCount: number }>();
 
@@ -74,7 +74,9 @@ export class Source {
 	}
 
 	@link("subscription")
-	async subscribeSwitcher(handler: (batchedCommits: BatchedCommits) => void) {
+	async subscribeSwitcher(
+		handler: (batchedCommits: IBatchedCommits) => void
+	) {
 		this.switchSubscriber = handler;
 	}
 
@@ -84,7 +86,7 @@ export class Source {
 	}
 
 	@link("subscription")
-	async filterMessage(handler: (batchedCommits: BatchedCommits) => void) {
+	async filterMessage(handler: (batchedCommits: IBatchedCommits) => void) {
 		state.logOptions.keyword = await commands.executeCommand<string>(
 			FILTER_MESSAGE_COMMAND
 		);
@@ -92,7 +94,7 @@ export class Source {
 	}
 
 	@link("subscription")
-	async filterAuthor(handler: (batchedCommits: BatchedCommits) => void) {
+	async filterAuthor(handler: (batchedCommits: IBatchedCommits) => void) {
 		state.logOptions.authors = await commands.executeCommand<string[]>(
 			FILTER_AUTHOR_COMMAND
 		);
@@ -111,7 +113,7 @@ export class Source {
 
 	@link("subscription")
 	async getCommits(
-		handler: (batchedCommits: BatchedCommits) => void,
+		handler: (batchedCommits: IBatchedCommits) => void,
 		options: LogOptions
 	) {
 		const FIRST_BATCH_SIZE = 300;

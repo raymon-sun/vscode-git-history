@@ -1,9 +1,7 @@
 import type { FC } from "react";
 
-import type { ICommitGraphSlice } from "../../../../git/types";
-
 interface Props {
-	data: ICommitGraphSlice;
+	data: [number, string, (number | string)[]];
 }
 
 const GitGraph: FC<Props> = ({ data }) => {
@@ -22,14 +20,14 @@ const GitGraph: FC<Props> = ({ data }) => {
 
 	const width =
 		(Math.max(
-			...lines.map(([top, bottom]) => Math.max(top, bottom)),
+			...mapLines(lines, ([top, bottom]) => Math.max(top, bottom)),
 			commitPosition
 		) +
 			2) *
 		UNIT;
 	return (
 		<svg width={Math.max(width, MIN_WIDTH)} height={HEIGHT}>
-			{lines.map(([top, bottom, color], index) => {
+			{mapLines(lines, ([top, bottom, color], index) => {
 				const topX = (top + 1) * UNIT;
 				const bottomX = (bottom + 1) * UNIT;
 				let points = `${topX},0 ${topX},4 ${bottomX},11 ${bottomX},${HEIGHT}`;
@@ -68,5 +66,26 @@ const GitGraph: FC<Props> = ({ data }) => {
 		</svg>
 	);
 };
+
+function mapLines<T>(
+	lines: (number | string)[],
+	handler: (line: [number, number, string], index: number) => T
+) {
+	const results = [];
+	for (let i = 0; i < lines.length; i += 3) {
+		results.push(
+			handler(
+				[
+					lines[i] as number,
+					lines[i + 1] as number,
+					lines[i + 2] as string,
+				],
+				i / 3
+			)
+		);
+	}
+
+	return results;
+}
 
 export default GitGraph;

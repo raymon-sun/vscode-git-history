@@ -1,17 +1,10 @@
 import { injectable } from "inversify";
 
-import { getLastItem } from "../views/history/utils/common";
-
 // import { attach_graph } from "./pkg/git_graph";
 
-import { ICommit, CommitIndex } from "./commit";
+import { IRoughCommit } from "./commit";
 
-import {
-	BatchedCommits,
-	CommitGraphSliceIndex,
-	ICommitGraphLine,
-	ICommitGraphSlice,
-} from "./types";
+import { BatchedCommits, IBatchedCommits } from "./types";
 
 interface IChain {
 	hash: string;
@@ -19,18 +12,22 @@ interface IChain {
 	color: string;
 }
 
+type ILines = (number | string)[];
+
 @injectable()
 export class GitGraph {
 	private batchedCommitsCollection: BatchedCommits[] = [];
 	private postIndex = 0;
-	private postHandler?: (batchedCommits: BatchedCommits) => void;
+	private postHandler?: (batchedCommits: IBatchedCommits) => void;
 
 	private colorPicker = getColorPicker();
 
 	/** record chains cross current commit */
 	private curChains: IChain[] = [];
+	/**  */
+	private curLines: ILines = [];
 
-	registerHandler(postHandler: (batchedCommits: BatchedCommits) => void) {
+	registerHandler(postHandler: (batchedCommits: IBatchedCommits) => void) {
 		this.clear();
 		this.postHandler = postHandler;
 	}
@@ -40,17 +37,23 @@ export class GitGraph {
 		this.batchedCommitsCollection[batchNumber] = batchedCommits;
 
 		while (this.currentBatchedCommits) {
-			const lastLines =
-				getLastItem(
-					this.batchedCommitsCollection[this.postIndex - 1]?.commits
-				)?.[CommitIndex.GRAPH_SLICE]?.[CommitGraphSliceIndex.LINES] ||
-				[];
-
-			this.setGraphToCommits(
-				this.currentBatchedCommits.commits,
-				lastLines
+			const graphicCommits = this.setGraphToCommits(
+				this.currentBatchedCommits.commits
 			);
-			this.postHandler?.(this.currentBatchedCommits);
+
+			const { batchNumber, totalCount, options } =
+				this.currentBatchedCommits;
+
+			this.postHandler?.([
+				totalCount,
+				batchNumber,
+				options.ref ?? "",
+				JSON.stringify(options.authors),
+				options.keyword ?? "",
+				options.maxLength ?? 0,
+				...graphicCommits,
+			]);
+
 			this.postIndex++;
 		}
 	}
@@ -66,15 +69,11 @@ export class GitGraph {
 		return this.batchedCommitsCollection[this.postIndex];
 	}
 
-	private setGraphToCommits(
-		commits: ICommit[],
-		lastLines: ICommitGraphLine[]
-	) {
-		commits.reduce((pre, commit) => {
-			const graphSlice = this.getGraphSlice(commit, pre);
-			commit.push(graphSlice);
-			return graphSlice[CommitGraphSliceIndex.LINES];
-		}, lastLines);
+	private setGraphToCommits(commits: IRoughCommit[]) {
+		return commits.map(
+			([hash, parents, commitData]) =>
+				`${commitData}${this.getGraphSlice(hash, parents)}`
+		);
 	}
 
 	// private setGraphToCommitsByWasm(
@@ -90,17 +89,14 @@ export class GitGraph {
 	// 	this.curChains = chains;
 	// }
 
-	private getGraphSlice(
-		commit: ICommit,
-		lastLines: ICommitGraphLine[]
-	): ICommitGraphSlice {
-		const [hash, , , parents] = commit;
-		const lines = this.getCurrentLines(lastLines);
+	private getGraphSlice(hash: string, parents: string[]) {
+		const lines = [...this.curLines];
 
 		const [firstParent, ...forkParents] = parents;
 		let commitPosition: number;
 		let commitColor: string;
 
+		// TODO: optimize to map
 		const indexList = this.getIndexList(this.curChains, hash);
 		if (indexList.length) {
 			// not first node of a chain
@@ -111,21 +107,14 @@ export class GitGraph {
 			this.curChains[firstIndex].parent = firstParent;
 
 			const mergedIndexList = firstParent ? otherIndexList : indexList;
+			// TODO: use func #removeItemsByIndexList
 			if (mergedIndexList.length) {
 				// remove merged chains
 				this.curChains = this.curChains.filter(
 					(_, i) => !mergedIndexList.includes(i)
 				);
 
-				let bottomIndex = 0;
-				lines.forEach((line, index) => {
-					if (mergedIndexList.includes(index)) {
-						line[1] = -1;
-					} else {
-						line[1] = bottomIndex;
-						bottomIndex++;
-					}
-				});
+				this.collapseMergedLines(lines, this.curLines, mergedIndexList);
 			}
 		} else {
 			commitColor = this.colorPicker.get();
@@ -139,11 +128,9 @@ export class GitGraph {
 			}
 
 			// first node of a chain
-			lines.push([
-				-1,
-				firstParent ? this.curChains.length - 1 : -1,
-				commitColor,
-			]);
+			const bottom = firstParent ? this.curChains.length - 1 : -1;
+			lines.push(-1, bottom, commitColor);
+			this.curLines.push(bottom, bottom, commitColor);
 		}
 
 		// handle multiple parents of the node
@@ -158,7 +145,7 @@ export class GitGraph {
 
 				const color = firstChain.color;
 				if (firstIndex !== undefined) {
-					lines.push([-1, firstIndex, color]);
+					lines.push(-1, firstIndex, color);
 				}
 			} else {
 				// new chain
@@ -169,28 +156,13 @@ export class GitGraph {
 					color: commitColor,
 				});
 
-				lines.push([-1, this.curChains.length - 1, commitColor]);
+				const bottom = this.curChains.length - 1;
+				lines.push(-1, bottom, commitColor);
+				this.curLines.push(bottom, bottom, commitColor);
 			}
 		});
 
-		return [commitPosition, commitColor, lines];
-	}
-
-	private getCurrentLines(preLines: ICommitGraphLine[]) {
-		const existedBottoms: Record<number, true> = {};
-		const lines: ICommitGraphLine[] = [];
-		preLines.forEach(([, bottom, color]) => {
-			if (existedBottoms[bottom]) {
-				return;
-			}
-
-			existedBottoms[bottom] = true;
-			if (bottom !== -1) {
-				lines.push([bottom, bottom, color]);
-			}
-		});
-
-		return lines;
+		return `${commitPosition}\n${commitColor}\n${JSON.stringify(lines)}`;
 	}
 
 	private getIndexList(chains: IChain[], hash: string) {
@@ -202,6 +174,35 @@ export class GitGraph {
 		});
 
 		return indexList;
+	}
+
+	private collapseMergedLines(
+		lines: ILines,
+		nextInitialLines: ILines,
+		mergedIndexList: number[]
+	) {
+		const firstMergedIndex = mergedIndexList[0];
+		let collapsedCount = 0;
+		for (let i = firstMergedIndex * 3; i < lines.length; i += 3) {
+			if (mergedIndexList.includes(i / 3)) {
+				// line bottom = -1
+				lines[i + 1] = -1;
+				nextInitialLines.splice(i - collapsedCount * 3, 3);
+				collapsedCount++;
+			} else {
+				// line bottom sub collapsed count
+				const lineBottomIndex = i + 1;
+				const bottom =
+					(lines[lineBottomIndex] as number) - collapsedCount;
+				lines[lineBottomIndex] = bottom;
+
+				const nextInitialLineTopIndex = i - collapsedCount * 3;
+				const nextInitialLineBottomIndex = nextInitialLineTopIndex + 1;
+
+				nextInitialLines[nextInitialLineTopIndex] = bottom;
+				nextInitialLines[nextInitialLineBottomIndex] = bottom;
+			}
+		}
 	}
 }
 

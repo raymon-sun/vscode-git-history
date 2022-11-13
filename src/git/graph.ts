@@ -5,12 +5,10 @@ import { injectable } from "inversify";
 import { IRoughCommit } from "./commit";
 
 import { BatchedCommits, IBatchedCommits } from "./types";
-import { removeItemsByIndexList } from "./utils";
 
-interface IChain {
-	hash: string;
-	parent: string;
-	color: string;
+interface IChainRecord {
+	indexList: number[];
+	colorList: string[];
 }
 
 type ILines = (number | string)[];
@@ -24,7 +22,8 @@ export class GitGraph {
 	private colorPicker = getColorPicker();
 
 	/** record chains cross current commit */
-	private curChains: IChain[] = [];
+	private curChainMap: Record<string, IChainRecord> = {};
+	private curChainLength = 0;
 	/**  */
 	private curLines: ILines = [];
 
@@ -62,7 +61,8 @@ export class GitGraph {
 	private clear() {
 		this.postIndex = 0;
 		this.batchedCommitsCollection = [];
-		this.curChains = [];
+		this.curChainMap = {};
+		this.curChainLength = 0;
 		this.colorPicker.reset();
 	}
 
@@ -97,81 +97,82 @@ export class GitGraph {
 		let commitPosition: number;
 		let commitColor: string;
 
-		// TODO: optimize to map
-		const indexList = this.getIndexList(this.curChains, hash);
+		const chainRecord = this.curChainMap[hash];
+		const indexList = chainRecord?.indexList || [];
 		if (indexList.length) {
 			// not first node of a chain
 			const [firstIndex, ...otherIndexList] = indexList;
+			const [firstColor] = chainRecord.colorList;
 			commitPosition = firstIndex;
-			commitColor = this.curChains[firstIndex].color;
-			this.curChains[firstIndex].hash = hash;
-			this.curChains[firstIndex].parent = firstParent;
+			commitColor = firstColor;
+
+			this.addChainRecord(firstParent, commitPosition, commitColor);
 
 			const mergedIndexList = firstParent ? otherIndexList : indexList;
-			// TODO: use func #removeItemsByIndexList
 			if (mergedIndexList.length) {
 				// remove merged chains
-				removeItemsByIndexList(this.curChains, mergedIndexList);
+				this.curChainLength =
+					this.curChainLength - mergedIndexList.length;
+
 				this.collapseMergedLines(lines, this.curLines, mergedIndexList);
 			}
 		} else {
 			commitColor = this.colorPicker.get();
-			commitPosition = this.curChains.length;
+			commitPosition = this.curChainLength;
 			if (firstParent) {
-				this.curChains.push({
-					hash,
-					parent: firstParent,
-					color: commitColor,
-				});
+				this.addChainRecord(
+					firstParent,
+					this.curChainLength,
+					commitColor
+				);
+				this.curChainLength++;
 			}
 
 			// first node of a chain
-			const bottom = firstParent ? this.curChains.length - 1 : -1;
+			// TODO: merge first parent condition
+			const bottom = firstParent ? this.curChainLength - 1 : -1;
 			lines.push(-1, bottom, commitColor);
 			this.curLines.push(bottom, bottom, commitColor);
 		}
 
 		// handle multiple parents of the node
 		forkParents.forEach((parent) => {
-			const hasSameParent =
-				this.curChains.findIndex((chain) => chain.parent === parent) !==
-				-1;
-			if (hasSameParent) {
+			const parentRecord = this.curChainMap[parent];
+			if (parentRecord) {
 				// flow into the existed chain
-				const [firstIndex] = this.getIndexList(this.curChains, parent);
-				const firstChain = this.curChains[firstIndex];
+				const [firstIndex] = parentRecord.indexList;
+				const [firstColor] = parentRecord.colorList;
 
-				const color = firstChain.color;
 				if (firstIndex !== undefined) {
-					lines.push(-1, firstIndex, color);
+					lines.push(-1, firstIndex, firstColor);
 				}
 			} else {
 				// new chain
 				commitColor = this.colorPicker.get();
-				this.curChains.push({
-					hash,
-					parent,
-					color: commitColor,
-				});
 
-				const bottom = this.curChains.length - 1;
+				this.addChainRecord(parent, this.curChainLength, commitColor);
+
+				const bottom = this.curChainLength - 1;
 				lines.push(-1, bottom, commitColor);
 				this.curLines.push(bottom, bottom, commitColor);
 			}
 		});
 
+		delete this.curChainMap[hash];
+
 		return `${commitPosition}\n${commitColor}\n${JSON.stringify(lines)}`;
 	}
 
-	private getIndexList(chains: IChain[], hash: string) {
-		const indexList: number[] = [];
-		chains.forEach(({ parent }, index) => {
-			if (parent === hash) {
-				indexList.push(index);
-			}
-		});
-
-		return indexList;
+	private addChainRecord(hash: string, index: number, color: string) {
+		if (this.curChainMap[hash]) {
+			this.curChainMap[hash].indexList.push(index);
+			this.curChainMap[hash].colorList.push(color);
+		} else {
+			this.curChainMap[hash] = {
+				indexList: [index],
+				colorList: [color],
+			};
+		}
 	}
 
 	private collapseMergedLines(

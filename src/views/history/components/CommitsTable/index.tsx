@@ -14,7 +14,7 @@ import type { IBatchedCommits } from "../../../../git/types";
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
 
-import { CommitIndex, ICommit, parseCommit } from "../../../../git/commit";
+import { ICommit, parseCommit } from "../../../../git/commit";
 
 import { useBatchCommits } from "./useBatchCommits";
 import { useColumnResize } from "./useColumnResize";
@@ -65,8 +65,12 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 			switch (prop) {
 				case "hash":
 					const hash = await channel.inputHash();
+					if (!hash) {
+						return;
+					}
+
 					const index = commits.findIndex((commit) =>
-						commit[CommitIndex.HASH].startsWith(hash || "")
+						commit.startsWith(hash || "")
 					);
 
 					if (index === -1) {

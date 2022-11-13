@@ -63,6 +63,7 @@ export class GitGraph {
 		this.postIndex = 0;
 		this.batchedCommitsCollection = [];
 		this.curChains = [];
+		this.curLines = [];
 		this.colorPicker.reset();
 	}
 

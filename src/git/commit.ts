@@ -120,8 +120,8 @@ export function parseCommit(commitData: string): ICommit {
 		` ${message}`.substr(1),
 		parents ? parents.split(" ") : [],
 		new Date(Number(authorDate) * 1000).toLocaleString(),
-		` ${authorName}`.substr(1),
 		` ${authorEmail}`.substr(1),
+		` ${authorName}`.substr(1),
 		new Date(Number(commitDate) * 1000).toLocaleString(),
 		[Number(commitPosition), commitColor, JSON.parse(stringifiedLines)],
 	];

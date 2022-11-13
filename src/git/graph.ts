@@ -38,12 +38,13 @@ export class GitGraph {
 		this.batchedCommitsCollection[batchNumber] = batchedCommits;
 
 		while (this.currentBatchedCommits) {
-			const graphicCommits = this.setGraphToCommits(
-				this.currentBatchedCommits.commits
-			);
-
 			const { batchNumber, totalCount, options } =
 				this.currentBatchedCommits;
+
+			const graphicCommits = this.setGraphToCommits(
+				this.currentBatchedCommits.commits,
+				!(options.authors || options.keyword)
+			);
 
 			this.postHandler?.([
 				totalCount,
@@ -71,10 +72,14 @@ export class GitGraph {
 		return this.batchedCommitsCollection[this.postIndex];
 	}
 
-	private setGraphToCommits(commits: IRoughCommit[]) {
+	private setGraphToCommits(commits: IRoughCommit[], setGraph = true) {
 		return commits.map(
 			([hash, parents, commitData]) =>
-				`${commitData}${this.getGraphSlice(hash, parents)}`
+				`${commitData}${
+					setGraph
+						? this.getGraphSlice(hash, parents)
+						: `0\n#000\n${JSON.stringify([])}`
+				}`
 		);
 	}
 

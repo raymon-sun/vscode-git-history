@@ -122,3 +122,9 @@ function compareAndDisambiguateByLength(one: string, other: string) {
 
 	return 0;
 }
+
+export function removeItemsByIndexList<T>(array: T[], indexList: number[]) {
+	for (var i = indexList.length - 1; i >= 0; i--) {
+		array.splice(indexList[i], 1);
+	}
+}

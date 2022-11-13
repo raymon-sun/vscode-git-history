@@ -5,6 +5,7 @@ import { injectable } from "inversify";
 import { IRoughCommit } from "./commit";
 
 import { BatchedCommits, IBatchedCommits } from "./types";
+import { removeItemsByIndexList } from "./utils";
 
 interface IChain {
 	hash: string;
@@ -110,10 +111,7 @@ export class GitGraph {
 			// TODO: use func #removeItemsByIndexList
 			if (mergedIndexList.length) {
 				// remove merged chains
-				this.curChains = this.curChains.filter(
-					(_, i) => !mergedIndexList.includes(i)
-				);
-
+				removeItemsByIndexList(this.curChains, mergedIndexList);
 				this.collapseMergedLines(lines, this.curLines, mergedIndexList);
 			}
 		} else {

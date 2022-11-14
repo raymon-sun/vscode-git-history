@@ -5,13 +5,6 @@ import { injectable } from "inversify";
 import { IRoughCommit } from "./commit";
 
 import { BatchedCommits, IBatchedCommits } from "./types";
-import { removeItemsByIndexList } from "./utils";
-
-interface IChain {
-	hash: string;
-	parent: string;
-	color: string;
-}
 
 type ILines = (number | string)[];
 
@@ -24,7 +17,8 @@ export class GitGraph {
 	private colorPicker = getColorPicker();
 
 	/** record chains cross current commit */
-	private curChains: IChain[] = [];
+	private hashChains: string[] = [];
+	private colorChains: string[] = [];
 	/**  */
 	private curLines: ILines = [];
 
@@ -63,7 +57,8 @@ export class GitGraph {
 	private clear() {
 		this.postIndex = 0;
 		this.batchedCommitsCollection = [];
-		this.curChains = [];
+		this.hashChains = [];
+		this.colorChains = [];
 		this.curLines = [];
 		this.colorPicker.reset();
 	}
@@ -103,64 +98,62 @@ export class GitGraph {
 		let commitPosition: number;
 		let commitColor: string;
 
-		// TODO: optimize to map
-		const indexList = this.getIndexList(this.curChains, hash);
-		if (indexList.length) {
+		// TODO: includes
+		const firstIndex = this.hashChains.indexOf(hash);
+		if (firstIndex !== -1) {
 			// not first node of a chain
-			const [firstIndex, ...otherIndexList] = indexList;
+			const otherIndexes = this.getAllIndexes(
+				this.hashChains,
+				hash,
+				firstIndex
+			);
 			commitPosition = firstIndex;
-			commitColor = this.curChains[firstIndex].color;
-			this.curChains[firstIndex].hash = hash;
-			this.curChains[firstIndex].parent = firstParent;
+			commitColor = this.colorChains[firstIndex];
+			this.hashChains[firstIndex] = firstParent;
 
-			const mergedIndexList = firstParent ? otherIndexList : indexList;
-			// TODO: use func #removeItemsByIndexList
-			if (mergedIndexList.length) {
+			const mergedIndexes = firstParent
+				? otherIndexes
+				: [firstIndex, ...otherIndexes];
+			if (mergedIndexes.length) {
 				// remove merged chains
-				removeItemsByIndexList(this.curChains, mergedIndexList);
-				this.collapseMergedLines(lines, this.curLines, mergedIndexList);
+				// TODO: iterate into #getAllIndexes
+				this.updateChainsByMergedIndexes(
+					this.hashChains,
+					this.colorChains,
+					mergedIndexes
+				);
+				this.collapseMergedLines(lines, this.curLines, mergedIndexes);
 			}
 		} else {
 			commitColor = this.colorPicker.get();
-			commitPosition = this.curChains.length;
+			commitPosition = this.hashChains.length;
 			if (firstParent) {
-				this.curChains.push({
-					hash,
-					parent: firstParent,
-					color: commitColor,
-				});
+				this.hashChains.push(firstParent);
+				this.colorChains.push(commitColor);
 			}
 
 			// first node of a chain
-			const bottom = firstParent ? this.curChains.length - 1 : -1;
+			const bottom = firstParent ? this.hashChains.length - 1 : -1;
 			lines.push(-1, bottom, commitColor);
 			this.curLines.push(bottom, bottom, commitColor);
 		}
 
 		// handle multiple parents of the node
 		forkParents.forEach((parent) => {
-			const hasSameParent =
-				this.curChains.findIndex((chain) => chain.parent === parent) !==
-				-1;
-			if (hasSameParent) {
+			const firstParentIndex = this.hashChains.indexOf(parent);
+			if (firstParentIndex !== -1) {
 				// flow into the existed chain
-				const [firstIndex] = this.getIndexList(this.curChains, parent);
-				const firstChain = this.curChains[firstIndex];
-
-				const color = firstChain.color;
-				if (firstIndex !== undefined) {
-					lines.push(-1, firstIndex, color);
+				const color = this.colorChains[firstParentIndex];
+				if (firstParentIndex !== undefined) {
+					lines.push(-1, firstParentIndex, color);
 				}
 			} else {
 				// new chain
 				commitColor = this.colorPicker.get();
-				this.curChains.push({
-					hash,
-					parent,
-					color: commitColor,
-				});
+				this.hashChains.push(parent);
+				this.colorChains.push(commitColor);
 
-				const bottom = this.curChains.length - 1;
+				const bottom = this.hashChains.length - 1;
 				lines.push(-1, bottom, commitColor);
 				this.curLines.push(bottom, bottom, commitColor);
 			}
@@ -169,15 +162,24 @@ export class GitGraph {
 		return `${commitPosition}\n${commitColor}\n${JSON.stringify(lines)}`;
 	}
 
-	private getIndexList(chains: IChain[], hash: string) {
-		const indexList: number[] = [];
-		chains.forEach(({ parent }, index) => {
-			if (parent === hash) {
-				indexList.push(index);
-			}
-		});
+	private getAllIndexes(list: string[], hash: string, start = -1) {
+		const indexes = [];
+		let i = start;
+		while ((i = list.indexOf(hash, i + 1)) !== -1) {
+			indexes.push(i);
+		}
+		return indexes;
+	}
 
-		return indexList;
+	private updateChainsByMergedIndexes(
+		hashChains: string[],
+		colorChains: string[],
+		indexes: number[]
+	) {
+		for (var i = indexes.length - 1; i >= 0; i--) {
+			hashChains.splice(indexes[i], 1);
+			colorChains.splice(indexes[i], 1);
+		}
 	}
 
 	private collapseMergedLines(

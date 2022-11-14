@@ -126,7 +126,7 @@ export class Source {
 
 		this.graph.registerHandler(handler);
 
-		const BATCH_SIZE = 3000;
+		const BATCH_SIZE = 14000;
 		if (
 			firstBatchCommits &&
 			firstBatchCommits.length === FIRST_BATCH_SIZE

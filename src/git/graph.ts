@@ -98,7 +98,6 @@ export class GitGraph {
 		let commitPosition: number;
 		let commitColor: string;
 
-		// TODO: includes
 		const firstIndex = this.hashChains.indexOf(hash);
 		if (firstIndex !== -1) {
 			// not first node of a chain

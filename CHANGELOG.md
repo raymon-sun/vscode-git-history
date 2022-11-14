@@ -4,6 +4,10 @@ All notable changes to the "git-history" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.2.2
+
+- improve performance
+
 ## 0.2.0
 
 - display bread crumbs in diff editor

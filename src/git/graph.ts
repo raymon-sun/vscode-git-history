@@ -73,7 +73,7 @@ export class GitGraph {
 				`${commitData}${
 					setGraph
 						? this.getGraphSlice(hash, parents)
-						: `0\n#000\n${JSON.stringify([])}`
+						: `0\n#06A77D\n${JSON.stringify([])}`
 				}`
 		);
 	}

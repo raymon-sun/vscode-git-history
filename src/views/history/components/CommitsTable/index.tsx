@@ -23,8 +23,6 @@ import { HEADERS } from "./constants";
 
 import style from "./index.module.scss";
 
-const GRAPH_COLUMN_ID = "graph";
-
 const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const channel = useContext(ChannelContext)!;
 
@@ -40,6 +38,11 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 			setBatchedCommits(batchedCommits)
 		);
 	}, [channel, setBatchedCommits]);
+
+	const onSelectReference = useCallback(
+		() => channel.switchReference(),
+		[channel]
+	);
 
 	const onFilter = useCallback(
 		(prop: string) => {
@@ -88,15 +91,10 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		[channel, commits]
 	);
 
-	// hidden graph when the commit list is filtered
+	// TODO: columns setting
 	const headers = useMemo(() => {
-		const { authors, keyword } = options;
-		if (authors?.length || keyword) {
-			return HEADERS.filter(({ prop }) => prop !== GRAPH_COLUMN_ID);
-		}
-
 		return HEADERS;
-	}, [options]);
+	}, []);
 
 	const { columns } = useColumnResize(headers, totalWidth);
 
@@ -136,32 +134,50 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 									className={style.divider}
 								/>
 							)}
-							<span>{label}</span>
-							{filterable && (
+							{prop === "graph" ? (
 								<VSCodeButton
+									className={style["ref-button"]}
+									data-button
 									appearance="icon"
-									onClick={() => onFilter(prop)}
+									title="Select Branch/Reference"
+									aria-label="All"
+									onClick={() => onSelectReference()}
 								>
-									<span
-										className={`codicon codicon-filter${
-											options[
-												filterLogOption as
-													| "authors"
-													| "keyword"
-											]?.length
-												? "-filled"
-												: ""
-										}`}
-									/>
+									<span className="codicon codicon-git-branch" />
+									<span className={style.text}>
+										{options.ref || "All"}
+									</span>
 								</VSCodeButton>
-							)}
-							{locatable && (
-								<VSCodeButton
-									appearance="icon"
-									onClick={() => onLocate(prop)}
-								>
-									<span className="codicon codicon-search" />
-								</VSCodeButton>
+							) : (
+								<>
+									<span>{label}</span>
+									{filterable && (
+										<VSCodeButton
+											appearance="icon"
+											onClick={() => onFilter(prop)}
+										>
+											<span
+												className={`codicon codicon-filter${
+													options[
+														filterLogOption as
+															| "authors"
+															| "keyword"
+													]?.length
+														? "-filled"
+														: ""
+												}`}
+											/>
+										</VSCodeButton>
+									)}
+									{locatable && (
+										<VSCodeButton
+											appearance="icon"
+											onClick={() => onLocate(prop)}
+										>
+											<span className="codicon codicon-search" />
+										</VSCodeButton>
+									)}
+								</>
 							)}
 						</div>
 					)

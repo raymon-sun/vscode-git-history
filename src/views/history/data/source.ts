@@ -22,7 +22,11 @@ import { ChangeTreeDataProvider } from "../../changes/ChangeTreeDataProvider";
 
 import type { IBatchedCommits, LogOptions } from "../../../git/types";
 
-import { REFRESH_COMMAND, RESET_COMMAND } from "../../../commands/switch";
+import {
+	REFRESH_COMMAND,
+	RESET_COMMAND,
+	SWITCH_BRANCH_COMMAND,
+} from "../../../commands/switch";
 
 import {
 	FILTER_AUTHOR_COMMAND,
@@ -83,6 +87,13 @@ export class Source {
 	@link("promise")
 	resetLog() {
 		return commands.executeCommand<string>(RESET_COMMAND);
+	}
+
+	@link("subscription")
+	async switchReference() {
+		state.logOptions.ref = await commands.executeCommand<string>(
+			SWITCH_BRANCH_COMMAND
+		);
 	}
 
 	@link("subscription")

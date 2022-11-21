@@ -9,7 +9,7 @@ import GitTag from "../GitTag";
 type FillRemainWidth = "fill";
 
 export interface IHeader {
-	prop: string;
+	prop: "graph" | "description" | "hash" | "author" | "date";
 	label: string;
 	width: number | FillRemainWidth;
 	minWidth: number;

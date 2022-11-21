@@ -32,6 +32,19 @@ $col-padding-right: 8px;
 		> span {
 			margin-right: 8px;
 		}
+
+		.ref-button {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 100%;
+
+			.text {
+				flex: 1;
+				display: inline-block;
+				width: auto;
+				padding: 0 4px;
+			}
+		}
 	}
 }
 

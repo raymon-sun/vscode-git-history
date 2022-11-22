@@ -21,6 +21,8 @@ export class GitGraph {
 	private colorChains: string[] = [];
 	/**  */
 	private curLines: ILines = [];
+	/**  */
+	private curParents: string[] = [];
 
 	registerHandler(postHandler: (batchedCommits: IBatchedCommits) => void) {
 		this.clear();
@@ -59,6 +61,7 @@ export class GitGraph {
 		this.batchedCommitsCollection = [];
 		this.hashChains = [];
 		this.colorChains = [];
+		this.curParents = [];
 		this.curLines = [];
 		this.colorPicker.reset();
 	}
@@ -73,7 +76,7 @@ export class GitGraph {
 				`${commitData}${
 					setGraph
 						? this.getGraphSlice(hash, parents)
-						: `0\n#06A77D\n${JSON.stringify([])}`
+						: this.getSingleLineGraphSlice(hash, parents)
 				}`
 		);
 	}
@@ -90,6 +93,19 @@ export class GitGraph {
 	// 	this.currentBatchedCommits.commits = graphicCommits;
 	// 	this.curChains = chains;
 	// }
+
+	private getSingleLineGraphSlice(hash: string, parents: string[]) {
+		const commitColor = "#06A77D";
+
+		const lines = [];
+		if (this.curParents.includes(hash)) {
+			lines.push(-2, -1, commitColor);
+		}
+
+		this.curParents = [...parents];
+
+		return `0\n${commitColor}\n${JSON.stringify(lines)}`;
+	}
 
 	private getGraphSlice(hash: string, parents: string[]) {
 		const lines = [...this.curLines];

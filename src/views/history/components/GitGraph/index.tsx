@@ -31,16 +31,21 @@ const GitGraph: FC<Props> = ({ data }) => {
 				const topX = (top + 1) * UNIT;
 				const bottomX = (bottom + 1) * UNIT;
 				let points = `${topX},0 ${topX},4 ${bottomX},11 ${bottomX},${HEIGHT}`;
-				if (top < 0 && bottom < 0) {
+
+				if (top === -1 && bottom === -1) {
 					return null;
 				}
 
-				if (top < 0) {
+				if (top === -1) {
 					points = `${commitX},11 ${bottomX},18 ${bottomX},${HEIGHT}`;
 				}
 
-				if (bottom < 0) {
+				if (bottom === -1) {
 					points = `${topX},0 ${topX},4 ${commitX},11`;
+				}
+
+				if (top === -2 && bottom === -1) {
+					points = `${commitX},-11 ${commitX},11`;
 				}
 
 				return (

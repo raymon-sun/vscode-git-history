@@ -73,7 +73,12 @@ $col-padding-right: 8px;
 			}
 
 			&[data-prop="graph"] {
+				overflow: visible;
 				text-overflow: unset;
+
+				> svg {
+					overflow: visible;
+				}
 			}
 
 			&[data-prop="description"] {

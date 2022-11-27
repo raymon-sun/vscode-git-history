@@ -139,7 +139,9 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 									className={style["ref-button"]}
 									data-button
 									appearance="icon"
-									title="Select Branch/Reference"
+									title={`Select Branch/Reference · ${
+										options.ref || "All"
+									}`}
 									aria-label="All"
 									onClick={() => onSelectReference()}
 								>

@@ -83,7 +83,7 @@ export function getSwitchCommandsDisposable() {
 		commands.registerCommand(SWITCH_BRANCH_COMMAND, async () => {
 			const quickPick = window.createQuickPick<QuickPickRefItem>();
 
-			quickPick.title = "Switch Branch";
+			quickPick.title = "Select Reference";
 			quickPick.placeholder = "Search ref by name or hash";
 			quickPick.busy = true;
 

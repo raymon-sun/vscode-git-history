@@ -42,7 +42,9 @@ $col-padding-right: 8px;
 				flex: 1;
 				display: inline-block;
 				width: auto;
+				max-width: 240px;
 				padding: 0 4px;
+				white-space: nowrap;
 			}
 		}
 	}

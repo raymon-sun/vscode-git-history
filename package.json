@@ -14,7 +14,7 @@
 		"flow",
 		"tag"
 	],
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-history",
@@ -86,7 +86,7 @@
 			{
 				"category": "Git History",
 				"command": "git-history.history.switch.branch",
-				"title": "Switch Branch",
+				"title": "Select Reference",
 				"icon": "$(git-branch)"
 			},
 			{

@@ -75,11 +75,26 @@ $col-padding-right: 8px;
 			}
 
 			&[data-prop="graph"] {
-				overflow: visible;
+				position: relative;
 				text-overflow: unset;
+				-webkit-mask: linear-gradient(
+					90deg,
+					black calc(100% - 5px),
+					transparent
+				);
 
 				> svg {
 					overflow: visible;
+				}
+
+				&::after {
+					content: "";
+					display: block;
+					position: absolute;
+					top: 0;
+					right: 0;
+					width: 4px;
+					height: 100%;
 				}
 			}
 

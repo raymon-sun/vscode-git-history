@@ -20,6 +20,10 @@
 		outline: 1px solid var(--vscode-list-focusOutline);
 	}
 
+	&:not(.picked) {
+		opacity: 0.7;
+	}
+
 	@keyframes blink {
 		0% {
 			background-color: transparent;

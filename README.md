@@ -1,5 +1,9 @@
 # Git History
 
+Fork form [raymon-sun/vscode-git-history](https://github.com/raymon-sun/vscode-git-history)
+
+Fixed the problem that keyboard multi-selection cannot be canceled
+
 English | [简体中文](./README.zh-CN.md)
 
 The extension provides a visual git history panel to help you browse git history easily.

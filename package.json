@@ -1,6 +1,6 @@
 {
-	"name": "vscode-git-cruise",
-	"displayName": "Git History",
+	"name": "xm-vscode-git-cruise",
+	"displayName": "Xiaomo Git History",
 	"description": "Git history panel in your VS Code",
 	"keywords": [
 		"git",
@@ -14,11 +14,11 @@
 		"flow",
 		"tag"
 	],
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
-	"repository": "https://github.com/raymon-sun/vscode-git-history",
-	"publisher": "GuodongSun",
+	"repository": "https://github.com/zhangmo8/vscode-git-history",
+	"publisher": "zhangmo8",
 	"engines": {
 		"vscode": "^1.56.0"
 	},

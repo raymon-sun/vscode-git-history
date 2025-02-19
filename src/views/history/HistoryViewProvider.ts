@@ -55,7 +55,7 @@ export class HistoryWebviewViewProvider implements WebviewViewProvider {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<title>Git History</title>
 			</head>
-			<body>
+			<body oncontextmenu="return false;">
 				<div id="root"></div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>

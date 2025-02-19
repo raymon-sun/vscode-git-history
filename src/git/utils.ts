@@ -1,9 +1,17 @@
+import { Uri } from "vscode";
+
 import { container } from "../container/inversify.config";
 
 import { Change, getChangePair } from "./changes/changes";
 
-import { FileNode, FolderNode, PathType } from "./changes/tree";
+import {
+	FileNode,
+	FolderNode,
+	type PathCollection,
+	PathType,
+} from "./changes/tree";
 import { GitService } from "./service";
+import { Status } from "./changes/status";
 
 export type ChangesCollection = { ref: string; changes: Change[] }[];
 
@@ -51,11 +59,19 @@ export function parseGitAuthors(data: string) {
 export function getDiffUriPair(node: FileNode) {
 	const gitService = container.get(GitService);
 
-	const { uri, originalChangeStack, changeStack } = node;
+	const { uri, originalChangeStack, changeStack, status } = node;
 	const [{ change: preChange, ref: preRef }, { ref: curRef }] = getChangePair(
 		originalChangeStack,
 		changeStack
 	);
+
+	if (status === Status.INDEX_ADDED) {
+		return [gitService.toGitUri(uri, curRef)];
+	}
+
+	if (status === Status.DELETED) {
+		return [gitService.toGitUri(uri, `${preRef}~`)];
+	}
 
 	return [
 		gitService.toGitUri(preChange.originalUri, `${preRef}~`),
@@ -127,4 +143,51 @@ export function removeItemsByIndexList<T>(array: T[], indexList: number[]) {
 	for (var i = indexList.length - 1; i >= 0; i--) {
 		array.splice(indexList[i], 1);
 	}
+}
+
+/**
+ * globalState cannot pass object with function, so rebuild the uri
+ * @param pathCollection
+ * @returns
+ */
+export function rebuildUri(pathCollection?: PathCollection) {
+	if (!pathCollection) {
+		return pathCollection;
+	}
+
+	Object.values(pathCollection).forEach((node) => {
+		if (node.type === PathType.FOLDER) {
+			rebuildUri(node.children);
+		} else if (node.type === PathType.FILE) {
+			node.uri = Uri.file(node.uri.path);
+			node.changeStack = node.changeStack.map(({ change, ...rest }) => ({
+				change: {
+					...change,
+					uri: Uri.file(change.uri.path),
+					renameUri: change.renameUri
+						? Uri.file(change.renameUri.path)
+						: change.renameUri,
+					originalUri: Uri.file(change.originalUri.path),
+					status: change.status,
+				},
+				...rest,
+			}));
+			node.originalChangeStack = node.originalChangeStack
+				? node.originalChangeStack.map(({ change, ...rest }) => ({
+						change: {
+							...change,
+							uri: Uri.file(change.uri.path),
+							renameUri: change.renameUri
+								? Uri.file(change.renameUri.path)
+								: change.renameUri,
+							originalUri: Uri.file(change.originalUri.path),
+							status: change.status,
+						},
+						...rest,
+				  }))
+				: node.originalChangeStack;
+		}
+	});
+
+	return pathCollection;
 }

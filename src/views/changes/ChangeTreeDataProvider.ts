@@ -11,7 +11,11 @@ import {
 import { inject, injectable } from "inversify";
 
 import { TYPES } from "../../container/types";
-import { compareFileTreeNode, getDiffUriPair } from "../../git/utils";
+import {
+	compareFileTreeNode,
+	getDiffUriPair,
+	rebuildUri,
+} from "../../git/utils";
 import { EXTENSION_SCHEME } from "../../constants";
 import {
 	FileNode,
@@ -39,8 +43,10 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 			Object.entries(
 				element
 					? (element.children as PathCollection)!
-					: this.context.globalState.get<PathCollection>(
-							"changedFileTree"
+					: rebuildUri(
+							this.context.globalState.get<PathCollection>(
+								"changedFileTree"
+							)
 					  )!
 			)
 				.sort(compareFileTreeNode)
@@ -90,11 +96,21 @@ class Path extends TreeItem {
 
 	private getCommand() {
 		if (this.props.type === PathType.FILE) {
-			return {
-				title: "diff",
-				command: "vscode.diff",
-				arguments: getDiffUriPair(this.props),
-			};
+			const diffUris = getDiffUriPair(this.props);
+
+			if (diffUris.length === 1) {
+				return {
+					title: "Open",
+					command: "vscode.open",
+					arguments: [diffUris[0]],
+				};
+			} else if (diffUris.length === 2) {
+				return {
+					title: "diff",
+					command: "vscode.diff",
+					arguments: getDiffUriPair(this.props),
+				};
+			}
 		}
 	}
 }

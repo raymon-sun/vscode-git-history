@@ -14,13 +14,13 @@
 		"flow",
 		"tag"
 	],
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-history",
 	"publisher": "GuodongSun",
 	"engines": {
-		"vscode": "^1.56.0"
+		"vscode": "^1.97.0"
 	},
 	"categories": [
 		"Other",

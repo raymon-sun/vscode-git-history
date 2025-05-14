@@ -20,7 +20,7 @@ import {
 } from "../../../git/changes/tree";
 import { ChangeTreeDataProvider } from "../../changes/ChangeTreeDataProvider";
 
-import type { IBatchedCommits, LogOptions } from "../../../git/types";
+import type { IBatchedCommits, LogOptions, ViewMode } from "../../../git/types";
 
 import {
 	REFRESH_COMMAND,
@@ -41,6 +41,7 @@ import state from "./state";
 @injectable()
 export class Source {
 	private switchSubscriber?: (batchedCommits: IBatchedCommits) => void;
+	private viewModeChangeSubscriber?: (mode: ViewMode) => void;
 
 	private commitsEventEmitter = new EventEmitter<{ totalCount: number }>();
 
@@ -82,6 +83,20 @@ export class Source {
 		handler: (batchedCommits: IBatchedCommits) => void
 	) {
 		this.switchSubscriber = handler;
+	}
+
+	@link("subscription")
+	async subscribeViewModeChange(
+		handler: (mode: ViewMode) => void
+	) {
+		this.viewModeChangeSubscriber = handler;
+	}
+
+	@link("promise")
+	async notifyViewModeChanged(mode: ViewMode) {
+		if (this.viewModeChangeSubscriber) {
+			this.viewModeChangeSubscriber(mode);
+		}
 	}
 
 	@link("promise")
@@ -193,6 +208,20 @@ export class Source {
 		);
 		const newFileTree = resolveChangesCollection(
 			changesCollection,
+			workspace.workspaceFolders![0].uri.path
+		);
+		this.updateTreeView(newFileTree);
+	}
+
+	@link("promise")
+	async viewCommitDiff(leftRef: string, rightRef: string) {
+		const diffCollection = await this.git.getCommitDiff(
+			state.logOptions.repo || "",
+			leftRef,
+			rightRef
+		);
+		const newFileTree = resolveChangesCollection(
+			[diffCollection],
 			workspace.workspaceFolders![0].uri.path
 		);
 		this.updateTreeView(newFileTree);

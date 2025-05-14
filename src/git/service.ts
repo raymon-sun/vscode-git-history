@@ -228,6 +228,25 @@ export class GitService {
 		);
 	}
 
+	async getCommitDiff(repoPath: string, leftRef: string, rightRef: string) {
+		const args = [
+			"diff",
+			"--name-status",
+			"-z",
+			`${leftRef}..${rightRef}`,
+		];
+
+		const diffOutput = await this.git!.cwd(repoPath || this.rootRepoPath)
+			.raw(args)
+			.then((res) => parseGitChanges(repoPath, res));
+
+		return {
+			ref: `${leftRef}..${rightRef}`,
+			repoPath,
+			changes: diffOutput,
+		};
+	}
+
 	async getChangesByRef(repoPath: string, ref: string) {
 		const args = [
 			"log",

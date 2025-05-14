@@ -91,6 +91,12 @@
 			},
 			{
 				"category": "Git History",
+				"command": "git-history.history.toggle.viewMode",
+				"title": "Toggle Commit Diff Mode",
+				"icon": "$(diff)"
+			},
+			{
+				"category": "Git History",
 				"command": "git-history.history.filter",
 				"title": "Git History",
 				"icon": "$(filter)"
@@ -115,6 +121,11 @@
 				},
 				{
 					"command": "git-history.history.switch.branch",
+					"when": "view =~ /git-history.history/",
+					"group": "navigation@4"
+				},
+				{
+					"command": "git-history.history.toggle.viewMode",
 					"when": "view =~ /git-history.history/",
 					"group": "navigation@4"
 				}

@@ -11,6 +11,12 @@ export interface LogOptions extends GitOptions {
 	maxLength?: number;
 	count?: number;
 	skip?: number;
+	mode?: ViewMode;
+}
+
+export enum ViewMode {
+	NORMAL = 'normal',
+	COMMIT_DIFF = 'commit_diff'
 }
 
 export type ICommitGraphSlice = [

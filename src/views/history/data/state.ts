@@ -1,5 +1,7 @@
-import { LogOptions } from "../../../git/types";
+import { LogOptions, ViewMode } from "../../../git/types";
 
 export default {
-	logOptions: {} as LogOptions,
+	logOptions: {
+		mode: ViewMode.NORMAL
+	} as LogOptions,
 };

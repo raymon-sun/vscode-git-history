@@ -112,6 +112,12 @@
 				"command": "git-history.changes.view.flat",
 				"title": "Changes Flat List View",
 				"icon": "$(list-flat)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.changes.filter",
+				"title": "Filter Changes",
+				"icon": "$(filter)"
 			}
 		],
 		"menus": {
@@ -137,14 +143,19 @@
 					"group": "navigation@4"
 				},
 				{
+					"command": "git-history.changes.filter",
+					"when": "view == git-history.changes",
+					"group": "navigation@1"
+				},
+				{
 					"command": "git-history.changes.view.tree",
 					"when": "view =~ /git-history.changes/ && !gitHistory:changesViewIsTree",
-					"group": "navigation@4"
+					"group": "navigation@2"
 				},
 				{
 					"command": "git-history.changes.view.flat",
 					"when": "view =~ /git-history.changes/ && gitHistory:changesViewIsTree",
-					"group": "navigation@4"
+					"group": "navigation@2"
 				}
 			]
 		}

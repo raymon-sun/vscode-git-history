@@ -37,6 +37,11 @@ export class ChangeTreeView {
 			this.viewFlat.bind(this)
 		);
 
+		commands.registerCommand(
+			`${EXTENSION_SCHEME}.changes.filter`,
+			this.setFilter.bind(this)
+		);
+
 		this.updateView();
 	}
 
@@ -55,9 +60,23 @@ export class ChangeTreeView {
 		this.updateView();
 	}
 
+	private async setFilter(): Promise<void> {
+		const filterText = await window.showInputBox({
+			placeHolder: "Input filenames to filter changes",
+			value: this.changeTreeDataProvider.filterText
+		});
+
+		this.changeTreeDataProvider.setFilter(filterText);
+		this.updateView();
+	}
+
 	private updateView(): void {
 		const isTreeView = this.changeTreeDataProvider.isTreeView;
+		const isFiltered = this.changeTreeDataProvider.isFiltered;
 		this.changesViewer.description = isTreeView ? "Tree View" : "Flat List View";
+		if (isFiltered) {
+			this.changesViewer.description += ' (filtered)';
+		}
 		commands.executeCommand('setContext', 'gitHistory:changesViewIsTree', isTreeView);
 	}
 }

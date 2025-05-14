@@ -29,6 +29,7 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 	private _onDidChangeTreeData = new EventEmitter<void>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 	private _isTreeView: boolean = true; // true: tree, false: flat
+	private _filterText: string = '';
 
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext
@@ -40,9 +41,22 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 		return this._isTreeView;
 	}
 
+	get filterText(): string {
+		return this._filterText;
+	}
+
+	get isFiltered(): boolean {
+		return this._filterText !== '';
+	}
+
 	setViewMode(mode: string): void {
 		this._isTreeView = mode === 'toggle' ? !this._isTreeView : (mode === "tree");
 		this.context.globalState.update("changesTreeView", this._isTreeView);
+		this.refresh();
+	}
+
+	setFilter(filterText?: string): void {
+		this._filterText = (filterText?.trim() || '').toLowerCase();
 		this.refresh();
 	}
 
@@ -60,19 +74,44 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 			return Promise.resolve(this.getFlatFileList(fileTree));
 		}
 
+		const sourceCollection = element
+			? (element.children as PathCollection)!
+			: rebuildUri(
+				this.context.globalState.get<PathCollection>(
+					"changedFileTree"
+				)
+			)!;
+
+		let childrenEntries = Object.entries(sourceCollection)
+			.sort(compareFileTreeNode);
+
+		if (this._filterText) {
+			childrenEntries = childrenEntries.filter(([name, props]) =>
+				this._nodeMatchesOrHasMatchingDescendant(props, name, this._filterText)
+			);
+		}
+
 		return Promise.resolve(
-			Object.entries(
-				element
-					? (element.children as PathCollection)!
-					: rebuildUri(
-						this.context.globalState.get<PathCollection>(
-							"changedFileTree"
-						)
-					)!
-			)
-				.sort(compareFileTreeNode)
-				.map(([name, props]) => new Path(name, props))
+			childrenEntries.map(([name, props]) => new Path(name, props))
 		);
+	}
+
+	private _nodeMatchesOrHasMatchingDescendant(props: FolderNode | FileNode, name: string, filterText: string): boolean {
+		if (name.toLowerCase().includes(filterText)) {
+			return true;
+		}
+
+		if (props.type === PathType.FOLDER) {
+			const folderNode = props as FolderNode;
+			if (folderNode.children) {
+				for (const [childName, childProps] of Object.entries(folderNode.children)) {
+					if (this._nodeMatchesOrHasMatchingDescendant(childProps, childName, filterText)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	private getFlatFileList(tree: PathCollection): Path[] {
@@ -93,7 +132,11 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 
 		traverseTree(tree);
 
-		return result.sort((a, b) => a.label.localeCompare(b.label));
+		const filteredResult = this._filterText
+			? result.filter(pathItem => pathItem.label.toLowerCase().includes(this._filterText))
+			: result;
+
+		return filteredResult.sort((a, b) => a.label.localeCompare(b.label));
 	}
 
 	refresh() {

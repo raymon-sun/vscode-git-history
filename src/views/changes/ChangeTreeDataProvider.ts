@@ -107,6 +107,7 @@ class Path extends TreeItem {
 	resourceUri = this.getResourceUri();
 	collapsibleState = this.getCollapsibleState();
 	readonly command?: Command = this.getCommand();
+	originalPath: string;
 
 	constructor(public label: string, public props: FolderNode | FileNode) {
 		super(label);

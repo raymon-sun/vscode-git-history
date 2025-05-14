@@ -10,11 +10,14 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { useMeasure } from "react-use";
 
 import type { IBatchedCommits } from "../../../../git/types";
+import { ViewMode } from "../../../../git/types";
 
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
 
 import { ICommit, parseCommit } from "../../../../git/commit";
+
+import state from "../../data/state";
 
 import { useBatchCommits } from "./useBatchCommits";
 import { useColumnResize } from "./useColumnResize";
@@ -25,12 +28,17 @@ import style from "./index.module.scss";
 
 const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const channel = useContext(ChannelContext)!;
+	const [viewMode, setViewMode] = useState<ViewMode>(state.logOptions.mode || ViewMode.NORMAL);
 
 	const { commits, commitsCount, options, setBatchedCommits } =
 		useBatchCommits();
 
 	function diff(sortedRefs: string[]) {
-		channel.viewChanges(sortedRefs);
+		if (viewMode === ViewMode.NORMAL || sortedRefs.length < 2) {
+			channel.viewChanges(sortedRefs);
+		} else if (viewMode === ViewMode.COMMIT_DIFF && sortedRefs.length === 2) {
+			channel.viewCommitDiff(sortedRefs[0], sortedRefs[1]);
+		}
 	}
 
 	const subscribeSwitcher = useCallback(() => {
@@ -101,11 +109,20 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	useEffect(() => {
 		subscribeSwitcher();
 
+		channel.subscribeViewModeChange((mode: ViewMode) => {
+			setViewMode(mode);
+		});
+
 		channel.autoRefreshLog();
 	}, [channel, subscribeSwitcher]);
 
 	return (
 		<>
+			{viewMode === ViewMode.COMMIT_DIFF && (
+				<div className={style["diff-mode-message"]}>
+					<span>Commit Diff Mode: Select two commits to compare.</span>
+				</div>
+			)}
 			<div className={style["commit-headers"]}>
 				{columns.map(
 					(
@@ -191,6 +208,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 					keyLength={40}
 					locationIndex={locationIndex}
 					itemPipe={parseCommit}
+					mode={viewMode}
 					itemRender={(commit: ICommit) => (
 						<div className={style.commit}>
 							{columns.map(({ prop, size, transformer }) => (

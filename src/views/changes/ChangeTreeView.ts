@@ -1,4 +1,4 @@
-import { ExtensionContext, TreeView, window } from "vscode";
+import { ExtensionContext, TreeView, window, commands } from "vscode";
 import { inject, injectable } from "inversify";
 
 import { TYPES } from "../../container/types";
@@ -21,5 +21,43 @@ export class ChangeTreeView {
 				treeDataProvider: this.changeTreeDataProvider,
 			}
 		);
+
+		commands.registerCommand(
+			`${EXTENSION_SCHEME}.changes.view.toggle`,
+			this.viewToggle.bind(this)
+		);
+
+		commands.registerCommand(
+			`${EXTENSION_SCHEME}.changes.view.tree`,
+			this.viewTree.bind(this)
+		);
+
+		commands.registerCommand(
+			`${EXTENSION_SCHEME}.changes.view.flat`,
+			this.viewFlat.bind(this)
+		);
+
+		this.updateView();
+	}
+
+	private viewToggle(): void {
+		this.changeTreeDataProvider.setViewMode('toggle');
+		this.updateView();
+	}
+
+	private viewTree(): void {
+		this.changeTreeDataProvider.setViewMode('tree');
+		this.updateView();
+	}
+
+	private viewFlat(): void {
+		this.changeTreeDataProvider.setViewMode('flat');
+		this.updateView();
+	}
+
+	private updateView(): void {
+		const isTreeView = this.changeTreeDataProvider.isTreeView;
+		this.changesViewer.description = isTreeView ? "Tree View" : "Flat List View";
+		commands.executeCommand('setContext', 'gitHistory:changesViewIsTree', isTreeView);
 	}
 }

@@ -28,10 +28,23 @@ import {
 export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 	private _onDidChangeTreeData = new EventEmitter<void>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+	private _isTreeView: boolean = true; // true: tree, false: flat
 
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext
-	) {}
+	) {
+		this._isTreeView = this.context.globalState.get<boolean>("changesTreeView", true);
+	}
+
+	get isTreeView(): boolean {
+		return this._isTreeView;
+	}
+
+	setViewMode(mode: string): void {
+		this._isTreeView = mode === 'toggle' ? !this._isTreeView : (mode === "tree");
+		this.context.globalState.update("changesTreeView", this._isTreeView);
+		this.refresh();
+	}
 
 	getTreeItem(element: Path) {
 		return element;
@@ -39,19 +52,48 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 
 	getChildren(element?: Path) {
 		// TODO: order by type and name
+
+		if (!this.isTreeView) {
+			const fileTree = rebuildUri(
+				this.context.globalState.get<PathCollection>("changedFileTree")
+			)!;
+			return Promise.resolve(this.getFlatFileList(fileTree));
+		}
+
 		return Promise.resolve(
 			Object.entries(
 				element
 					? (element.children as PathCollection)!
 					: rebuildUri(
-							this.context.globalState.get<PathCollection>(
-								"changedFileTree"
-							)
-					  )!
+						this.context.globalState.get<PathCollection>(
+							"changedFileTree"
+						)
+					)!
 			)
 				.sort(compareFileTreeNode)
 				.map(([name, props]) => new Path(name, props))
 		);
+	}
+
+	private getFlatFileList(tree: PathCollection): Path[] {
+		const result: Path[] = [];
+
+		const traverseTree = (node: PathCollection, parentPath: string = '') => {
+			Object.entries(node).forEach(([name, props]) => {
+				const fullPath = parentPath ? `${parentPath}/${name}` : name;
+
+				if (props.type === PathType.FILE) {
+					const filePath = new Path(fullPath, props);
+					result.push(filePath);
+				} else if (props.type === PathType.FOLDER) {
+					traverseTree((props as FolderNode).children, fullPath);
+				}
+			});
+		};
+
+		traverseTree(tree);
+
+		return result.sort((a, b) => a.label.localeCompare(b.label));
 	}
 
 	refresh() {
@@ -68,6 +110,13 @@ class Path extends TreeItem {
 
 	constructor(public label: string, public props: FolderNode | FileNode) {
 		super(label);
+
+		this.originalPath = label;
+
+		// For flat list view, we want to show the full path in the tooltip
+		if (this.props.type === PathType.FILE) {
+			this.tooltip = this.originalPath;
+		}
 	}
 
 	private getResourceUri() {

@@ -1,3 +1,5 @@
+import * as path from "path";
+
 import { Pool, spawn, Worker } from "threads";
 
 import { injectable } from "inversify";
@@ -37,7 +39,7 @@ export class GitService {
 
 		const gitBinPath = await getGitBinPath();
 
-		this.git = simpleGit(this.rootRepoPath, {
+		this.git = simpleGit({
 			binary: gitBinPath,
 			maxConcurrentProcesses: 10,
 		});
@@ -57,7 +59,7 @@ export class GitService {
 
 	getConfig(repo: string) {
 		return this.git
-			?.cwd(repo)
+			?.cwd({path: repo, root: false})
 			?.raw("config", "--list")
 			.then((res) => parseGitConfig(res));
 	}
@@ -78,7 +80,7 @@ export class GitService {
 		// todo
 		const { repo = [this.rootRepoPath] } = options;
 		return this.git
-			?.cwd(repo[0])
+			?.cwd({path: repo[0], root: false})
 			.raw(
 				"for-each-ref",
 				"--sort",
@@ -108,7 +110,7 @@ export class GitService {
 
 	getRefsForSingleRepository(repo: string) {
 		return this.git
-			?.cwd(repo)
+			?.cwd({path: repo, root: false})
 			.raw(
 				"for-each-ref",
 				"--sort",
@@ -142,7 +144,7 @@ export class GitService {
 		// todo
 		const { repo = [this.rootRepoPath] } = options;
 		return Promise.allSettled([
-			this.git?.cwd(repo[0])?.raw("shortlog", "-ens", "HEAD"),
+			this.git?.cwd({path: repo[0], root: false})?.raw("shortlog", "-ens", "HEAD"),
 			this.getConfig(repo[0]),
 		]).then(([settledShortLogResult, settledConfigResult]) => {
 			if (
@@ -194,7 +196,10 @@ export class GitService {
 				this.getCommitsForSingleRepository(repository, newOptions)
 			) || [Promise.resolve([])]
 		).then((results) =>
-			results.flat().filter((commit): commit is IRoughCommit => !!commit)
+			results
+				.flat()
+				.filter((commit): commit is IRoughCommit => !!commit)
+			.sort((a, b) => b[4] - a[4]) 
 		);
 	}
 
@@ -230,17 +235,18 @@ export class GitService {
 		}
 
 		let repositoryName = (repo || this.rootRepoPath)
-			.split("\\")
+			.split(path.sep)
 			.slice(-1)[0];
 
 		return await this.git
-			?.cwd(repo || this.rootRepoPath)
+			?.cwd({path: repo, root: false})
 			.raw(args)
-			.then<IRoughCommit[]>((res) =>
-				this.pool.queue(({ parseCommits }) =>
+			.then<IRoughCommit[]>((res) => {
+				console.log(`getCommitsForSingleRepository: ${repositoryName}\n`, res);
+				return this.pool.queue(({ parseCommits }) =>
 					parseCommits(res, repositoryName)
-				)
-			)
+				);
+			})
 			.catch((err) => console.log(err));
 	}
 
@@ -280,7 +286,7 @@ export class GitService {
 		}
 
 		return await this.git
-			?.cwd(repo || this.rootRepoPath)
+			?.cwd({path: repo, root: false})
 			.raw(args)
 			.catch((err) => console.log(err));
 	}
@@ -323,7 +329,7 @@ export class GitService {
 			ref,
 		];
 
-		return await this.git!.cwd(repoPath || this.rootRepoPath)
+		return await this.git!.cwd({path: repoPath, root: false})
 			.raw(args)
 			.then((res) => parseGitChanges(repoPath, res));
 	}

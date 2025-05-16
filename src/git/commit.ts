@@ -30,7 +30,9 @@ export type IRoughCommit = [
 	/** commit data */
 	string,
 	/** repository name */
-	string
+	string,
+	/** author date */
+	number
 ];
 
 export enum CommitIndex {
@@ -57,6 +59,7 @@ export function parseCommits(data: string, repo: string) {
 	let commitData;
 	let ref;
 	let parents;
+	let authorDate
 	let match;
 
 	do {
@@ -65,7 +68,7 @@ export function parseCommits(data: string, repo: string) {
 			break;
 		}
 
-		[commitData, ref, , , , , , parents] = match;
+		[commitData, ref, , , , authorDate, , parents] = match;
 
 		// Stop excessive memory usage by using substr -- https://bugs.chromium.org/p/v8/issues/detail?id=2869
 		const commit: IRoughCommit = [
@@ -73,6 +76,7 @@ export function parseCommits(data: string, repo: string) {
 			parents ? parents.split(" ") : [],
 			commitData,
 			repo,
+			authorDate ? Number(authorDate) * 1000 : 0
 		];
 
 		commits.push(commit);

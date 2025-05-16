@@ -1,7 +1,7 @@
 import { IRoughCommit } from "./commit";
 
 export interface GitOptions {
-	repo?: string;
+	repo?: string[];
 }
 
 export interface LogOptions extends GitOptions {

@@ -63,10 +63,9 @@ export class GitService {
 	}
 
 	getDefaultRepository() {
-		const workspacePath = workspace.workspaceFolders![0].uri.fsPath;
 		const repos = this.getRepositories();
 
-		return repos.find((fsPath) => fsPath === workspacePath) || repos[0];
+		return repos;
 	}
 
 	getRepositories() {
@@ -76,7 +75,38 @@ export class GitService {
 	}
 
 	getRefs(options: GitOptions) {
-		const { repo = this.rootRepoPath } = options;
+		// todo
+		const { repo = [this.rootRepoPath] } = options;
+		return this.git
+			?.cwd(repo[0])
+			.raw(
+				"for-each-ref",
+				"--sort",
+				"-committerdate",
+				"--format=%(objectname) %(refname)"
+			)
+			.then((res) => {
+				const refs: { hash: string; type: string; name: string }[] = [];
+				res.split("\n").forEach((item) => {
+					if (!item) {
+						return;
+					}
+
+					const [, hash, type, name] =
+						item.match(
+							/^([A-Fa-f0-9]+) refs\/(heads|remotes|tags)\/(.*)$/
+						) || [];
+
+					if (hash && type && name) {
+						refs.push({ hash, type, name });
+					}
+				});
+
+				return refs;
+			});
+	}
+
+	getRefsForSingleRepository(repo: string) {
 		return this.git
 			?.cwd(repo)
 			.raw(
@@ -109,10 +139,11 @@ export class GitService {
 	getAuthors(
 		options: GitOptions
 	): Promise<{ name: string; email: string; isSelf?: true }[]> {
-		const { repo = this.rootRepoPath } = options;
+		// todo
+		const { repo = [this.rootRepoPath] } = options;
 		return Promise.allSettled([
-			this.git?.cwd(repo)?.raw("shortlog", "-ens", "HEAD"),
-			this.getConfig(repo),
+			this.git?.cwd(repo[0])?.raw("shortlog", "-ens", "HEAD"),
+			this.getConfig(repo[0]),
 		]).then(([settledShortLogResult, settledConfigResult]) => {
 			if (
 				settledShortLogResult.status !== "fulfilled" ||
@@ -155,10 +186,21 @@ export class GitService {
 			.show(commitHash, filePath);
 	}
 
-	async getCommits(options?: LogOptions) {
+	async getCommits(options?: LogOptions): Promise<IRoughCommit[]> {
+		const { repo, ...newOptions } = options || {};
+		const repos = repo || this.getRepositories();
+		return await Promise.all(
+			repos.map((repository) =>
+				this.getCommitsForSingleRepository(repository, newOptions)
+			) || [Promise.resolve([])]
+		).then((results) =>
+			results.flat().filter((commit): commit is IRoughCommit => !!commit)
+		);
+	}
+
+	async getCommitsForSingleRepository(repo: string, options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%D%n%aN%n%aE%n%at%n%ct%n%P%n%B";
-		const { repo, authors, keyword, ref, maxLength, count, skip } =
-			options || {};
+		const { authors, keyword, ref, maxLength, count, skip } = options || {};
 		const args = [
 			"log",
 			`--format=${COMMIT_FORMAT}`,
@@ -187,17 +229,44 @@ export class GitService {
 			args.push(`-${count}`);
 		}
 
+		let repositoryName = (repo || this.rootRepoPath)
+			.split("\\")
+			.slice(-1)[0];
+
 		return await this.git
 			?.cwd(repo || this.rootRepoPath)
 			.raw(args)
 			.then<IRoughCommit[]>((res) =>
-				this.pool.queue(({ parseCommits }) => parseCommits(res))
+				this.pool.queue(({ parseCommits }) =>
+					parseCommits(res, repositoryName)
+				)
 			)
 			.catch((err) => console.log(err));
 	}
 
-	async getCommitsTotalCount(options?: LogOptions) {
-		const { repo, ref, authors, keyword } = options || {};
+	async getCommitsTotalCount(options?: LogOptions): Promise<number> {
+		const { repo, ...newOptions } = options || {};
+		const repos = repo || this.getRepositories();
+		return await Promise.all(
+			repos.map((repository) =>
+				this.getCommitsTotalCountForSingleRepository(
+					repository,
+					newOptions
+				)
+			) || [Promise.resolve("0")]
+		).then((counts) =>
+			counts.reduce(
+				(total, count) => total + parseInt(count || "0", 10),
+				0
+			)
+		);
+	}
+
+	async getCommitsTotalCountForSingleRepository(
+		repo: string,
+		options?: LogOptions
+	) {
+		const { ref, authors, keyword } = options || {};
 
 		// TODO: reuse arguments assembly process in getCommits
 		const args = ["rev-list", ...(ref ? [ref] : LOG_TYPE_ARGS), "--count"];
@@ -216,19 +285,34 @@ export class GitService {
 			.catch((err) => console.log(err));
 	}
 
-	async getChangesCollection(repoPath: string, refs: string[]) {
+	async getChangesCollection(repoPath: string[], refs: string[]) {
 		return await Promise.all(
-			refs.map((ref) =>
-				this.getChangesByRef(repoPath, ref).then((changes) => ({
-					ref,
-					repoPath,
-					changes,
-				}))
-			)
+			refs
+				.map((ref) =>
+					repoPath.map((repository) =>
+						this.getChangesByRefForSingleRepository(
+							repository,
+							ref
+						).then((changes) => ({
+							ref,
+							repoPath: repository,
+							changes,
+						}))
+					)
+				)
+				.flat() || [Promise.resolve([])]
 		);
 	}
 
-	async getChangesByRef(repoPath: string, ref: string) {
+	async getChangesByRef(repoPath: string[], ref: string) {
+		return await Promise.all(
+			repoPath.map((repository) =>
+				this.getChangesByRefForSingleRepository(repository, ref)
+			) || [Promise.resolve([])]
+		).then((results) => results.flat());
+	}
+
+	async getChangesByRefForSingleRepository(repoPath: string, ref: string) {
 		const args = [
 			"log",
 			"-p",

@@ -17,6 +17,8 @@ export type ICommit = [
 	string,
 	/** author date */
 	string,
+	/** repository name */
+	string,
 	ICommitGraphSlice?
 ];
 
@@ -26,6 +28,8 @@ export type IRoughCommit = [
 	/** parents */
 	string[],
 	/** commit data */
+	string,
+	/** repository name */
 	string
 ];
 
@@ -38,12 +42,13 @@ export enum CommitIndex {
 	AUTHOR_EMAIL,
 	AUTHOR_NAME,
 	AUTHOR_DATE,
+	REPOSITORY_NAME,
 	GRAPH_SLICE,
 }
 
 export const REFS_SEPARATOR = ", ";
 
-export function parseCommits(data: string) {
+export function parseCommits(data: string, repo: string) {
 	const commitRegex =
 		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)/gm;
 
@@ -67,6 +72,7 @@ export function parseCommits(data: string) {
 			` ${ref}`.substr(1),
 			parents ? parents.split(" ") : [],
 			commitData,
+			repo,
 		];
 
 		commits.push(commit);
@@ -77,7 +83,7 @@ export function parseCommits(data: string) {
 
 export function parseCommit(commitData: string): ICommit {
 	const commitRegex =
-		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)(.*)\n(.*)\n(.*)/g;
+		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)(.*)\n(.*)\n(.*)\n(.*)/g;
 
 	let ref;
 	let refNames;
@@ -87,6 +93,7 @@ export function parseCommit(commitData: string): ICommit {
 	let commitDate;
 	let parents;
 	let message;
+	let repositoryName;
 	let commitPosition;
 	let commitColor;
 	let stringifiedLines;
@@ -104,6 +111,7 @@ export function parseCommit(commitData: string): ICommit {
 		commitDate,
 		parents,
 		message,
+		repositoryName,
 		commitPosition,
 		commitColor,
 		stringifiedLines,
@@ -123,6 +131,7 @@ export function parseCommit(commitData: string): ICommit {
 		` ${authorEmail}`.substr(1),
 		` ${authorName}`.substr(1),
 		new Date(Number(commitDate) * 1000).toLocaleString(),
+		repositoryName,
 		[Number(commitPosition), commitColor, JSON.parse(stringifiedLines)],
 	];
 }

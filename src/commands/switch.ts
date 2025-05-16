@@ -50,6 +50,7 @@ export function getSwitchCommandsDisposable() {
 		}),
 		commands.registerCommand(SWITCH_REPO_COMMAND, async () => {
 			const quickPick = window.createQuickPick();
+			quickPick.canSelectMany = true; // 启用多选
 
 			const items =
 				gitService
@@ -61,20 +62,26 @@ export function getSwitchCommandsDisposable() {
 			quickPick.title = "Switch Repository";
 			quickPick.placeholder = "Search repo by path";
 			quickPick.items = items;
-			quickPick.activeItems = items.filter(
-				({ label }) => label === state.logOptions.repo
+
+			// 设置 activeItems 和 selectedItems，确保之前选中的仓库显示为选中状态
+			const selectedRepos = state.logOptions.repo || [];
+			quickPick.activeItems = items.filter(({ label }) =>
+				selectedRepos.includes(label)
+			);
+			quickPick.selectedItems = items.filter(({ label }) =>
+				selectedRepos.includes(label)
 			);
 
-			quickPick.onDidChangeSelection((selection) => {
-				const [item] = selection;
-				const { label: repo } = item;
+			quickPick.onDidAccept(() => {
+				const selection = quickPick.selectedItems; // 获取选中的项目
+				const repo = selection.map((item) => item.label); // 提取所有选中的仓库路径
 				const switchSubscriber = source.getSwitchSubscriber();
 				if (!switchSubscriber) {
 					return;
 				}
 
-				state.logOptions = { repo };
-				source.getCommits(switchSubscriber, state.logOptions);
+				state.logOptions = { repo }; // 将选中的仓库存储为数组
+				source.getCommits(switchSubscriber, state.logOptions); // 传递选中的仓库
 				quickPick.dispose();
 			});
 

@@ -1,3 +1,5 @@
+import * as path from "path";
+
 import { Uri } from "vscode";
 
 import { container } from "../container/inversify.config";
@@ -190,4 +192,8 @@ export function rebuildUri(pathCollection?: PathCollection) {
 	});
 
 	return pathCollection;
+}
+
+export function getRepositoryNameFromRepoPath(repoPath: string) {
+	return repoPath.split(path.sep).slice(-1)[0];
 }

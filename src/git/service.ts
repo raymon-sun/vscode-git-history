@@ -1,5 +1,3 @@
-import * as path from "path";
-
 import { Pool, spawn, Worker } from "threads";
 
 import { injectable } from "inversify";
@@ -13,7 +11,7 @@ import { getBuiltInGitApi, getGitBinPath } from "./api";
 
 import { GitOptions, LogOptions } from "./types";
 import { parseGitChanges } from "./changes/changes";
-import { parseGitAuthors, parseGitConfig } from "./utils";
+import { getRepositoryNameFromRepoPath, parseGitAuthors, parseGitConfig } from "./utils";
 
 import type { GitWorker } from "./worker";
 import { IRoughCommit } from "./commit";
@@ -85,8 +83,7 @@ export class GitService {
 				const refs = await this.getRefsForSingleRepository(repository);
 				return refs?.map((ref) => ({
 					...ref,
-					repos: repository.split(path.sep)
-						.slice(-1)[0], // 添加 repository 信息
+					repos: getRepositoryNameFromRepoPath(repository), // 添加 repository 信息
 				}));
 			})
 		).then((refsGroupedByRepo) =>
@@ -95,12 +92,15 @@ export class GitService {
 				.flat()
 				.reduce(
 					(acc, ref) => {
+						if (!ref) {
+							return acc;
+						}
 						const existingRef = acc.find(
-							(item) => item.name === ref.name
+							(item) => item.name === ref?.name
 						);
 						if (existingRef) {
 							// 如果已经存在相同的 ref，合并 repos 字段
-							existingRef.repos += `,${ref.repos}`;
+							existingRef.repos += `,${ref?.repos}`;
 						} else {
 							acc.push(ref);
 						}
@@ -261,9 +261,7 @@ export class GitService {
 			args.push(`-${count}`);
 		}
 
-		let repositoryName = (repo || this.rootRepoPath)
-			.split(path.sep)
-			.slice(-1)[0];
+		let repositoryName = getRepositoryNameFromRepoPath(repo || this.rootRepoPath);
 
 		return await this.git
 			?.cwd({ path: repo, root: false })

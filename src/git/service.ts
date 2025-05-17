@@ -77,35 +77,38 @@ export class GitService {
 	}
 
 	getRefs(options: GitOptions) {
-		// todo
 		const { repo = [this.rootRepoPath] } = options;
-		return this.git
-			?.cwd({ path: repo[0], root: false })
-			.raw(
-				"for-each-ref",
-				"--sort",
-				"-committerdate",
-				"--format=%(objectname) %(refname)"
-			)
-			.then((res) => {
-				const refs: { hash: string; type: string; name: string }[] = [];
-				res.split("\n").forEach((item) => {
-					if (!item) {
-						return;
-					}
 
-					const [, hash, type, name] =
-						item.match(
-							/^([A-Fa-f0-9]+) refs\/(heads|remotes|tags)\/(.*)$/
-						) || [];
-
-					if (hash && type && name) {
-						refs.push({ hash, type, name });
-					}
-				});
-
-				return refs;
-			});
+		// 获取每个 repository 的 refs，并添加 repos 字段
+		return Promise.all(
+			repo.map(async (repository) => {
+				const refs = await this.getRefsForSingleRepository(repository);
+				return refs?.map((ref) => ({
+					...ref,
+					repos: repository.split(path.sep)
+						.slice(-1)[0], // 添加 repository 信息
+				}));
+			})
+		).then((refsGroupedByRepo) =>
+			// 将分组的 refs 打平成一个列表，并合并 repos 字段
+			refsGroupedByRepo
+				.flat()
+				.reduce(
+					(acc, ref) => {
+						const existingRef = acc.find(
+							(item) => item.name === ref.name
+						);
+						if (existingRef) {
+							// 如果已经存在相同的 ref，合并 repos 字段
+							existingRef.repos += `,${ref.repos}`;
+						} else {
+							acc.push(ref);
+						}
+						return acc;
+					},
+					[] as { hash: string; type: string; name: string; repos: string }[]
+				)
+		);
 	}
 
 	getRefsForSingleRepository(repo: string) {
@@ -141,10 +144,34 @@ export class GitService {
 	getAuthors(
 		options: GitOptions
 	): Promise<{ name: string; email: string; isSelf?: true }[]> {
-		// todo
 		const { repo = [this.rootRepoPath] } = options;
+
+		// 获取每个 repository 的 authors
+		return Promise.all(
+			repo.map((repository) =>
+				this.getAuthorsForSingleRepository(repository)
+			)
+		).then((authors) =>
+			// 将分组的 authors 打平成一个列表
+			authors.flat()
+			.reduce((acc, author) => {
+				if (
+					!acc.some(
+						(existingAuthor) =>
+							existingAuthor.name === author.name &&
+							existingAuthor.email === author.email
+					)
+				) {
+					acc.push(author);
+				}
+				return acc;
+			}, [] as { name: string; email: string; isSelf?: true }[]));
+	}
+
+	getAuthorsForSingleRepository(repo: string
+	): Promise<{ name: string; email: string; isSelf?: true }[]> {
 		return Promise.allSettled([
-			this.git?.cwd({ path: repo[0], root: false })?.raw("shortlog", "-ens", "HEAD"),
+			this.git?.cwd({ path: repo, root: false })?.raw("shortlog", "-ens", "HEAD"),
 			this.getConfig(repo[0]),
 		]).then(([settledShortLogResult, settledConfigResult]) => {
 			if (

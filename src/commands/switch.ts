@@ -116,9 +116,9 @@ export function getSwitchCommandsDisposable() {
 				...localBranchRefs,
 				...remoteBranchRefs,
 				...otherRefs,
-			].map(({ type, name, hash }) => ({
+			].map(({ type, name, hash, repos }) => ({
 				label: `$(${REF_TYPE_DETAIL_MAP[type]?.icon}) ${name}`,
-				description: `${
+				description: `${repos} ${
 					REF_TYPE_DETAIL_MAP[type]?.descriptionPrefix
 				}${hash.substring(0, 8)}`,
 				ref: name,

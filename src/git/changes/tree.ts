@@ -69,7 +69,6 @@ export function resolveChangesCollection(
 }
 
 export function getPathMap(changesCollection: ChangesCollection) {
-	// todo
 	const pathMap: Record<string, FileNode> = {};
 	const renamedPaths: string[] = [];
 	changesCollection.reverse().forEach(({ ref, repoPath, changes }) => {

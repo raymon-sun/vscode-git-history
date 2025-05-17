@@ -59,7 +59,7 @@ export class GitService {
 
 	getConfig(repo: string) {
 		return this.git
-			?.cwd({path: repo, root: false})
+			?.cwd({ path: repo, root: false })
 			?.raw("config", "--list")
 			.then((res) => parseGitConfig(res));
 	}
@@ -80,7 +80,7 @@ export class GitService {
 		// todo
 		const { repo = [this.rootRepoPath] } = options;
 		return this.git
-			?.cwd({path: repo[0], root: false})
+			?.cwd({ path: repo[0], root: false })
 			.raw(
 				"for-each-ref",
 				"--sort",
@@ -110,7 +110,7 @@ export class GitService {
 
 	getRefsForSingleRepository(repo: string) {
 		return this.git
-			?.cwd({path: repo, root: false})
+			?.cwd({ path: repo, root: false })
 			.raw(
 				"for-each-ref",
 				"--sort",
@@ -144,7 +144,7 @@ export class GitService {
 		// todo
 		const { repo = [this.rootRepoPath] } = options;
 		return Promise.allSettled([
-			this.git?.cwd({path: repo[0], root: false})?.raw("shortlog", "-ens", "HEAD"),
+			this.git?.cwd({ path: repo[0], root: false })?.raw("shortlog", "-ens", "HEAD"),
 			this.getConfig(repo[0]),
 		]).then(([settledShortLogResult, settledConfigResult]) => {
 			if (
@@ -199,7 +199,7 @@ export class GitService {
 			results
 				.flat()
 				.filter((commit): commit is IRoughCommit => !!commit)
-			.sort((a, b) => b[4] - a[4]) 
+				.sort((a, b) => b[4] - a[4])
 		);
 	}
 
@@ -239,14 +239,12 @@ export class GitService {
 			.slice(-1)[0];
 
 		return await this.git
-			?.cwd({path: repo, root: false})
+			?.cwd({ path: repo, root: false })
 			.raw(args)
-			.then<IRoughCommit[]>((res) => {
-				console.log(`getCommitsForSingleRepository: ${repositoryName}\n`, res);
-				return this.pool.queue(({ parseCommits }) =>
+			.then<IRoughCommit[]>((res) =>
+				this.pool.queue(({ parseCommits }) =>
 					parseCommits(res, repositoryName)
-				);
-			})
+				))
 			.catch((err) => console.log(err));
 	}
 
@@ -286,7 +284,7 @@ export class GitService {
 		}
 
 		return await this.git
-			?.cwd({path: repo, root: false})
+			?.cwd({ path: repo, root: false })
 			.raw(args)
 			.catch((err) => console.log(err));
 	}
@@ -329,9 +327,22 @@ export class GitService {
 			ref,
 		];
 
-		return await this.git!.cwd({path: repoPath, root: false})
-			.raw(args)
-			.then((res) => parseGitChanges(repoPath, res));
+		try {
+			const res = await this.git!.cwd({ path: repoPath, root: false }).raw(args);
+			const changes = parseGitChanges(repoPath, res);
+
+			// 如果解析结果为空，返回空数组
+			if (!changes || changes.length === 0) {
+				console.warn(`No changes found for ref: ${ref} in repository: ${repoPath}`);
+				return [];
+			}
+
+			return changes;
+		} catch (err) {
+			// 捕获异常并记录日志
+			console.log(`Error fetching changes for ref: ${ref} in repository: ${repoPath}`, err);
+			return []; // 返回空数组作为默认值
+		}
 	}
 
 	onReposChange(handler: (repos: string[]) => void) {

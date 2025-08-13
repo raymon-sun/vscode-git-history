@@ -72,8 +72,8 @@ export class GitGraph {
 
 	private setGraphToCommits(commits: IRoughCommit[], setGraph = true) {
 		return commits.map(
-			([hash, parents, commitData]) =>
-				`${commitData}${
+			([hash, parents, commitData, repositoryName]) =>
+				`${commitData}${repositoryName}\n${
 					setGraph
 						? this.getGraphSlice(hash, parents)
 						: this.getSingleLineGraphSlice(hash, parents)

@@ -11,7 +11,7 @@ import { getBuiltInGitApi, getGitBinPath } from "./api";
 
 import { GitOptions, LogOptions } from "./types";
 import { parseGitChanges } from "./changes/changes";
-import { parseGitAuthors, parseGitConfig } from "./utils";
+import { getRepositoryNameFromRepoPath, parseGitAuthors, parseGitConfig } from "./utils";
 
 import type { GitWorker } from "./worker";
 import { IRoughCommit } from "./commit";
@@ -37,7 +37,7 @@ export class GitService {
 
 		const gitBinPath = await getGitBinPath();
 
-		this.git = simpleGit(this.rootRepoPath, {
+		this.git = simpleGit({
 			binary: gitBinPath,
 			maxConcurrentProcesses: 10,
 		});
@@ -57,16 +57,15 @@ export class GitService {
 
 	getConfig(repo: string) {
 		return this.git
-			?.cwd(repo)
+			?.cwd({ path: repo, root: false })
 			?.raw("config", "--list")
 			.then((res) => parseGitConfig(res));
 	}
 
 	getDefaultRepository() {
-		const workspacePath = workspace.workspaceFolders![0].uri.fsPath;
 		const repos = this.getRepositories();
 
-		return repos.find((fsPath) => fsPath === workspacePath) || repos[0];
+		return repos;
 	}
 
 	getRepositories() {
@@ -76,9 +75,45 @@ export class GitService {
 	}
 
 	getRefs(options: GitOptions) {
-		const { repo = this.rootRepoPath } = options;
+		const { repo = [this.rootRepoPath] } = options;
+
+		// 获取每个 repository 的 refs，并添加 repos 字段
+		return Promise.all(
+			repo.map(async (repository) => {
+				const refs = await this.getRefsForSingleRepository(repository);
+				return refs?.map((ref) => ({
+					...ref,
+					repos: getRepositoryNameFromRepoPath(repository), // 添加 repository 信息
+				}));
+			})
+		).then((refsGroupedByRepo) =>
+			// 将分组的 refs 打平成一个列表，并合并 repos 字段
+			refsGroupedByRepo
+				.flat()
+				.reduce(
+					(acc, ref) => {
+						if (!ref) {
+							return acc;
+						}
+						const existingRef = acc.find(
+							(item) => item.name === ref?.name
+						);
+						if (existingRef) {
+							// 如果已经存在相同的 ref，合并 repos 字段
+							existingRef.repos += `,${ref?.repos}`;
+						} else {
+							acc.push(ref);
+						}
+						return acc;
+					},
+					[] as { hash: string; type: string; name: string; repos: string }[]
+				)
+		);
+	}
+
+	getRefsForSingleRepository(repo: string) {
 		return this.git
-			?.cwd(repo)
+			?.cwd({ path: repo, root: false })
 			.raw(
 				"for-each-ref",
 				"--sort",
@@ -109,10 +144,35 @@ export class GitService {
 	getAuthors(
 		options: GitOptions
 	): Promise<{ name: string; email: string; isSelf?: true }[]> {
-		const { repo = this.rootRepoPath } = options;
+		const { repo = [this.rootRepoPath] } = options;
+
+		// 获取每个 repository 的 authors
+		return Promise.all(
+			repo.map((repository) =>
+				this.getAuthorsForSingleRepository(repository)
+			)
+		).then((authors) =>
+			// 将分组的 authors 打平成一个列表
+			authors.flat()
+			.reduce((acc, author) => {
+				if (
+					!acc.some(
+						(existingAuthor) =>
+							existingAuthor.name === author.name &&
+							existingAuthor.email === author.email
+					)
+				) {
+					acc.push(author);
+				}
+				return acc;
+			}, [] as { name: string; email: string; isSelf?: true }[]));
+	}
+
+	getAuthorsForSingleRepository(repo: string
+	): Promise<{ name: string; email: string; isSelf?: true }[]> {
 		return Promise.allSettled([
-			this.git?.cwd(repo)?.raw("shortlog", "-ens", "HEAD"),
-			this.getConfig(repo),
+			this.git?.cwd({ path: repo, root: false })?.raw("shortlog", "-ens", "HEAD"),
+			this.getConfig(repo[0]),
 		]).then(([settledShortLogResult, settledConfigResult]) => {
 			if (
 				settledShortLogResult.status !== "fulfilled" ||
@@ -155,10 +215,24 @@ export class GitService {
 			.show(commitHash, filePath);
 	}
 
-	async getCommits(options?: LogOptions) {
+	async getCommits(options?: LogOptions): Promise<IRoughCommit[]> {
+		const { repo, ...newOptions } = options || {};
+		const repos = repo || this.getRepositories();
+		return await Promise.all(
+			repos.map((repository) =>
+				this.getCommitsForSingleRepository(repository, newOptions)
+			) || [Promise.resolve([])]
+		).then((results) =>
+			results
+				.flat()
+				.filter((commit): commit is IRoughCommit => !!commit)
+				.sort((a, b) => b[4] - a[4])
+		);
+	}
+
+	async getCommitsForSingleRepository(repo: string, options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%D%n%aN%n%aE%n%at%n%ct%n%P%n%B";
-		const { repo, authors, keyword, ref, maxLength, count, skip } =
-			options || {};
+		const { authors, keyword, ref, maxLength, count, skip } = options || {};
 		const args = [
 			"log",
 			`--format=${COMMIT_FORMAT}`,
@@ -187,17 +261,41 @@ export class GitService {
 			args.push(`-${count}`);
 		}
 
+		let repositoryName = getRepositoryNameFromRepoPath(repo || this.rootRepoPath);
+
 		return await this.git
-			?.cwd(repo || this.rootRepoPath)
+			?.cwd({ path: repo, root: false })
 			.raw(args)
 			.then<IRoughCommit[]>((res) =>
-				this.pool.queue(({ parseCommits }) => parseCommits(res))
-			)
+				this.pool.queue(({ parseCommits }) =>
+					parseCommits(res, repositoryName)
+				))
 			.catch((err) => console.log(err));
 	}
 
-	async getCommitsTotalCount(options?: LogOptions) {
-		const { repo, ref, authors, keyword } = options || {};
+	async getCommitsTotalCount(options?: LogOptions): Promise<number> {
+		const { repo, ...newOptions } = options || {};
+		const repos = repo || this.getRepositories();
+		return await Promise.all(
+			repos.map((repository) =>
+				this.getCommitsTotalCountForSingleRepository(
+					repository,
+					newOptions
+				)
+			) || [Promise.resolve("0")]
+		).then((counts) =>
+			counts.reduce(
+				(total, count) => total + parseInt(count || "0", 10),
+				0
+			)
+		);
+	}
+
+	async getCommitsTotalCountForSingleRepository(
+		repo: string,
+		options?: LogOptions
+	) {
+		const { ref, authors, keyword } = options || {};
 
 		// TODO: reuse arguments assembly process in getCommits
 		const args = ["rev-list", ...(ref ? [ref] : LOG_TYPE_ARGS), "--count"];
@@ -211,24 +309,39 @@ export class GitService {
 		}
 
 		return await this.git
-			?.cwd(repo || this.rootRepoPath)
+			?.cwd({ path: repo, root: false })
 			.raw(args)
 			.catch((err) => console.log(err));
 	}
 
-	async getChangesCollection(repoPath: string, refs: string[]) {
+	async getChangesCollection(repoPath: string[], refs: string[]) {
 		return await Promise.all(
-			refs.map((ref) =>
-				this.getChangesByRef(repoPath, ref).then((changes) => ({
-					ref,
-					repoPath,
-					changes,
-				}))
-			)
+			refs
+				.map((ref) =>
+					repoPath.map((repository) =>
+						this.getChangesByRefForSingleRepository(
+							repository,
+							ref
+						).then((changes) => ({
+							ref,
+							repoPath: repository,
+							changes,
+						}))
+					)
+				)
+				.flat() || [Promise.resolve([])]
 		);
 	}
 
-	async getChangesByRef(repoPath: string, ref: string) {
+	async getChangesByRef(repoPath: string[], ref: string) {
+		return await Promise.all(
+			repoPath.map((repository) =>
+				this.getChangesByRefForSingleRepository(repository, ref)
+			) || [Promise.resolve([])]
+		).then((results) => results.flat());
+	}
+
+	async getChangesByRefForSingleRepository(repoPath: string, ref: string) {
 		const args = [
 			"log",
 			"-p",
@@ -239,9 +352,22 @@ export class GitService {
 			ref,
 		];
 
-		return await this.git!.cwd(repoPath || this.rootRepoPath)
-			.raw(args)
-			.then((res) => parseGitChanges(repoPath, res));
+		try {
+			const res = await this.git!.cwd({ path: repoPath, root: false }).raw(args);
+			const changes = parseGitChanges(repoPath, res);
+
+			// 如果解析结果为空，返回空数组
+			if (!changes || changes.length === 0) {
+				console.warn(`No changes found for ref: ${ref} in repository: ${repoPath}`);
+				return [];
+			}
+
+			return changes;
+		} catch (err) {
+			// 捕获异常并记录日志
+			console.log(`Error fetching changes for ref: ${ref} in repository: ${repoPath}`, err);
+			return []; // 返回空数组作为默认值
+		}
 	}
 
 	onReposChange(handler: (repos: string[]) => void) {

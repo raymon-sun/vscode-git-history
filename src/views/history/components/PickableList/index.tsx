@@ -5,6 +5,8 @@ import classNames from "classnames";
 
 import { useVirtual } from "react-virtual";
 
+import { ViewMode } from "../../../../git/types";
+
 import { checkScrollBarVisible } from "../../utils/element";
 
 import { useIsKeyPressed } from "./event";
@@ -21,6 +23,7 @@ interface Props<T> {
 	itemRender: (o: T) => ReactNode;
 	size?: number;
 	onPick?: (ids: Id[]) => void;
+	mode?: ViewMode;
 }
 
 const INDEX_PLACEHOLDER = -1;
@@ -37,6 +40,7 @@ const PickableList = <T extends Record<string, any>>(
 		itemRender,
 		size,
 		onPick,
+		mode,
 	} = props;
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const dragContainerRef = useRef<HTMLDivElement>(null);
@@ -48,6 +52,10 @@ const PickableList = <T extends Record<string, any>>(
 	});
 
 	const [pickedItems, setPickedItems] = useState<Record<Id, number>>({});
+
+	useEffect(() => {
+		setPickedItems({});
+	}, [mode]);
 	const [containerRect, setContainerRect] = useState<DOMRect | undefined>();
 	const [itemYs, setItemYs] = useState<number[]>([]);
 	const [dragStartIndex, setDragStartIndex] =
@@ -65,8 +73,9 @@ const PickableList = <T extends Record<string, any>>(
 	const dragBind = useDrag(({ type, xy, target }) => {
 		const [x, y] = xy;
 
+		const isCommitDiffMode = mode === ViewMode.COMMIT_DIFF;
 		const existedItems =
-			checkKeyIsPressed("Meta") || checkKeyIsPressed("Control")
+			!isCommitDiffMode && (checkKeyIsPressed("Meta") || checkKeyIsPressed("Control"))
 				? pickedItems
 				: {};
 		const firstItemIndex = virtualItems[0].index;
@@ -103,10 +112,34 @@ const PickableList = <T extends Record<string, any>>(
 			setDragStartIndex(dragStartIndex);
 
 			const id = list![dragStartIndex].slice(0, keyLength);
-			setPickedItems({
-				...existedItems,
-				[id]: dragStartIndex,
-			});
+
+			if (!isCommitDiffMode) {
+				setPickedItems({
+					...existedItems,
+					[id]: dragStartIndex,
+				});
+
+			} else {
+				/* Logic for handling selections
+					- First selection is left and pinnned
+					- Subsequent selections are right
+					- Selecting left again clears it
+				 */
+				if (Object.keys(pickedItems).length === 0) {
+					setPickedItems({ [id]: 0 });
+				} else if (pickedItems[id] === 0) {
+					setPickedItems({});
+				} else {
+					const leftItemId = String(Object.keys(pickedItems).find(key => pickedItems[key] === 0));
+
+					if (id === leftItemId) {
+						setPickedItems({ [leftItemId]: 0 });
+					}
+					else {
+						setPickedItems({ [leftItemId]: 0, [id]: 1 });
+					}
+				}
+			}
 			return;
 		}
 
@@ -132,7 +165,7 @@ const PickableList = <T extends Record<string, any>>(
 			y > containerRect.y &&
 			y < containerRect.y + containerRect.height
 		) {
-			if (dragStartIndex === INDEX_PLACEHOLDER) {
+			if (dragStartIndex === INDEX_PLACEHOLDER || mode === ViewMode.COMMIT_DIFF) {
 				return;
 			}
 
@@ -168,32 +201,38 @@ const PickableList = <T extends Record<string, any>>(
 					position: "relative",
 				}}
 			>
-				{virtualItems.map((virtualRow) => (
-					<div
-						key={virtualRow.index}
-						ref={virtualRow.measureRef}
-						className={classNames(style.item, {
-							[style.picked]:
-								list[virtualRow.index] &&
-								Object.prototype.hasOwnProperty.call(
-									pickedItems,
-									list[virtualRow.index].slice(0, keyLength)
-								),
-							[style.located]: virtualRow.index === locationIndex,
-						})}
-						style={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							width: "100%",
-							height: "22px",
-							transform: `translateY(${virtualRow.start}px)`,
-						}}
-					>
-						{list[virtualRow.index] &&
-							itemRender(itemPipe(list[virtualRow.index]))}
-					</div>
-				))}
+				{virtualItems.map((virtualRow) => {
+					const itemId = list[virtualRow.index]?.slice(0, keyLength);
+					const isPicked = list[virtualRow.index] && Object.prototype.hasOwnProperty.call(pickedItems, itemId);
+
+					// Determine if this is the left or right commit in diff mode
+					const isLeftCommit = mode === ViewMode.COMMIT_DIFF && pickedItems[itemId] === 0;
+					const isRightCommit = mode === ViewMode.COMMIT_DIFF && pickedItems[itemId] === 1;
+
+					return (
+						<div
+							key={virtualRow.index}
+							ref={virtualRow.measureRef}
+							className={classNames(style.item, {
+								[style.picked]: isPicked,
+								[style.located]: virtualRow.index === locationIndex,
+								[style.leftCommit]: isLeftCommit,
+								[style.rightCommit]: isRightCommit,
+							})}
+							style={{
+								position: "absolute",
+								top: 0,
+								left: 0,
+								width: "100%",
+								height: "22px",
+								transform: `translateY(${virtualRow.start}px)`,
+							}}
+						>
+							{list[virtualRow.index] &&
+								itemRender(itemPipe(list[virtualRow.index]))}
+						</div>
+					);
+				})}
 			</div>
 		</div>
 	);

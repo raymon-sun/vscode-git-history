@@ -12,6 +12,19 @@ $col-padding-right: 8px;
 	display: flex;
 	line-height: 24px;
 	margin-top: 4px;
+	position: relative;
+
+	.diff-mode-message {
+		position: absolute;
+		left: 10px;
+		top: 0;
+		z-index: 10;
+		font-size: 12px;
+		color: var(--vscode-editor-foreground);
+		background-color: var(--vscode-badge-background);
+		padding: 2px 8px;
+		border-radius: 3px;
+	}
 
 	.header-item {
 		display: flex;

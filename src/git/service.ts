@@ -172,7 +172,7 @@ export class GitService {
 		}
 
 		if (keyword) {
-			args.push(`--grep=${keyword}`);
+			args.push(`--grep=${keyword}`, `-i`);
 		}
 
 		if (maxLength) {
@@ -207,7 +207,7 @@ export class GitService {
 		}
 
 		if (keyword) {
-			args.push(`--grep=${keyword}`);
+			args.push(`--grep=${keyword}`, `-i`);
 		}
 
 		return await this.git

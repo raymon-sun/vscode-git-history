@@ -13,6 +13,7 @@ import type { IBatchedCommits } from "../../../../git/types";
 
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
+import { onEvent } from "../../utils/message";
 
 import { ICommit, parseCommit } from "../../../../git/commit";
 
@@ -91,10 +92,43 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		[channel, commits]
 	);
 
-	// TODO: columns setting
+	const [columnVisibility, setColumnVisibility] = useState<{
+		showHash: boolean;
+		showAuthor: boolean;
+		showDate: boolean;
+	}>({ showHash: true, showAuthor: true, showDate: true });
+
+	useEffect(() => {
+		channel.getColumnVisibility().then((visibility) => {
+			setColumnVisibility(visibility);
+		});
+
+		// Listen for column visibility changes
+		onEvent("columnsChanged", () => {
+			channel.getColumnVisibility().then((visibility) => {
+				setColumnVisibility(visibility);
+			});
+		});
+	}, [channel]);
+
 	const headers = useMemo(() => {
-		return HEADERS;
-	}, []);
+		return HEADERS.filter((header) => {
+			if (!header.hideable) {
+				return true;
+			}
+			const configKey = header.configKey;
+			if (configKey === "gitHistory.columns.showHash") {
+				return columnVisibility.showHash;
+			}
+			if (configKey === "gitHistory.columns.showAuthor") {
+				return columnVisibility.showAuthor;
+			}
+			if (configKey === "gitHistory.columns.showDate") {
+				return columnVisibility.showDate;
+			}
+			return true;
+		});
+	}, [columnVisibility]);
 
 	const { columns } = useColumnResize(headers, totalWidth);
 

@@ -29,6 +29,12 @@ export class HistoryWebviewViewProvider implements WebviewViewProvider {
 			webviewView.description = `${totalCount} commits in total`;
 		});
 
+		this.source.getColumnsChangedEventEmitter().event(() => {
+			webviewView.webview.postMessage({
+				type: "columnsChanged",
+			});
+		});
+
 		webviewView.webview.options = {
 			enableScripts: true,
 			localResourceRoots: [Uri.joinPath(extensionUri, "dist")],

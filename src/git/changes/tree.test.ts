@@ -1,16 +1,43 @@
-import { equal } from "assert";
+import { deepStrictEqual, equal } from "assert";
 
 import { Uri } from "vscode";
 
 import { Status } from "./status";
 
 import {
+	collectFileNodes,
 	ChangesCollection,
+	FileNode,
+	FolderNode,
+	filterPathCollection,
 	getOriginalChangeStackAndUpdateChange,
 	getPathMap,
+	PathCollection,
 	PathType,
-	FileNode,
 } from "./tree";
+
+function fileNode(filePath: string): FileNode {
+	return {
+		type: PathType.FILE,
+		uri: Uri.parse(filePath),
+		repoPath: "",
+		changeStack: [],
+	};
+}
+
+function sampleCollection(): PathCollection {
+	return {
+		src: {
+			type: PathType.FOLDER,
+			path: "/src",
+			children: {
+				"app.ts": fileNode("/src/app.ts"),
+				"util.ts": fileNode("/src/util.ts"),
+			},
+		},
+		"readme.md": fileNode("/readme.md"),
+	};
+}
 
 suite("#getPathMap()", () => {
 	test("should return path map when given a changes collection", () => {
@@ -216,5 +243,44 @@ suite("#getOriginalChangeStackAndUpdateChange()", () => {
 		);
 		equal(originalChangeStack[2].isDeletedByRename, true);
 		equal(originalChangeStack[2].hidden, true);
+	});
+});
+
+suite("#filterPathCollection()", () => {
+	test("should keep matching files and prune empty folders", () => {
+		const result = filterPathCollection(sampleCollection(), (node) =>
+			node.uri.path.includes("app")
+		);
+
+		deepStrictEqual(Object.keys(result), ["src"]);
+		deepStrictEqual(Object.keys((result["src"] as FolderNode).children), [
+			"app.ts",
+		]);
+	});
+
+	test("should drop folders that have no matching file", () => {
+		const result = filterPathCollection(sampleCollection(), (node) =>
+			node.uri.path.includes("readme")
+		);
+
+		deepStrictEqual(Object.keys(result), ["readme.md"]);
+	});
+
+	test("should keep everything when the predicate always matches", () => {
+		const result = filterPathCollection(sampleCollection(), () => true);
+
+		deepStrictEqual(Object.keys(result), ["src", "readme.md"]);
+	});
+});
+
+suite("#collectFileNodes()", () => {
+	test("should collect every file node regardless of the folder depth", () => {
+		const files = collectFileNodes(sampleCollection());
+
+		deepStrictEqual(files.map((node) => node.uri.path).sort(), [
+			"/readme.md",
+			"/src/app.ts",
+			"/src/util.ts",
+		]);
 	});
 });

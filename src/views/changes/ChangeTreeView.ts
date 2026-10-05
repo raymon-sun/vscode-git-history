@@ -1,9 +1,9 @@
-import { ExtensionContext, TreeView, window } from "vscode";
+import { commands, ExtensionContext, TreeView, window } from "vscode";
 import { inject, injectable } from "inversify";
 
 import { TYPES } from "../../container/types";
 
-import { EXTENSION_SCHEME } from "../../constants";
+import { CHANGES_VIEW_MODE_CONTEXT, EXTENSION_SCHEME } from "../../constants";
 
 import { ChangeTreeDataProvider } from "./ChangeTreeDataProvider";
 
@@ -21,5 +21,22 @@ export class ChangeTreeView {
 				treeDataProvider: this.changeTreeDataProvider,
 			}
 		);
+
+		this.changeTreeDataProvider.onDidChangeTreeData(() =>
+			this.updateViewState()
+		);
+		this.updateViewState();
+	}
+
+	updateViewState() {
+		const { flatMode } = this.changeTreeDataProvider;
+		commands.executeCommand(
+			"setContext",
+			CHANGES_VIEW_MODE_CONTEXT,
+			flatMode ? "flat" : "tree"
+		);
+
+		const filter = this.changeTreeDataProvider.getFilter();
+		this.changesViewer.message = filter ? `Filter: ${filter}` : undefined;
 	}
 }

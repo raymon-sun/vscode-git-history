@@ -1,3 +1,4 @@
+import { getChangesCommandsDisposable } from "./changes";
 import { getFilterCommandsDisposable } from "./filter";
 import { getInputCommandsDisposable } from "./input";
 import { getSwitchCommandsDisposable } from "./switch";
@@ -9,5 +10,6 @@ export function getCommandDisposables() {
 		...getSwitchCommandsDisposable(),
 		...getInputCommandsDisposable(),
 		...getColumnsCommandsDisposable(),
+		...getChangesCommandsDisposable(),
 	];
 }

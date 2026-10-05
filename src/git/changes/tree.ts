@@ -210,6 +210,40 @@ function attachFileNode(
 	fileNode[base] = node;
 }
 
+/** prune folders that have no file matching the predicate */
+export function filterPathCollection(
+	collection: PathCollection,
+	predicate: (node: FileNode) => boolean
+): PathCollection {
+	const result: PathCollection = {};
+	Object.entries(collection).forEach(([name, node]) => {
+		if (node.type === PathType.FOLDER) {
+			const children = filterPathCollection(node.children, predicate);
+			if (Object.keys(children).length) {
+				result[name] = { ...node, children };
+			}
+		} else if (predicate(node)) {
+			result[name] = node;
+		}
+	});
+
+	return result;
+}
+
+/** collect every file node of a collection, ignoring the folder structure */
+export function collectFileNodes(collection: PathCollection): FileNode[] {
+	const files: FileNode[] = [];
+	Object.values(collection).forEach((node) => {
+		if (node.type === PathType.FOLDER) {
+			files.push(...collectFileNodes(node.children));
+		} else {
+			files.push(node);
+		}
+	});
+
+	return files;
+}
+
 export function compareFileTreeNode(
 	[name, node]: [string, FolderNode | FileNode],
 	[anotherName, anotherNode]: [string, FolderNode | FileNode]

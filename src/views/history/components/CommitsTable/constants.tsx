@@ -19,7 +19,13 @@ function getGraphNodeKind(commit: ICommit): Exclude<GitGraphNodeKind, "head"> {
 }
 
 export interface IHeader {
-	prop: "graph" | "description" | "hash" | "author" | "date";
+	prop:
+		| "repositoryName"
+		| "graph"
+		| "description"
+		| "hash"
+		| "author"
+		| "date";
 	label: string;
 	width: number | FillRemainWidth;
 	minWidth: number;
@@ -31,6 +37,13 @@ export interface IHeader {
 }
 
 export const HEADERS: IHeader[] = [
+	{
+		prop: "repositoryName",
+		label: "Repository",
+		width: 108,
+		minWidth: 108,
+		transformer: (commit) => commit[CommitIndex.REPOSITORY_NAME],
+	},
 	{
 		prop: "graph",
 		label: "Graph",

@@ -16,6 +16,7 @@ export interface Change {
 	readonly originalUri: Uri;
 	readonly renameUri: Uri | undefined;
 	readonly status: Status;
+	readonly repository: string;
 }
 
 export function parseGitChanges(repoPath: string, gitResult: string) {
@@ -26,6 +27,8 @@ export function parseGitChanges(repoPath: string, gitResult: string) {
 	entriesLoop: while (index < entries.length - 1) {
 		const change = entries[index++];
 		const resourcePath = entries[index++];
+		const repositoryName = repoPath.split("\\").slice(-1)[0];
+
 		if (!change || !resourcePath) {
 			break;
 		}
@@ -72,6 +75,7 @@ export function parseGitChanges(repoPath: string, gitResult: string) {
 					renameUri: uri,
 					originalUri,
 					status: Status.INDEX_RENAMED,
+					repository: repositoryName,
 				});
 
 				continue;
@@ -86,6 +90,7 @@ export function parseGitChanges(repoPath: string, gitResult: string) {
 			originalUri,
 			uri: originalUri,
 			renameUri: originalUri,
+			repository: repositoryName,
 		});
 	}
 

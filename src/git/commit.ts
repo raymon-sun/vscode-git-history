@@ -17,6 +17,8 @@ export type ICommit = [
 	string,
 	/** author date */
 	string,
+	/** repository name */
+	string,
 	ICommitGraphSlice?
 ];
 
@@ -26,7 +28,11 @@ export type IRoughCommit = [
 	/** parents */
 	string[],
 	/** commit data */
-	string
+	string,
+	/** repository name */
+	string,
+	/** author date */
+	number
 ];
 
 export enum CommitIndex {
@@ -38,12 +44,13 @@ export enum CommitIndex {
 	AUTHOR_EMAIL,
 	AUTHOR_NAME,
 	AUTHOR_DATE,
+	REPOSITORY_NAME,
 	GRAPH_SLICE,
 }
 
 export const REFS_SEPARATOR = ", ";
 
-export function parseCommits(data: string) {
+export function parseCommits(data: string, repo: string) {
 	const commitRegex =
 		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)/gm;
 
@@ -52,6 +59,7 @@ export function parseCommits(data: string) {
 	let commitData;
 	let ref;
 	let parents;
+	let authorDate
 	let match;
 
 	do {
@@ -60,13 +68,15 @@ export function parseCommits(data: string) {
 			break;
 		}
 
-		[commitData, ref, , , , , , parents] = match;
+		[commitData, ref, , , , authorDate, , parents] = match;
 
 		// Stop excessive memory usage by using substr -- https://bugs.chromium.org/p/v8/issues/detail?id=2869
 		const commit: IRoughCommit = [
 			` ${ref}`.substr(1),
 			parents ? parents.split(" ") : [],
 			commitData,
+			repo,
+			authorDate ? Number(authorDate) * 1000 : 0
 		];
 
 		commits.push(commit);
@@ -77,7 +87,7 @@ export function parseCommits(data: string) {
 
 export function parseCommit(commitData: string): ICommit {
 	const commitRegex =
-		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)(.*)\n(.*)\n(.*)/g;
+		/([0-9a-f]{40})\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)\n(.*)(?:\n([^]*?))?(?:\x00)(.*)\n(.*)\n(.*)\n(.*)/g;
 
 	let ref;
 	let refNames;
@@ -87,6 +97,7 @@ export function parseCommit(commitData: string): ICommit {
 	let commitDate;
 	let parents;
 	let message;
+	let repositoryName;
 	let commitPosition;
 	let commitColor;
 	let stringifiedLines;
@@ -104,6 +115,7 @@ export function parseCommit(commitData: string): ICommit {
 		commitDate,
 		parents,
 		message,
+		repositoryName,
 		commitPosition,
 		commitColor,
 		stringifiedLines,
@@ -123,6 +135,7 @@ export function parseCommit(commitData: string): ICommit {
 		` ${authorEmail}`.substr(1),
 		` ${authorName}`.substr(1),
 		new Date(Number(commitDate) * 1000).toLocaleString(),
+		repositoryName,
 		[Number(commitPosition), commitColor, JSON.parse(stringifiedLines)],
 	];
 }

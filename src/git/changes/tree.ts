@@ -86,6 +86,7 @@ export function getPathMap(changesCollection: ChangesCollection) {
 					uri: originalUri,
 					originalUri,
 					renameUri: originalUri,
+					repository: repoPath,
 				};
 				if (pathMap[originalPath]) {
 					pathMap[originalPath].changeStack.push({

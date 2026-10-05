@@ -100,8 +100,10 @@ export class Source {
 			return Promise.resolve();
 		}
 
+		const name = repoPath.map((repo) => parse(repo).base).join(", ");
+
 		return Promise.resolve({
-			name: parse(repoPath).base,
+			name,
 			path: repoPath,
 		});
 	}
@@ -171,9 +173,7 @@ export class Source {
 			firstBatchCommits &&
 			firstBatchCommits.length === FIRST_BATCH_SIZE
 		) {
-			const totalCount = Number(
-				await this.git.getCommitsTotalCount(options)
-			);
+			const totalCount = await this.git.getCommitsTotalCount(options);
 
 			this.commitsEventEmitter.fire({ totalCount });
 
@@ -217,7 +217,7 @@ export class Source {
 	@link("promise")
 	async viewChanges(refs: string[]) {
 		const changesCollection = await this.git.getChangesCollection(
-			state.logOptions.repo || "",
+			state.logOptions.repo || [],
 			refs
 		);
 		const newFileTree = resolveChangesCollection(
@@ -247,7 +247,7 @@ export class Source {
 			() =>
 				this.git.onDidRepoChange((repository) => {
 					const { rootUri } = repository;
-					if (rootUri.fsPath === state.logOptions.repo) {
+					if (state.logOptions.repo?.includes(rootUri.fsPath)) {
 						debouncedRefresh();
 					}
 				}),

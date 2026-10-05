@@ -4,6 +4,16 @@ All notable changes to the "git-history" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.3.0
+
+- Require VS Code 1.140 or newer
+- Ignore capitalization when searching commit descriptions
+- Show changes in merge commits
+- Toggle commit column visibility
+- Filter and flat/list mode for the Changes view
+- Live filtering for the commit message filter
+- Align the graph and list styling with VS Code's theme
+
 ## 0.2.5
 
 - Fix issues

@@ -1,5 +1,7 @@
 import { commands, ThemeIcon, window } from "vscode";
 
+import { debounce } from "lodash";
+
 import { container } from "../container/inversify.config";
 import { GitService } from "../git/service";
 
@@ -7,6 +9,8 @@ import state from "../views/history/data/state";
 
 export const FILTER_AUTHOR_COMMAND = "git-history.history.filter.author";
 export const FILTER_MESSAGE_COMMAND = "git-history.history.filter.message";
+
+const FILTER_MESSAGE_DEBOUNCE_INTERVAL = 300;
 
 export function getFilterCommandsDisposable() {
 	const gitService = container.get(GitService);
@@ -63,19 +67,37 @@ export function getFilterCommandsDisposable() {
 				quickPick.busy = false;
 			});
 		}),
-		commands.registerCommand(FILTER_MESSAGE_COMMAND, async () => {
-			const inputBox = window.createInputBox();
-			inputBox.placeholder = "Input message keywords to filter commits";
-			inputBox.value = state.logOptions.keyword || "";
+		commands.registerCommand(
+			FILTER_MESSAGE_COMMAND,
+			async (onDidChangeKeyword?: (keyword: string) => void) => {
+				const inputBox = window.createInputBox();
+				inputBox.placeholder =
+					"Input message keywords to filter commits";
+				inputBox.value = state.logOptions.keyword || "";
 
-			return new Promise((resolve) => {
-				inputBox.onDidAccept(() => {
-					resolve(inputBox.value);
-					inputBox.dispose();
+				const applyKeyword = debounce(
+					(keyword: string) => onDidChangeKeyword?.(keyword),
+					FILTER_MESSAGE_DEBOUNCE_INTERVAL
+				);
+
+				return new Promise((resolve) => {
+					// filter as the user types
+					inputBox.onDidChangeValue((value) =>
+						applyKeyword(value.trim())
+					);
+
+					inputBox.onDidAccept(() => {
+						applyKeyword.cancel();
+						onDidChangeKeyword?.(inputBox.value.trim());
+						resolve(inputBox.value);
+						inputBox.dispose();
+					});
+
+					inputBox.onDidHide(() => inputBox.dispose());
+
+					inputBox.show();
 				});
-
-				inputBox.show();
-			});
-		}),
+			}
+		),
 	];
 }

@@ -127,10 +127,13 @@ export class Source {
 
 	@link("subscription")
 	async filterMessage(handler: (batchedCommits: IBatchedCommits) => void) {
-		state.logOptions.keyword = await commands.executeCommand<string>(
-			FILTER_MESSAGE_COMMAND
+		await commands.executeCommand(
+			FILTER_MESSAGE_COMMAND,
+			(keyword: string) => {
+				state.logOptions.keyword = keyword;
+				this.getCommits(handler, state.logOptions);
+			}
 		);
-		this.getCommits(handler, state.logOptions);
 	}
 
 	@link("subscription")

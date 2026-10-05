@@ -31,12 +31,13 @@ $col-padding-right: 8px;
 		> .divider {
 			cursor: col-resize;
 			width: $col-divider-width;
-			height: 12px;
-			border-left: 1px solid var(--vscode-foreground);
+			height: 10px;
+			border-left: 1px solid var(--vscode-descriptionForeground);
 		}
 
 		> span {
 			margin-right: 8px;
+			color: var(--vscode-descriptionForeground);
 		}
 
 		.ref-button {
@@ -51,7 +52,17 @@ $col-padding-right: 8px;
 				max-width: 240px;
 				padding: 0 4px;
 				white-space: nowrap;
+				color: var(--vscode-descriptionForeground);
 			}
+		}
+
+		// dim header icons, but keep an active (toggled-on) action prominent
+		:global(.codicon) {
+			color: var(--vscode-descriptionForeground);
+		}
+
+		:global(.codicon-filter-filled) {
+			color: var(--vscode-foreground);
 		}
 	}
 }

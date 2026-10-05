@@ -94,6 +94,12 @@
 				"command": "git-history.history.filter",
 				"title": "Git History",
 				"icon": "$(filter)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.history.toggle.columns",
+				"title": "Toggle Columns",
+				"icon": "$(settings-gear)"
 			}
 		],
 		"menus": {
@@ -117,6 +123,11 @@
 					"command": "git-history.history.switch.branch",
 					"when": "view =~ /git-history.history/",
 					"group": "navigation@4"
+				},
+				{
+					"command": "git-history.history.toggle.columns",
+					"when": "view =~ /git-history.history/",
+					"group": "navigation@5"
 				}
 			]
 		}

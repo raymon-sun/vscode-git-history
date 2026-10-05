@@ -43,6 +43,7 @@ export class Source {
 	private switchSubscriber?: (batchedCommits: IBatchedCommits) => void;
 
 	private commitsEventEmitter = new EventEmitter<{ totalCount: number }>();
+	private columnsChangedEventEmitter = new EventEmitter<void>();
 
 	constructor(
 		@inject(TYPES.ExtensionContext) private context: ExtensionContext,
@@ -59,9 +60,32 @@ export class Source {
 		return this.commitsEventEmitter;
 	}
 
+	getColumnsChangedEventEmitter() {
+		return this.columnsChangedEventEmitter;
+	}
+
+	fireColumnsChanged() {
+		this.columnsChangedEventEmitter.fire();
+	}
+
 	@link("promise")
 	getWorkspacePath() {
 		return Promise.resolve(workspace.workspaceFolders![0].uri.fsPath);
+	}
+
+	@link("promise")
+	getColumnVisibility() {
+		return Promise.resolve(
+			this.context.globalState.get<{
+				showHash: boolean;
+				showAuthor: boolean;
+				showDate: boolean;
+			}>("columnVisibility", {
+				showHash: true,
+				showAuthor: true,
+				showDate: true,
+			})
+		);
 	}
 
 	@link("promise")

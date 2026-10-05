@@ -18,6 +18,24 @@ import { IRoughCommit } from "./commit";
 
 const LOG_TYPE_ARGS = ["--branches", "--remotes", "--tags"];
 
+/**
+ * `-m` makes merge commits emit a diff (they are skipped by default), and
+ * `--first-parent` keeps that diff relative to the first parent, so a merge
+ * shows the changes it introduced.
+ */
+export function buildChangesByRefArgs(ref: string) {
+	return [
+		"log",
+		"-m",
+		"-1",
+		"--first-parent",
+		"--pretty=format:",
+		"--name-status",
+		"-z",
+		ref,
+	];
+}
+
 @injectable()
 export class GitService {
 	private gitExt?: API;
@@ -229,20 +247,8 @@ export class GitService {
 	}
 
 	async getChangesByRef(repoPath: string, ref: string) {
-		const args = [
-			"log",
-			"-p",
-			"-m",
-			"-1",
-			"--first-parent",
-			"--pretty=format:",
-			"--name-status",
-			"-z",
-			ref,
-		];
-
 		return await this.git!.cwd(repoPath || this.rootRepoPath)
-			.raw(args)
+			.raw(buildChangesByRefArgs(ref))
 			.then((res) => parseGitChanges(repoPath, res));
 	}
 

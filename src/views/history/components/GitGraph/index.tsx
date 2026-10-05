@@ -1,19 +1,44 @@
-import type { FC } from "react";
+import { useContext, type FC } from "react";
+
+import { LatestCommitContext } from "../../data/latestCommit";
+
+export type GitGraphNodeKind = "head" | "merge" | "node";
 
 interface Props {
 	data: [number, string, (number | string)[]];
+	kind?: Exclude<GitGraphNodeKind, "head">;
+	hash?: string;
 }
 
-const GitGraph: FC<Props> = ({ data }) => {
+const UNIT = 14;
+const MIN_WIDTH = 5 * UNIT;
+const HEIGHT = 22;
+const NODE_CENTER_Y = HEIGHT / 2;
+
+// Geometry mirrors VS Code's built-in Source Control graph
+// (src/vs/workbench/contrib/scm/browser/scmHistory.ts).
+const CIRCLE_RADIUS = 4;
+const CIRCLE_STROKE_WIDTH = 2;
+const LINE_WIDTH = 1;
+
+const ROW_BACKGROUND =
+	"var(--vscode-panel-background, var(--vscode-editor-background))";
+// inner circles keep the row background gap
+const NODE_GAP_COLOR = `var(--git-graph-node-gap, ${ROW_BACKGROUND})`;
+// the outer circle drops its gap on hover/selection so the node grows and
+// merges with the line (mirrors VS Code's graph hover style)
+const NODE_OUTER_GAP_COLOR = `var(--git-graph-node-outer-gap, ${NODE_GAP_COLOR})`;
+
+const GitGraph: FC<Props> = ({ data, kind = "node", hash }) => {
+	const latestCommit = useContext(LatestCommitContext);
+
 	if (!data) {
 		return null;
 	}
 
-	const UNIT = 14;
-	const MIN_WIDTH = 5 * UNIT;
-	const HEIGHT = 22;
-
-	const RADIUS = 4;
+	// the newest commit is highlighted, like the current item in VS Code's graph
+	const nodeKind: GitGraphNodeKind =
+		hash && hash === latestCommit ? "head" : kind;
 
 	const [commitPosition, commitColor, lines] = data;
 	const commitX = (commitPosition + 1) * UNIT;
@@ -55,22 +80,84 @@ const GitGraph: FC<Props> = ({ data }) => {
 						style={{
 							fill: "none",
 							stroke: color,
-							strokeWidth: 2,
+							strokeWidth: LINE_WIDTH,
+							strokeLinecap: "round",
 						}}
 					/>
 				);
 			})}
-			<circle
-				cx={commitX}
-				cy={HEIGHT / 2}
-				r={RADIUS}
-				fill={commitColor}
-				stroke={commitColor}
-				strokeWidth="2"
-			/>
+			{renderNode(nodeKind, commitX, commitColor)}
 		</svg>
 	);
 };
+
+function renderNode(kind: GitGraphNodeKind, cx: number, color: string) {
+	const drawCircle = (
+		key: string,
+		radius: number,
+		strokeWidth: number,
+		gapColor: string,
+		fill?: string
+	) => (
+		<circle
+			key={key}
+			cx={cx}
+			cy={NODE_CENTER_Y}
+			r={radius}
+			style={{
+				stroke: gapColor,
+				strokeWidth,
+				fill: fill ?? "none",
+			}}
+		/>
+	);
+
+	switch (kind) {
+		case "head":
+			return [
+				drawCircle(
+					"outer",
+					CIRCLE_RADIUS + 3,
+					CIRCLE_STROKE_WIDTH,
+					NODE_OUTER_GAP_COLOR,
+					color
+				),
+				drawCircle(
+					"inner",
+					CIRCLE_STROKE_WIDTH,
+					CIRCLE_RADIUS,
+					NODE_GAP_COLOR
+				),
+			];
+		case "merge":
+			return [
+				drawCircle(
+					"outer",
+					CIRCLE_RADIUS + 2,
+					CIRCLE_STROKE_WIDTH,
+					NODE_OUTER_GAP_COLOR,
+					color
+				),
+				drawCircle(
+					"inner",
+					CIRCLE_RADIUS - 1,
+					CIRCLE_STROKE_WIDTH,
+					NODE_GAP_COLOR,
+					color
+				),
+			];
+		default:
+			return [
+				drawCircle(
+					"node",
+					CIRCLE_RADIUS + 1,
+					CIRCLE_STROKE_WIDTH,
+					NODE_OUTER_GAP_COLOR,
+					color
+				),
+			];
+	}
+}
 
 function mapLines<T>(
 	lines: (number | string)[],

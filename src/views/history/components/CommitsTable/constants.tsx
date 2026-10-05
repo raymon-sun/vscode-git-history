@@ -5,9 +5,18 @@ import { ICommit, CommitIndex } from "../../../../git/commit";
 import { CommitGraphSliceIndex } from "../../../../git/types";
 import type { IColumnVisibility } from "../../data/columnVisibility";
 import GitGraph from "../GitGraph";
+import type { GitGraphNodeKind } from "../GitGraph";
 import GitTag from "../GitTag";
 
 type FillRemainWidth = "fill";
+
+function getGraphNodeKind(commit: ICommit): Exclude<GitGraphNodeKind, "head"> {
+	if (commit[CommitIndex.PARENTS].length > 1) {
+		return "merge";
+	}
+
+	return "node";
+}
 
 export interface IHeader {
 	prop: "graph" | "description" | "hash" | "author" | "date";
@@ -28,7 +37,11 @@ export const HEADERS: IHeader[] = [
 		width: 70,
 		minWidth: 70,
 		transformer: (commit) => (
-			<GitGraph data={commit[CommitIndex.GRAPH_SLICE]!} />
+			<GitGraph
+				data={commit[CommitIndex.GRAPH_SLICE]!}
+				kind={getGraphNodeKind(commit)}
+				hash={commit[CommitIndex.HASH]}
+			/>
 		),
 	},
 	{

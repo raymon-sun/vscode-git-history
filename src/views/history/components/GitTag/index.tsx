@@ -17,7 +17,7 @@ const GitTag: FC<Props> = ({ refName, color }) => {
 		<div
 			className={style["tag-container"]}
 			style={{
-				backgroundColor: `${color}70`,
+				backgroundColor: `color-mix(in srgb, ${color} 44%, transparent)`,
 			}}
 		>
 			<span

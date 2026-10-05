@@ -12,12 +12,20 @@
 
 	&:hover {
 		background-color: var(--vscode-list-hoverBackground);
+
+		// match the node gaps to the row background and drop the outer gap so
+		// the node grows to meet its line
+		--git-graph-node-gap: var(--vscode-list-hoverBackground);
+		--git-graph-node-outer-gap: transparent;
 	}
 
 	&.picked {
 		background-color: var(--vscode-list-activeSelectionBackground);
 		color: var(--vscode-list-activeSelectionForeground);
 		outline: 1px solid var(--vscode-list-focusOutline);
+
+		--git-graph-node-gap: var(--vscode-list-activeSelectionBackground);
+		--git-graph-node-outer-gap: transparent;
 	}
 
 	&:not(.picked) {

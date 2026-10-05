@@ -18,6 +18,7 @@ import {
 	IColumnVisibility,
 } from "../../data/columnVisibility";
 import { COLUMNS_CHANGED_EVENT } from "../../data/events";
+import { LatestCommitContext } from "../../data/latestCommit";
 import { onEvent } from "../../utils/message";
 
 import { ICommit, parseCommit } from "../../../../git/commit";
@@ -29,11 +30,16 @@ import { HEADERS } from "./constants";
 
 import style from "./index.module.scss";
 
+const COMMIT_HASH_LENGTH = 40;
+
 const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const channel = useContext(ChannelContext)!;
 
 	const { commits, commitsCount, options, setBatchedCommits } =
 		useBatchCommits();
+
+	// commits are ordered newest first
+	const latestCommit = commits[0]?.slice(0, COMMIT_HASH_LENGTH);
 
 	function diff(sortedRefs: string[]) {
 		channel.viewChanges(sortedRefs);
@@ -130,7 +136,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	}, [channel, subscribeSwitcher]);
 
 	return (
-		<>
+		<LatestCommitContext.Provider value={latestCommit}>
 			<div className={style["commit-headers"]}>
 				{columns.map(
 					(
@@ -235,7 +241,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 					onPick={(ids) => diff(ids)}
 				/>
 			</div>
-		</>
+		</LatestCommitContext.Provider>
 	);
 };
 

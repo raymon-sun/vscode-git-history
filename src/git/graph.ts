@@ -8,6 +8,8 @@ import { BatchedCommits, IBatchedCommits } from "./types";
 
 type ILines = (number | string)[];
 
+const SINGLE_LINE_COLOR = "var(--vscode-focusBorder, #0078D4)";
+
 @injectable()
 export class GitGraph {
 	private batchedCommitsCollection: BatchedCommits[] = [];
@@ -95,7 +97,7 @@ export class GitGraph {
 	// }
 
 	private getSingleLineGraphSlice(hash: string, parents: string[]) {
-		const commitColor = "#06A77D";
+		const commitColor = SINGLE_LINE_COLOR;
 
 		const lines = [];
 		if (this.curParents.includes(hash)) {
@@ -230,13 +232,12 @@ export class GitGraph {
 function getColorPicker() {
 	let index = -1;
 	const colors = [
-		"#06A77D",
-		"#C62E65",
-		"#005377",
-		"#D5C67A",
-		"#F1A208",
-		"#D36135",
-		"#D63AF9",
+		"var(--vscode-focusBorder, #0078D4)",
+		"var(--vscode-scmGraph-foreground1, #FFB000)",
+		"var(--vscode-scmGraph-foreground2, #DC267F)",
+		"var(--vscode-scmGraph-foreground3, #994F00)",
+		"var(--vscode-scmGraph-foreground4, #40B0A6)",
+		"var(--vscode-scmGraph-foreground5, #B66DFF)",
 	];
 	return {
 		get() {

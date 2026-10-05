@@ -13,6 +13,11 @@ import type { IBatchedCommits } from "../../../../git/types";
 
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
+import {
+	DEFAULT_COLUMN_VISIBILITY,
+	IColumnVisibility,
+} from "../../data/columnVisibility";
+import { COLUMNS_CHANGED_EVENT } from "../../data/events";
 import { onEvent } from "../../utils/message";
 
 import { ICommit, parseCommit } from "../../../../git/commit";
@@ -92,43 +97,29 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		[channel, commits]
 	);
 
-	const [columnVisibility, setColumnVisibility] = useState<{
-		showHash: boolean;
-		showAuthor: boolean;
-		showDate: boolean;
-	}>({ showHash: true, showAuthor: true, showDate: true });
+	const [columnVisibility, setColumnVisibility] = useState<IColumnVisibility>(
+		DEFAULT_COLUMN_VISIBILITY
+	);
 
 	useEffect(() => {
-		channel.getColumnVisibility().then((visibility) => {
-			setColumnVisibility(visibility);
-		});
+		const refresh = () => {
+			channel.getColumnVisibility().then(setColumnVisibility);
+		};
 
-		// Listen for column visibility changes
-		onEvent("columnsChanged", () => {
-			channel.getColumnVisibility().then((visibility) => {
-				setColumnVisibility(visibility);
-			});
-		});
+		refresh();
+
+		return onEvent(COLUMNS_CHANGED_EVENT, refresh);
 	}, [channel]);
 
-	const headers = useMemo(() => {
-		return HEADERS.filter((header) => {
-			if (!header.hideable) {
-				return true;
-			}
-			const configKey = header.configKey;
-			if (configKey === "gitHistory.columns.showHash") {
-				return columnVisibility.showHash;
-			}
-			if (configKey === "gitHistory.columns.showAuthor") {
-				return columnVisibility.showAuthor;
-			}
-			if (configKey === "gitHistory.columns.showDate") {
-				return columnVisibility.showDate;
-			}
-			return true;
-		});
-	}, [columnVisibility]);
+	const headers = useMemo(
+		() =>
+			HEADERS.filter(
+				(header) =>
+					!header.visibilityKey ||
+					columnVisibility[header.visibilityKey]
+			),
+		[columnVisibility]
+	);
 
 	const { columns } = useColumnResize(headers, totalWidth);
 

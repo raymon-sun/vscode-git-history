@@ -2,6 +2,7 @@ import path from "path";
 
 import { inject, injectable } from "inversify";
 import {
+	Disposable,
 	ExtensionContext,
 	Uri,
 	Webview,
@@ -14,6 +15,7 @@ import { TYPES } from "../../container/types";
 import { IRequestMessage } from "./utils/message";
 import { Source } from "./data/source";
 import { linksMap } from "./data/link";
+import { COLUMNS_CHANGED_EVENT, EVENT_MESSAGE_TYPE } from "./data/events";
 
 @injectable()
 export class HistoryWebviewViewProvider implements WebviewViewProvider {
@@ -25,15 +27,21 @@ export class HistoryWebviewViewProvider implements WebviewViewProvider {
 	resolveWebviewView(webviewView: WebviewView) {
 		const { extensionUri } = this.context;
 
-		this.source.getCommitsEventEmitter().event(({ totalCount }) => {
-			webviewView.description = `${totalCount} commits in total`;
-		});
+		const disposables: Disposable[] = [
+			this.source.getCommitsEventEmitter().event(({ totalCount }) => {
+				webviewView.description = `${totalCount} commits in total`;
+			}),
+			this.source.getColumnsChangedEventEmitter().event(() => {
+				webviewView.webview.postMessage({
+					type: EVENT_MESSAGE_TYPE,
+					event: COLUMNS_CHANGED_EVENT,
+				});
+			}),
+		];
 
-		this.source.getColumnsChangedEventEmitter().event(() => {
-			webviewView.webview.postMessage({
-				type: "columnsChanged",
-			});
-		});
+		webviewView.onDidDispose(() =>
+			disposables.forEach((disposable) => disposable.dispose())
+		);
 
 		webviewView.webview.options = {
 			enableScripts: true,

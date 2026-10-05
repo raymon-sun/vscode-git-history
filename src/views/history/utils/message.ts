@@ -1,3 +1,5 @@
+import { EVENT_MESSAGE_TYPE } from "../data/events";
+
 declare const acquireVsCodeApi: () => any;
 
 const vscode = acquireVsCodeApi();
@@ -6,6 +8,12 @@ export type IMessageType = "promise" | "subscription";
 export interface IMessage {
 	id: number;
 	type: IMessageType;
+}
+
+interface IIncomingMessage {
+	id?: number;
+	type: IMessageType | typeof EVENT_MESSAGE_TYPE;
+	event?: string;
 }
 
 export interface IRequestMessage<T = any> extends IMessage {
@@ -21,33 +29,39 @@ export interface IResponseMessage<T = any> extends IMessage {
 let messageId = 0;
 
 const responseHandles: { [id: number]: (res: any) => void } = {};
-const eventHandlers: { [eventType: string]: (() => void)[] } = {};
+const eventHandlers: { [eventName: string]: (() => void)[] } = {};
 
-window.addEventListener(
-	"message",
-	(event: MessageEvent<{ id?: number; type: IMessageType | string }>) => {
-		const { id, type } = event.data;
+window.addEventListener("message", (event: MessageEvent<IIncomingMessage>) => {
+	const { id, type, event: eventName } = event.data;
 
-		// Handle special event messages
-		if (type === "columnsChanged") {
-			const handlers = eventHandlers["columnsChanged"] || [];
-			handlers.forEach((handler) => handler());
+	if (type === EVENT_MESSAGE_TYPE && eventName) {
+		eventHandlers[eventName]?.forEach((handler) => handler());
+		return;
+	}
+
+	if (id !== undefined && responseHandles[id]) {
+		responseHandles[id](event.data);
+		type === "promise" && delete responseHandles[id];
+	}
+});
+
+export function onEvent(eventName: string, handler: () => void) {
+	if (!eventHandlers[eventName]) {
+		eventHandlers[eventName] = [];
+	}
+	eventHandlers[eventName].push(handler);
+
+	return () => {
+		const handlers = eventHandlers[eventName];
+		if (!handlers) {
 			return;
 		}
 
-		// Handle normal request/response messages
-		if (id !== undefined && responseHandles[id]) {
-			responseHandles[id](event.data);
-			type === "promise" && delete responseHandles[id];
+		const index = handlers.indexOf(handler);
+		if (index !== -1) {
+			handlers.splice(index, 1);
 		}
-	}
-);
-
-export function onEvent(eventType: string, handler: () => void) {
-	if (!eventHandlers[eventType]) {
-		eventHandlers[eventType] = [];
-	}
-	eventHandlers[eventType].push(handler);
+	};
 }
 
 export async function sendMessage<T extends IMessage>(

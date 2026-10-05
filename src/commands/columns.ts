@@ -1,68 +1,52 @@
-import { commands, window, type ExtensionContext } from "vscode";
+import { commands, window } from "vscode";
 
 import { container } from "../container/inversify.config";
-import { TYPES } from "../container/types";
 
+import {
+	COLUMN_VISIBILITY_OPTIONS,
+	DEFAULT_COLUMN_VISIBILITY,
+	IColumnVisibility,
+} from "../views/history/data/columnVisibility";
 import { Source } from "../views/history/data/source";
 
 export const TOGGLE_COLUMNS_COMMAND = "git-history.history.toggle.columns";
 
 export function getColumnsCommandsDisposable() {
-	const context = container.get<ExtensionContext>(TYPES.ExtensionContext);
 	const source = container.get(Source);
 
 	return [
 		commands.registerCommand(TOGGLE_COLUMNS_COMMAND, async () => {
-			const currentState = context.globalState.get<{
-				showHash: boolean;
-				showAuthor: boolean;
-				showDate: boolean;
-			}>("columnVisibility", {
-				showHash: true,
-				showAuthor: true,
-				showDate: true,
-			});
+			const currentState = await source.getColumnVisibility();
 
 			const quickPick = window.createQuickPick<{
 				label: string;
-				id: string;
+				id: keyof IColumnVisibility;
 				picked: boolean;
 			}>();
 			quickPick.title = "Select Columns to Display";
 			quickPick.placeholder = "Choose which columns to show";
 			quickPick.canSelectMany = true;
 
-			const items = [
-				{
-					label: "Hash",
-					id: "showHash",
-					picked: currentState.showHash,
-				},
-				{
-					label: "Author",
-					id: "showAuthor",
-					picked: currentState.showAuthor,
-				},
-				{
-					label: "Date/Time",
-					id: "showDate",
-					picked: currentState.showDate,
-				},
-			];
+			const items = COLUMN_VISIBILITY_OPTIONS.map(({ id, label }) => ({
+				label,
+				id,
+				picked: currentState[id],
+			}));
 
 			quickPick.items = items;
-			quickPick.selectedItems = items.filter((item) => item.picked);
+			quickPick.selectedItems = items.filter(({ picked }) => picked);
 
 			return new Promise((resolve) => {
-				quickPick.onDidAccept(() => {
-					const selected = quickPick.selectedItems;
-					const newState = {
-						showHash: selected.some((item) => item.id === "showHash"),
-						showAuthor: selected.some((item) => item.id === "showAuthor"),
-						showDate: selected.some((item) => item.id === "showDate"),
-					};
-					context.globalState.update("columnVisibility", newState);
-					source.fireColumnsChanged();
+				quickPick.onDidAccept(async () => {
+					const selectedIds = new Set(
+						quickPick.selectedItems.map(({ id }) => id)
+					);
+					const newState = { ...DEFAULT_COLUMN_VISIBILITY };
+					COLUMN_VISIBILITY_OPTIONS.forEach(({ id }) => {
+						newState[id] = selectedIds.has(id);
+					});
+
+					await source.setColumnVisibility(newState);
 					resolve(newState);
 					quickPick.dispose();
 				});

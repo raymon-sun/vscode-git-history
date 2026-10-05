@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { ICommit, CommitIndex } from "../../../../git/commit";
 import { CommitGraphSliceIndex } from "../../../../git/types";
+import type { IColumnVisibility } from "../../data/columnVisibility";
 import GitGraph from "../GitGraph";
 import GitTag from "../GitTag";
 
@@ -16,8 +17,7 @@ export interface IHeader {
 	filterable?: boolean;
 	locatable?: boolean;
 	filterLogOption?: string;
-	hideable?: boolean;
-	configKey?: string;
+	visibilityKey?: keyof IColumnVisibility;
 	transformer: (commit: ICommit) => ReactNode | string;
 }
 
@@ -38,6 +38,7 @@ export const HEADERS: IHeader[] = [
 		minWidth: 180,
 		filterable: true,
 		filterLogOption: "keyword",
+		visibilityKey: "showDescription",
 		transformer: (commit) => (
 			<>
 				<span>
@@ -77,8 +78,7 @@ export const HEADERS: IHeader[] = [
 		width: 100,
 		minWidth: 100,
 		locatable: true,
-		hideable: true,
-		configKey: "gitHistory.columns.showHash",
+		visibilityKey: "showHash",
 		transformer: (commit) => (
 			<>
 				<span>{commit[CommitIndex.HASH].slice(0, 6)}</span>
@@ -102,8 +102,7 @@ export const HEADERS: IHeader[] = [
 		minWidth: 108,
 		filterable: true,
 		filterLogOption: "authors",
-		hideable: true,
-		configKey: "gitHistory.columns.showAuthor",
+		visibilityKey: "showAuthor",
 		transformer: (commit) => commit[CommitIndex.AUTHOR_NAME],
 	},
 	{
@@ -111,8 +110,7 @@ export const HEADERS: IHeader[] = [
 		label: "Date/Time",
 		width: 164,
 		minWidth: 164,
-		hideable: true,
-		configKey: "gitHistory.columns.showDate",
+		visibilityKey: "showDate",
 		transformer: (commit) => commit[CommitIndex.COMMIT_DATE],
 	},
 ];

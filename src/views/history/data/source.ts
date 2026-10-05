@@ -35,6 +35,12 @@ import {
 
 import { INPUT_HASH_COMMAND } from "../../../commands/input";
 
+import {
+	COLUMN_VISIBILITY_STATE_KEY,
+	DEFAULT_COLUMN_VISIBILITY,
+	IColumnVisibility,
+} from "./columnVisibility";
+
 import { link } from "./link";
 import state from "./state";
 
@@ -64,7 +70,11 @@ export class Source {
 		return this.columnsChangedEventEmitter;
 	}
 
-	fireColumnsChanged() {
+	async setColumnVisibility(visibility: IColumnVisibility) {
+		await this.context.globalState.update(
+			COLUMN_VISIBILITY_STATE_KEY,
+			visibility
+		);
 		this.columnsChangedEventEmitter.fire();
 	}
 
@@ -75,17 +85,12 @@ export class Source {
 
 	@link("promise")
 	getColumnVisibility() {
-		return Promise.resolve(
-			this.context.globalState.get<{
-				showHash: boolean;
-				showAuthor: boolean;
-				showDate: boolean;
-			}>("columnVisibility", {
-				showHash: true,
-				showAuthor: true,
-				showDate: true,
-			})
+		const stored = this.context.globalState.get<Partial<IColumnVisibility>>(
+			COLUMN_VISIBILITY_STATE_KEY,
+			{}
 		);
+
+		return Promise.resolve({ ...DEFAULT_COLUMN_VISIBILITY, ...stored });
 	}
 
 	@link("promise")

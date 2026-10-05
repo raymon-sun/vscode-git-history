@@ -232,7 +232,9 @@ export class GitService {
 		const args = [
 			"log",
 			"-p",
+			"-m",
 			"-1",
+			"--first-parent",
 			"--pretty=format:",
 			"--name-status",
 			"-z",

@@ -249,8 +249,10 @@ const CommitsTable: FC = () => {
 	const [ref, { width }] = useMeasure<HTMLDivElement>();
 
 	return (
-		<div ref={ref} className={style.container}>
-			<CommitsTableInner totalWidth={width} />
+		<div className={style.outer}>
+			<div ref={ref} className={style.container}>
+				<CommitsTableInner totalWidth={width} />
+			</div>
 		</div>
 	);
 };

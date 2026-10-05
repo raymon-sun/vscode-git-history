@@ -1,6 +1,12 @@
 $col-divider-width: 6px;
 $col-padding-right: 8px;
 
+// inset the content from the webview edges, like the Source Control view
+.outer {
+	height: 100%;
+	padding: 0 var(--vscode-spacing-size40, 4px);
+}
+
 .container {
 	display: flex;
 	flex-direction: column;

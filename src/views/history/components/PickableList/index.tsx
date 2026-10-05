@@ -52,7 +52,21 @@ const PickableList = <T extends Record<string, any>>(
 	const [itemYs, setItemYs] = useState<number[]>([]);
 	const [dragStartIndex, setDragStartIndex] =
 		useState<number>(INDEX_PLACEHOLDER);
+	const [isFocused, setIsFocused] = useState(() => document.hasFocus());
 	const { checkKeyIsPressed } = useIsKeyPressed();
+
+	useEffect(() => {
+		const handleFocus = () => setIsFocused(true);
+		const handleBlur = () => setIsFocused(false);
+
+		window.addEventListener("focus", handleFocus);
+		window.addEventListener("blur", handleBlur);
+
+		return () => {
+			window.removeEventListener("focus", handleFocus);
+			window.removeEventListener("blur", handleBlur);
+		};
+	}, []);
 
 	useEffect(() => {
 		if (typeof locationIndex !== "number") {
@@ -158,7 +172,9 @@ const PickableList = <T extends Record<string, any>>(
 			{...dragBind()}
 			ref={scrollContainerRef}
 			style={{ overflow: "auto" }}
-			className={style.container}
+			className={classNames(style.container, {
+				[style.focused]: isFocused,
+			})}
 		>
 			<div
 				ref={dragContainerRef}

@@ -1,14 +1,14 @@
+$row-radius: var(--vscode-cornerRadius-small, 4px);
+
 .container {
 	overflow: overlay !important;
 	height: 100%;
 	user-select: none;
-
-	// Display left and right outline at picked item
-	padding: 1px;
 }
 
 .item {
 	width: 100%;
+	border-radius: $row-radius;
 
 	&:hover {
 		background-color: var(--vscode-list-hoverBackground);
@@ -19,12 +19,11 @@
 		--git-graph-node-outer-gap: transparent;
 	}
 
+	// selected while the view is not focused
 	&.picked {
-		background-color: var(--vscode-list-activeSelectionBackground);
-		color: var(--vscode-list-activeSelectionForeground);
-		outline: 1px solid var(--vscode-list-focusOutline);
+		background-color: var(--vscode-list-inactiveSelectionBackground);
 
-		--git-graph-node-gap: var(--vscode-list-activeSelectionBackground);
+		--git-graph-node-gap: var(--vscode-list-inactiveSelectionBackground);
 		--git-graph-node-outer-gap: transparent;
 	}
 
@@ -51,4 +50,16 @@
 		animation-delay: 0.1s;
 		animation-duration: 1.4s;
 	}
+}
+
+// selected while the view is focused
+.container.focused .item.picked {
+	background-color: var(--vscode-list-activeSelectionBackground);
+	color: var(--vscode-list-activeSelectionForeground);
+
+	// inset the ring so the scroll container's overflow cannot clip it
+	outline: 1px solid var(--vscode-list-focusOutline);
+	outline-offset: -1px;
+
+	--git-graph-node-gap: var(--vscode-list-activeSelectionBackground);
 }

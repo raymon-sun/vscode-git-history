@@ -17,6 +17,11 @@ import {
 	DEFAULT_COLUMN_VISIBILITY,
 	IColumnVisibility,
 } from "../../data/columnVisibility";
+import {
+	DateFormatContext,
+	DEFAULT_DATE_FORMAT,
+	DateFormat,
+} from "../../data/dateFormat";
 import { COLUMNS_CHANGED_EVENT } from "../../data/events";
 import { LatestCommitContext } from "../../data/latestCommit";
 import { onEvent } from "../../utils/message";
@@ -26,11 +31,14 @@ import { ICommit, parseCommit } from "../../../../git/commit";
 import { useBatchCommits } from "./useBatchCommits";
 import { useColumnResize } from "./useColumnResize";
 
-import { HEADERS } from "./constants";
+import { HEADERS, applyDateFormatWidth } from "./constants";
 
 import style from "./index.module.scss";
 
 const COMMIT_HASH_LENGTH = 40;
+
+/** relative commit times are refreshed once a minute */
+const RELATIVE_TIME_REFRESH_INTERVAL = 60 * 1000;
 
 const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const channel = useContext(ChannelContext)!;
@@ -117,14 +125,53 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		return onEvent(COLUMNS_CHANGED_EVENT, refresh);
 	}, [channel]);
 
+	const [dateFormat, setDateFormat] = useState<DateFormat>(
+		DEFAULT_DATE_FORMAT
+	);
+	const [now, setNow] = useState(() => Date.now());
+
+	useEffect(() => {
+		channel.getDateFormat().then(setDateFormat);
+	}, [channel]);
+
+	useEffect(() => {
+		if (dateFormat !== "relative") {
+			return;
+		}
+
+		setNow(Date.now());
+		const timer = setInterval(
+			() => setNow(Date.now()),
+			RELATIVE_TIME_REFRESH_INTERVAL
+		);
+
+		return () => clearInterval(timer);
+	}, [dateFormat]);
+
+	const toggleDateFormat = useCallback(async () => {
+		const next: DateFormat =
+			dateFormat === "absolute" ? "relative" : "absolute";
+
+		setDateFormat(next);
+		await channel.setDateFormat(next);
+	}, [channel, dateFormat]);
+
+	const dateFormatContext = useMemo(
+		() => ({ format: dateFormat, now }),
+		[dateFormat, now]
+	);
+
 	const headers = useMemo(
 		() =>
-			HEADERS.filter(
-				(header) =>
-					!header.visibilityKey ||
-					columnVisibility[header.visibilityKey]
+			applyDateFormatWidth(
+				HEADERS.filter(
+					(header) =>
+						!header.visibilityKey ||
+						columnVisibility[header.visibilityKey]
+				),
+				dateFormat
 			),
-		[columnVisibility]
+		[columnVisibility, dateFormat]
 	);
 
 	const { columns } = useColumnResize(headers, totalWidth);
@@ -146,6 +193,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 							filterable,
 							locatable,
 							filterLogOption,
+							dateFormatToggle,
 							hasDivider,
 							size,
 							dragBind,
@@ -210,6 +258,19 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 											<span className="codicon codicon-search" />
 										</VSCodeButton>
 									)}
+									{dateFormatToggle && (
+										<VSCodeButton
+											appearance="icon"
+											title={
+												dateFormat === "relative"
+													? "Show Full Date/Time"
+													: "Show Relative Time"
+											}
+											onClick={toggleDateFormat}
+										>
+											<span className="codicon codicon-arrow-swap" />
+										</VSCodeButton>
+									)}
 								</>
 							)}
 						</div>
@@ -217,29 +278,31 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 				)}
 			</div>
 			<div className={style["commits-area"]}>
-				<PickableList
-					list={commits}
-					keyLength={40}
-					locationIndex={locationIndex}
-					itemPipe={parseCommit}
-					itemRender={(commit: ICommit) => (
-						<div className={style.commit}>
-							{columns.map(({ prop, size, transformer }) => (
-								<span
-									style={{
-										width: `${size}px`,
-									}}
-									data-prop={prop}
-									key={prop}
-								>
-									{transformer(commit)}
-								</span>
-							))}
-						</div>
-					)}
-					size={commitsCount}
-					onPick={(ids) => diff(ids)}
-				/>
+				<DateFormatContext.Provider value={dateFormatContext}>
+					<PickableList
+						list={commits}
+						keyLength={40}
+						locationIndex={locationIndex}
+						itemPipe={parseCommit}
+						itemRender={(commit: ICommit) => (
+							<div className={style.commit}>
+								{columns.map(({ prop, size, transformer }) => (
+									<span
+										style={{
+											width: `${size}px`,
+										}}
+										data-prop={prop}
+										key={prop}
+									>
+										{transformer(commit)}
+									</span>
+								))}
+							</div>
+						)}
+						size={commitsCount}
+						onPick={(ids) => diff(ids)}
+					/>
+				</DateFormatContext.Provider>
 			</div>
 		</LatestCommitContext.Provider>
 	);

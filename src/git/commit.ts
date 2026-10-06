@@ -9,8 +9,8 @@ export type ICommit = [
 	string,
 	/** parents */
 	string[],
-	/** commit date */
-	string,
+	/** commit date (epoch milliseconds) */
+	number,
 	/** author email */
 	string,
 	/** author name */
@@ -119,7 +119,7 @@ export function parseCommit(commitData: string): ICommit {
 		refNames ? refNames.split(REFS_SEPARATOR) : [],
 		` ${message}`.substr(1),
 		parents ? parents.split(" ") : [],
-		new Date(Number(authorDate) * 1000).toLocaleString(),
+		Number(authorDate) * 1000,
 		` ${authorEmail}`.substr(1),
 		` ${authorName}`.substr(1),
 		new Date(Number(commitDate) * 1000).toLocaleString(),

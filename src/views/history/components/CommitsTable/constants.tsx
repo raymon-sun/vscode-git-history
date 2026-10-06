@@ -4,11 +4,19 @@ import type { ReactNode } from "react";
 import { ICommit, CommitIndex } from "../../../../git/commit";
 import { CommitGraphSliceIndex } from "../../../../git/types";
 import type { IColumnVisibility } from "../../data/columnVisibility";
+import type { DateFormat } from "../../data/dateFormat";
+import CommitDate from "../CommitDate";
 import GitGraph from "../GitGraph";
 import type { GitGraphNodeKind } from "../GitGraph";
 import GitTag from "../GitTag";
 
 type FillRemainWidth = "fill";
+
+/** the relative format is shorter than the full date, so the column can be narrower */
+export const DATE_COLUMN_WIDTH: { [key in DateFormat]: number } = {
+	relative: 108,
+	absolute: 176,
+};
 
 function getGraphNodeKind(commit: ICommit): Exclude<GitGraphNodeKind, "head"> {
 	if (commit[CommitIndex.PARENTS].length > 1) {
@@ -27,6 +35,7 @@ export interface IHeader {
 	locatable?: boolean;
 	filterLogOption?: string;
 	visibilityKey?: keyof IColumnVisibility;
+	dateFormatToggle?: boolean;
 	transformer: (commit: ICommit) => ReactNode | string;
 }
 
@@ -121,9 +130,27 @@ export const HEADERS: IHeader[] = [
 	{
 		prop: "date",
 		label: "Date/Time",
-		width: 164,
-		minWidth: 164,
+		width: DATE_COLUMN_WIDTH.absolute,
+		minWidth: DATE_COLUMN_WIDTH.absolute,
 		visibilityKey: "showDate",
-		transformer: (commit) => commit[CommitIndex.COMMIT_DATE],
+		dateFormatToggle: true,
+		transformer: (commit) => (
+			<CommitDate timestamp={commit[CommitIndex.COMMIT_DATE]} />
+		),
 	},
 ];
+
+export function applyDateFormatWidth(
+	headers: IHeader[],
+	format: DateFormat
+): IHeader[] {
+	return headers.map((header) =>
+		header.prop === "date"
+			? {
+					...header,
+					width: DATE_COLUMN_WIDTH[format],
+					minWidth: DATE_COLUMN_WIDTH[format],
+			  }
+			: header
+	);
+}

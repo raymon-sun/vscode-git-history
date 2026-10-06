@@ -40,6 +40,11 @@ import {
 	DEFAULT_COLUMN_VISIBILITY,
 	IColumnVisibility,
 } from "./columnVisibility";
+import {
+	DATE_FORMAT_STATE_KEY,
+	DEFAULT_DATE_FORMAT,
+	DateFormat,
+} from "./dateFormat";
 
 import { link } from "./link";
 import state from "./state";
@@ -91,6 +96,21 @@ export class Source {
 		);
 
 		return Promise.resolve({ ...DEFAULT_COLUMN_VISIBILITY, ...stored });
+	}
+
+	@link("promise")
+	getDateFormat() {
+		return Promise.resolve(
+			this.context.globalState.get<DateFormat>(
+				DATE_FORMAT_STATE_KEY,
+				DEFAULT_DATE_FORMAT
+			)
+		);
+	}
+
+	@link("promise")
+	async setDateFormat(format: DateFormat) {
+		await this.context.globalState.update(DATE_FORMAT_STATE_KEY, format);
 	}
 
 	@link("promise")

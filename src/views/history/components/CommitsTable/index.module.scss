@@ -115,6 +115,11 @@ $col-padding-right: 8px;
 				}
 			}
 
+			// the date cell ends the row, so the inner trailing gap is not needed
+			&[data-prop="date"] > span {
+				padding-right: 0;
+			}
+
 			&[data-prop="description"] {
 				text-overflow: unset;
 				display: flex;

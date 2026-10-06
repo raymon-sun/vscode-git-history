@@ -115,7 +115,19 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 					]
 			)
 			.sort(([left], [right]) => pathCollator.compare(left, right))
-			.map(([label, node]) => new Path(label, node));
+			.map(([relativePath, node]) => {
+				const dirname = path.dirname(relativePath);
+				const item = new Path(
+					path.basename(relativePath),
+					node,
+					dirname === "." ? undefined : dirname
+				);
+
+				// file names are not unique in flat mode, so keep the id per file
+				item.id = node.uri.toString();
+
+				return item;
+			});
 	}
 
 	private toPaths(collection?: PathCollection) {
@@ -146,7 +158,11 @@ class Path extends TreeItem {
 	collapsibleState = this.getCollapsibleState();
 	readonly command?: Command = this.getCommand();
 
-	constructor(public label: string, public props: FolderNode | FileNode) {
+	constructor(
+		public label: string,
+		public props: FolderNode | FileNode,
+		public description?: string
+	) {
 		super(label);
 	}
 

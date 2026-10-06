@@ -4,6 +4,11 @@ All notable changes to the "git-history" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.3.1
+
+- Show commit dates as relative time by default, with a header button to switch to the full date/time (the Date/Time column width follows the format)
+- Show only the file name in flat mode of the Changes view, with the folder path as a dimmed description
+
 ## 0.3.0
 
 - Require VS Code 1.140 or newer

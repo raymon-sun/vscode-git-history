@@ -1,7 +1,7 @@
 import { useDrag } from "@use-gesture/react";
 import { useEffect, useMemo, useState } from "react";
-import { sum } from "lodash";
 
+import { getSizes, resizeColumns } from "./columnSizes";
 import { IHeader } from "./constants";
 
 export function useColumnResize(
@@ -31,15 +31,8 @@ export function useColumnResize(
 			return;
 		}
 
-		const newSizes = [...dragStartSizes];
-		newSizes[index] = newSizes[index] - mx;
-		newSizes[index - 1] = newSizes[index - 1] + mx;
-
-		const isExceedSize =
-			newSizes[index] < columns[index].minWidth ||
-			newSizes[index - 1] < columns[index - 1].minWidth;
-
-		!isExceedSize && setRealTimeSizes(newSizes);
+		// dragging the divider to the left grows the column after it
+		setRealTimeSizes(resizeColumns(dragStartSizes, columns, index, -mx));
 	});
 
 	return {
@@ -50,21 +43,4 @@ export function useColumnResize(
 			dragBind,
 		})),
 	};
-}
-
-function getSizes(columns: IHeader[], totalWidth: number) {
-	let fillIndex = -1;
-	const sizes = columns.map(({ width }, index) => {
-		if (width === "fill") {
-			fillIndex = index;
-			return 0;
-		}
-		return width;
-	});
-
-	if (fillIndex !== -1) {
-		sizes[fillIndex] = totalWidth - sum(sizes);
-	}
-
-	return sizes;
 }

@@ -4,6 +4,10 @@ All notable changes to the "git-history" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## Unreleased
+
+- Widen a commit column by taking space from the flexible Description column when the column on its left cannot shrink any further
+
 ## 0.3.1
 
 - Show commit dates as relative time by default, with a header button to switch to the full date/time (the Date/Time column width follows the format)

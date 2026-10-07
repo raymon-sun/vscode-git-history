@@ -6,7 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## Unreleased
 
-- Widen a commit column by taking space from the flexible Description column when the column on its left cannot shrink any further
+- Column resizing now flexes the Description column first, so the columns next to a divider keep their width and simply move out of the way
+- Let the Hash and Date/Time columns start a little wider than their minimum width, so they can also be dragged narrower
 
 ## 0.3.1
 

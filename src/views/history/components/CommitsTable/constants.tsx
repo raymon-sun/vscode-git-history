@@ -13,9 +13,18 @@ import GitTag from "../GitTag";
 type FillRemainWidth = "fill";
 
 /** the relative format is shorter than the full date, so the column can be narrower */
+const DATE_COLUMN_MIN_WIDTH: { [key in DateFormat]: number } = {
+	relative: 96,
+	absolute: 160,
+};
+
+/** the column starts this much wider than its minimum, so it can also be dragged narrower */
+const DATE_COLUMN_WIDTH_SLACK = 12;
+
+/** the width the date column starts with, for the current format */
 export const DATE_COLUMN_WIDTH: { [key in DateFormat]: number } = {
-	relative: 108,
-	absolute: 176,
+	relative: DATE_COLUMN_MIN_WIDTH.relative + DATE_COLUMN_WIDTH_SLACK,
+	absolute: DATE_COLUMN_MIN_WIDTH.absolute + DATE_COLUMN_WIDTH_SLACK,
 };
 
 function getGraphNodeKind(commit: ICommit): Exclude<GitGraphNodeKind, "head"> {
@@ -29,7 +38,9 @@ function getGraphNodeKind(commit: ICommit): Exclude<GitGraphNodeKind, "head"> {
 export interface IHeader {
 	prop: "graph" | "description" | "hash" | "author" | "date";
 	label: string;
+	/** the width the column starts with; the fill column grows into the leftover space */
 	width: number | FillRemainWidth;
+	/** the smallest width the column can be dragged down to */
 	minWidth: number;
 	filterable?: boolean;
 	locatable?: boolean;
@@ -98,7 +109,8 @@ export const HEADERS: IHeader[] = [
 		prop: "hash",
 		label: "Hash",
 		width: 100,
-		minWidth: 100,
+		// the commit hash is short, so the column can be dragged down a lot
+		minWidth: 64,
 		locatable: true,
 		visibilityKey: "showHash",
 		transformer: (commit) => (
@@ -131,7 +143,7 @@ export const HEADERS: IHeader[] = [
 		prop: "date",
 		label: "Date/Time",
 		width: DATE_COLUMN_WIDTH.absolute,
-		minWidth: DATE_COLUMN_WIDTH.absolute,
+		minWidth: DATE_COLUMN_MIN_WIDTH.absolute,
 		visibilityKey: "showDate",
 		dateFormatToggle: true,
 		transformer: (commit) => (
@@ -149,7 +161,7 @@ export function applyDateFormatWidth(
 			? {
 					...header,
 					width: DATE_COLUMN_WIDTH[format],
-					minWidth: DATE_COLUMN_WIDTH[format],
+					minWidth: DATE_COLUMN_MIN_WIDTH[format],
 			  }
 			: header
 	);

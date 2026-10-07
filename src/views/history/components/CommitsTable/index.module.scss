@@ -37,6 +37,11 @@ $col-padding-right: 8px;
 
 		> span {
 			margin-right: 8px;
+			// let the label shrink (and ellipsize) instead of pushing the icons out
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 			color: var(--vscode-descriptionForeground);
 		}
 

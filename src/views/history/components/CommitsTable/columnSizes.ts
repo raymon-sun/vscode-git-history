@@ -22,11 +22,12 @@ export function getSizes(columns: IHeader[], totalWidth: number): number[] {
 /**
  * Move the divider before the column at `index` by `delta` pixels, keeping the
  * total width unchanged. A positive `delta` grows the column to the right of
- * the divider; the space is taken from the column on its left first.
+ * the divider.
  *
- * When that left column is already at its minimum width, the remainder is taken
- * from the fill column instead, so the left column keeps its size and shifts
- * out of the way.
+ * The flexible (fill) column absorbs the change first, so the columns next to
+ * the divider keep their size and simply move out of the way. Only once the
+ * fill column cannot give any more space does the adjacent column step in.
+ * A column is never shrunk below its own minimum width.
  */
 export function resizeColumns(
 	sizes: number[],
@@ -36,39 +37,50 @@ export function resizeColumns(
 ): number[] {
 	const newSizes = [...sizes];
 	const leftIndex = index - 1;
+	const fillIndex = columns.findIndex((column) => column.width === "fill");
 
-	if (delta < 0) {
-		const shrink = Math.min(
-			-delta,
-			Math.max(0, newSizes[index] - columns[index].minWidth)
+	const takeFrom = (donorIndex: number, amount: number) => {
+		const available = Math.max(
+			0,
+			newSizes[donorIndex] - columns[donorIndex].minWidth
 		);
-		newSizes[index] -= shrink;
-		newSizes[leftIndex] += shrink;
+		const taken = Math.min(amount, available);
+		newSizes[donorIndex] -= taken;
+		return taken;
+	};
+
+	if (delta > 0) {
+		let remaining = delta;
+
+		// try the flexible column first, then the column next to the divider
+		const donors = [...new Set([fillIndex, leftIndex])];
+		for (const donorIndex of donors) {
+			if (remaining === 0) {
+				break;
+			}
+			if (donorIndex !== -1 && donorIndex !== index) {
+				remaining -= takeFrom(donorIndex, remaining);
+			}
+		}
+
+		newSizes[index] += delta - remaining;
+
 		return newSizes;
 	}
 
-	let remaining = delta;
-
-	const takenFromLeft = Math.min(
-		remaining,
-		Math.max(0, newSizes[leftIndex] - columns[leftIndex].minWidth)
+	const shrink = Math.min(
+		-delta,
+		Math.max(0, newSizes[index] - columns[index].minWidth)
 	);
-	newSizes[leftIndex] -= takenFromLeft;
-	remaining -= takenFromLeft;
-
-	const fillIndex = columns.findIndex((column) => column.width === "fill");
-	const canUseFill =
-		fillIndex !== -1 && fillIndex !== leftIndex && fillIndex !== index;
-	if (remaining > 0 && canUseFill) {
-		const takenFromFill = Math.min(
-			remaining,
-			Math.max(0, newSizes[fillIndex] - columns[fillIndex].minWidth)
-		);
-		newSizes[fillIndex] -= takenFromFill;
-		remaining -= takenFromFill;
+	if (shrink === 0) {
+		return newSizes;
 	}
 
-	newSizes[index] += delta - remaining;
+	newSizes[index] -= shrink;
+
+	const receiverIndex =
+		fillIndex !== -1 && fillIndex !== index ? fillIndex : leftIndex;
+	newSizes[receiverIndex] += shrink;
 
 	return newSizes;
 }

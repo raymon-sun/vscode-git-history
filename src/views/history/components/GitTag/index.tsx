@@ -16,6 +16,8 @@ const GitTag: FC<Props> = ({ refName, color }) => {
 	return (
 		<div
 			className={style["tag-container"]}
+			// lets the commit row detect a right click on a tag
+			data-tag-name={isTag ? label : undefined}
 			style={{
 				backgroundColor: `color-mix(in srgb, ${color} 44%, transparent)`,
 			}}

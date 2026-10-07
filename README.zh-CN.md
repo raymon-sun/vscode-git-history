@@ -33,6 +33,17 @@
 - 按住 `Ctrl`/`⌘` 可选中多个commit,你可以查看这多个commit合并后的变更
 - 通过拖动来快速选择多个连续的commit
 
+### Commit 操作
+
+右键点击 commit 可以对它执行操作，右键点击 tag 可以管理 tag：
+
+- 复制 commit hash 或信息
+- 基于该 commit 创建分支并切换过去
+- 在该 commit 上创建 tag
+- Cherry-pick / revert 该 commit
+- 检出该 commit（分离 HEAD）
+- 将当前分支重置到该 commit（`soft` / `mixed` / `hard`）
+
 ### 图形
 
 ![Usage](./assets/usage/graph.gif)

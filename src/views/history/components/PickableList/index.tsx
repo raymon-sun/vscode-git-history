@@ -76,7 +76,7 @@ const PickableList = <T extends Record<string, any>>(
 		scrollToIndex(locationIndex || 0, { align: "center" });
 	}, [scrollToIndex, locationIndex]);
 
-	const dragBind = useDrag(({ type, xy, target }) => {
+	const dragBind = useDrag(({ type, xy, target, buttons }) => {
 		const [x, y] = xy;
 
 		const existedItems =
@@ -85,6 +85,12 @@ const PickableList = <T extends Record<string, any>>(
 				: {};
 		const firstItemIndex = virtualItems[0].index;
 		if (type === "pointerdown") {
+			// only the primary button starts a selection drag, so a right click
+			// can open the context menu without changing the selection
+			if (buttons !== 1) {
+				return;
+			}
+
 			const scrollContainerEl = scrollContainerRef.current!;
 
 			const isPointerOnButton = !!(target as HTMLElement).closest(

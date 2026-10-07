@@ -36,6 +36,30 @@ export function buildChangesByRefArgs(ref: string) {
 	];
 }
 
+export type ResetMode = "soft" | "mixed" | "hard";
+
+/** `checkout -b` creates the branch and switches to it in one step */
+export function buildCreateBranchArgs(name: string, startPoint: string) {
+	return ["checkout", "-b", name, startPoint];
+}
+
+export function buildAddTagArgs(name: string, hash: string) {
+	return ["tag", name, hash];
+}
+
+export function buildCherryPickArgs(hash: string) {
+	return ["cherry-pick", hash];
+}
+
+/** `--no-edit` keeps the revert from opening an editor for the produced commit */
+export function buildRevertArgs(hash: string) {
+	return ["revert", "--no-edit", hash];
+}
+
+export function buildResetArgs(mode: ResetMode, hash: string) {
+	return ["reset", `--${mode}`, hash];
+}
+
 @injectable()
 export class GitService {
 	private gitExt?: API;
@@ -250,6 +274,44 @@ export class GitService {
 		return await this.git!.cwd(repoPath || this.rootRepoPath)
 			.raw(buildChangesByRefArgs(ref))
 			.then((res) => parseGitChanges(repoPath, res));
+	}
+
+	private gitAt(repo?: string) {
+		return this.git!.cwd(repo || this.rootRepoPath);
+	}
+
+	/** create a branch at `hash` and switch to it */
+	async createBranch(repo: string | undefined, name: string, hash: string) {
+		return this.gitAt(repo).raw(buildCreateBranchArgs(name, hash));
+	}
+
+	/** check out `hash` directly, leaving the repository on a detached HEAD */
+	async checkoutCommit(repo: string | undefined, hash: string) {
+		return this.gitAt(repo).raw(["checkout", hash]);
+	}
+
+	async addTag(repo: string | undefined, name: string, hash: string) {
+		return this.gitAt(repo).raw(buildAddTagArgs(name, hash));
+	}
+
+	async deleteTag(repo: string | undefined, name: string) {
+		return this.gitAt(repo).raw(["tag", "-d", name]);
+	}
+
+	async cherryPick(repo: string | undefined, hash: string) {
+		return this.gitAt(repo).raw(buildCherryPickArgs(hash));
+	}
+
+	async revertCommit(repo: string | undefined, hash: string) {
+		return this.gitAt(repo).raw(buildRevertArgs(hash));
+	}
+
+	async resetToCommit(
+		repo: string | undefined,
+		hash: string,
+		mode: ResetMode
+	) {
+		return this.gitAt(repo).raw(buildResetArgs(mode, hash));
 	}
 
 	onReposChange(handler: (repos: string[]) => void) {

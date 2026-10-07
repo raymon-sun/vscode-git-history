@@ -36,6 +36,16 @@ import {
 import { INPUT_HASH_COMMAND } from "../../../commands/input";
 
 import {
+	ADD_TAG_COMMAND,
+	CHECKOUT_COMMAND,
+	CHERRY_PICK_COMMAND,
+	CREATE_BRANCH_COMMAND,
+	DELETE_TAG_COMMAND,
+	RESET_TO_COMMIT_COMMAND,
+	REVERT_COMMAND,
+} from "../../../commands/commit";
+
+import {
 	COLUMN_VISIBILITY_STATE_KEY,
 	DEFAULT_COLUMN_VISIBILITY,
 	IColumnVisibility,
@@ -167,6 +177,41 @@ export class Source {
 	@link("promise")
 	async inputHash() {
 		return commands.executeCommand<string>(INPUT_HASH_COMMAND);
+	}
+
+	@link("promise")
+	async checkoutCommit(hash: string) {
+		return commands.executeCommand(CHECKOUT_COMMAND, hash);
+	}
+
+	@link("promise")
+	async createBranch(hash: string) {
+		return commands.executeCommand(CREATE_BRANCH_COMMAND, hash);
+	}
+
+	@link("promise")
+	async addTag(hash: string) {
+		return commands.executeCommand(ADD_TAG_COMMAND, hash);
+	}
+
+	@link("promise")
+	async cherryPick(hash: string) {
+		return commands.executeCommand(CHERRY_PICK_COMMAND, hash);
+	}
+
+	@link("promise")
+	async revertCommit(hash: string) {
+		return commands.executeCommand(REVERT_COMMAND, hash);
+	}
+
+	@link("promise")
+	async resetToCommit(hash: string) {
+		return commands.executeCommand(RESET_TO_COMMIT_COMMAND, hash);
+	}
+
+	@link("promise")
+	async deleteTag(name: string) {
+		return commands.executeCommand(DELETE_TAG_COMMAND, name);
 	}
 
 	@link("promise")

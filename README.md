@@ -30,6 +30,17 @@ It brings the following main features
 - Select multiple commits with `Ctrl`/`⌘` pressed,and then you will see the merged changes from the selected commits
 - Drag through the commits to quickly select them
 
+### Commit Actions
+
+Right click a commit to act on it, right click a tag to manage it:
+
+- Copy the commit hash or message
+- Create a branch at the commit and switch to it
+- Add a tag at the commit
+- Cherry-pick / revert the commit
+- Check out the commit in a detached HEAD
+- Reset the current branch to the commit (`soft` / `mixed` / `hard`)
+
 ### Commit Chain Graph
 
 ![Usage](./assets/usage/graph.gif)

@@ -1,5 +1,6 @@
 import {
 	FC,
+	MouseEvent as ReactMouseEvent,
 	useCallback,
 	useContext,
 	useEffect,
@@ -11,6 +12,7 @@ import { useMeasure } from "react-use";
 
 import type { IBatchedCommits } from "../../../../git/types";
 
+import ContextMenu, { IContextMenuItem } from "../ContextMenu";
 import PickableList from "../PickableList";
 import { ChannelContext } from "../../data/channel";
 import {
@@ -26,7 +28,7 @@ import { COLUMNS_CHANGED_EVENT } from "../../data/events";
 import { LatestCommitContext } from "../../data/latestCommit";
 import { onEvent } from "../../utils/message";
 
-import { ICommit, parseCommit } from "../../../../git/commit";
+import { ICommit, CommitIndex, parseCommit } from "../../../../git/commit";
 
 import { useBatchCommits } from "./useBatchCommits";
 import { useColumnResize } from "./useColumnResize";
@@ -39,6 +41,42 @@ const COMMIT_HASH_LENGTH = 40;
 
 /** relative commit times are refreshed once a minute */
 const RELATIVE_TIME_REFRESH_INTERVAL = 60 * 1000;
+
+const COMMIT_MENU_ITEMS: IContextMenuItem[] = [
+	{ id: "copyHash", label: "Copy Commit Hash", icon: "copy" },
+	{ id: "copyMessage", label: "Copy Commit Message", icon: "clippy" },
+	{
+		id: "createBranch",
+		label: "Create Branch from Commit…",
+		icon: "git-branch",
+		separatorBefore: true,
+	},
+	{ id: "addTag", label: "Add Tag…", icon: "tag" },
+	{
+		id: "cherryPick",
+		label: "Cherry-Pick Commit",
+		icon: "git-commit",
+		separatorBefore: true,
+	},
+	{ id: "revert", label: "Revert Commit", icon: "discard" },
+	{
+		id: "checkout",
+		label: "Checkout Commit",
+		icon: "versions",
+		separatorBefore: true,
+	},
+	{ id: "reset", label: "Reset Current Branch to Commit…", icon: "history" },
+];
+
+const TAG_MENU_ITEMS: IContextMenuItem[] = [
+	{ id: "copyTag", label: "Copy Tag Name", icon: "copy" },
+	{
+		id: "deleteTag",
+		label: "Delete Tag",
+		icon: "trash",
+		separatorBefore: true,
+	},
+];
 
 const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	const channel = useContext(ChannelContext)!;
@@ -125,9 +163,8 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		return onEvent(COLUMNS_CHANGED_EVENT, refresh);
 	}, [channel]);
 
-	const [dateFormat, setDateFormat] = useState<DateFormat>(
-		DEFAULT_DATE_FORMAT
-	);
+	const [dateFormat, setDateFormat] =
+		useState<DateFormat>(DEFAULT_DATE_FORMAT);
 	const [now, setNow] = useState(() => Date.now());
 
 	useEffect(() => {
@@ -175,6 +212,84 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 	);
 
 	const { columns } = useColumnResize(headers, totalWidth);
+
+	const [menu, setMenu] = useState<
+		{ x: number; y: number; commit: ICommit; tagName?: string } | undefined
+	>();
+
+	const openContextMenu = useCallback(
+		(event: ReactMouseEvent, commit: ICommit) => {
+			event.preventDefault();
+
+			// a right click on a tag chip opens the tag menu instead
+			const tagElement = (
+				event.target as HTMLElement
+			).closest<HTMLElement>("[data-tag-name]");
+
+			setMenu({
+				x: event.clientX,
+				y: event.clientY,
+				commit,
+				tagName: tagElement?.dataset.tagName,
+			});
+		},
+		[]
+	);
+
+	const closeMenu = useCallback(() => setMenu(undefined), []);
+
+	const handleMenuSelect = useCallback(
+		async (id: string) => {
+			const target = menu;
+			setMenu(undefined);
+			if (!target) {
+				return;
+			}
+
+			const hash = target.commit[CommitIndex.HASH];
+			const tagName = target.tagName;
+
+			switch (id) {
+				case "copyHash":
+					await navigator.clipboard.writeText(hash);
+					break;
+				case "copyMessage":
+					await navigator.clipboard.writeText(
+						target.commit[CommitIndex.MESSAGE]
+					);
+					break;
+				case "createBranch":
+					await channel.createBranch(hash);
+					break;
+				case "addTag":
+					await channel.addTag(hash);
+					break;
+				case "cherryPick":
+					await channel.cherryPick(hash);
+					break;
+				case "revert":
+					await channel.revertCommit(hash);
+					break;
+				case "checkout":
+					await channel.checkoutCommit(hash);
+					break;
+				case "reset":
+					await channel.resetToCommit(hash);
+					break;
+				case "copyTag":
+					if (tagName) {
+						await navigator.clipboard.writeText(tagName);
+					}
+					break;
+				case "deleteTag":
+					if (tagName) {
+						await channel.deleteTag(tagName);
+					}
+					break;
+			}
+		},
+		[channel, menu]
+	);
 
 	useEffect(() => {
 		subscribeSwitcher();
@@ -285,7 +400,12 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 						locationIndex={locationIndex}
 						itemPipe={parseCommit}
 						itemRender={(commit: ICommit) => (
-							<div className={style.commit}>
+							<div
+								className={style.commit}
+								onContextMenu={(event) =>
+									openContextMenu(event, commit)
+								}
+							>
 								{columns.map(({ prop, size, transformer }) => (
 									<span
 										style={{
@@ -304,6 +424,15 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 					/>
 				</DateFormatContext.Provider>
 			</div>
+			{menu && (
+				<ContextMenu
+					x={menu.x}
+					y={menu.y}
+					items={menu.tagName ? TAG_MENU_ITEMS : COMMIT_MENU_ITEMS}
+					onSelect={handleMenuSelect}
+					onClose={closeMenu}
+				/>
+			)}
 		</LatestCommitContext.Provider>
 	);
 };

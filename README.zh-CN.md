@@ -32,6 +32,7 @@
 - 点击commit可在变更栏查看变更
 - 按住 `Ctrl`/`⌘` 可选中多个commit,你可以查看这多个commit合并后的变更
 - 通过拖动来快速选择多个连续的commit
+- 右键点击变更文件可以使用 `Open Changes`、`Open File at Commit`、`Copy Path`、`Copy Relative Path`、`Open Containing Folder`、`Open in Integrated Terminal`（按住 `Ctrl`/`⌘` 多选后可一次复制多个路径）
 
 ### Commit 操作
 

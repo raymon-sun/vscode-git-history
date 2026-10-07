@@ -28,6 +28,9 @@ import {
 	PathCollection,
 	PathType,
 } from "../../git/changes/tree";
+import { Status } from "../../git/changes/status";
+
+import { getChangeItemContextValue } from "./contextValues";
 
 const CHANGED_FILE_TREE_STATE_KEY = "changedFileTree";
 const FLAT_MODE_STATE_KEY = "changesFlatMode";
@@ -151,11 +154,12 @@ export class ChangeTreeDataProvider implements TreeDataProvider<TreeItem> {
 	}
 }
 
-class Path extends TreeItem {
+export class Path extends TreeItem {
 	children?: PathCollection = (this.props as FolderNode).children;
 	iconPath = ThemeIcon[this.props.type];
 	resourceUri = this.getResourceUri();
 	collapsibleState = this.getCollapsibleState();
+	contextValue = this.getContextValue();
 	readonly command?: Command = this.getCommand();
 
 	constructor(
@@ -164,6 +168,22 @@ class Path extends TreeItem {
 		public description?: string
 	) {
 		super(label);
+	}
+
+	private getContextValue() {
+		const { props } = this;
+
+		if (props.type === PathType.FOLDER) {
+			return getChangeItemContextValue({
+				isFolder: true,
+				isDeleted: false,
+			});
+		}
+
+		return getChangeItemContextValue({
+			isFolder: false,
+			isDeleted: props.status === Status.DELETED,
+		});
 	}
 
 	private getResourceUri() {

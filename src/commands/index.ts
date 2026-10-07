@@ -1,4 +1,5 @@
 import { getChangesCommandsDisposable } from "./changes";
+import { getChangesFileCommandsDisposable } from "./changesFile";
 import { getCommitCommandsDisposable } from "./commit";
 import { getFilterCommandsDisposable } from "./filter";
 import { getInputCommandsDisposable } from "./input";
@@ -12,6 +13,7 @@ export function getCommandDisposables() {
 		...getInputCommandsDisposable(),
 		...getColumnsCommandsDisposable(),
 		...getChangesCommandsDisposable(),
+		...getChangesFileCommandsDisposable(),
 		...getCommitCommandsDisposable(),
 	];
 }

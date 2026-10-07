@@ -8,6 +8,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Right click a commit for Git actions: copy hash/message, create a branch at the commit, add a tag, cherry-pick, revert, checkout (detached HEAD) and reset the current branch to it
 - Right click a tag chip to copy its name or delete the tag
+- Right click a changed file in the Changes view for Open Changes, Open File at Commit, Copy Path, Copy Relative Path, Open Containing Folder and Open in Integrated Terminal
+- Allow selecting several changed files at once in the Changes view
 - Column resizing now flexes the Description column first, so the columns next to a divider keep their width and simply move out of the way
 - Let the Hash and Date/Time columns start a little wider than their minimum width, so they can also be dragged narrower
 

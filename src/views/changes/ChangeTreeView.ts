@@ -19,6 +19,8 @@ export class ChangeTreeView {
 			`${EXTENSION_SCHEME}.changes`,
 			{
 				treeDataProvider: this.changeTreeDataProvider,
+				// allow acting on several changed files at once
+				canSelectMany: true,
 			}
 		);
 

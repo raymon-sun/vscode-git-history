@@ -118,9 +118,77 @@
 				"command": "git-history.changes.viewAsTree",
 				"title": "View as Tree",
 				"icon": "$(list-tree)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.changes.openChanges",
+				"title": "Open Changes",
+				"icon": "$(diff)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.changes.openFile",
+				"title": "Open File at Commit",
+				"icon": "$(go-to-file)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.changes.copyPath",
+				"title": "Copy Path",
+				"icon": "$(copy)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.changes.copyRelativePath",
+				"title": "Copy Relative Path",
+				"icon": "$(copy)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.changes.revealInOS",
+				"title": "Open Containing Folder",
+				"icon": "$(folder-opened)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.changes.openInTerminal",
+				"title": "Open in Integrated Terminal",
+				"icon": "$(terminal)"
 			}
 		],
 		"menus": {
+			"view/item/context": [
+				{
+					"command": "git-history.changes.openChanges",
+					"when": "view == git-history.changes && viewItem =~ /^gitHistory\\.changedFile/",
+					"group": "1_open@1"
+				},
+				{
+					"command": "git-history.changes.openFile",
+					"when": "view == git-history.changes && viewItem == gitHistory.changedFile",
+					"group": "1_open@2"
+				},
+				{
+					"command": "git-history.changes.copyPath",
+					"when": "view == git-history.changes && viewItem =~ /^gitHistory\\.changed/",
+					"group": "2_copy@1"
+				},
+				{
+					"command": "git-history.changes.copyRelativePath",
+					"when": "view == git-history.changes && viewItem =~ /^gitHistory\\.changed/",
+					"group": "2_copy@2"
+				},
+				{
+					"command": "git-history.changes.revealInOS",
+					"when": "view == git-history.changes && viewItem =~ /^gitHistory\\.changed/",
+					"group": "3_reveal@1"
+				},
+				{
+					"command": "git-history.changes.openInTerminal",
+					"when": "view == git-history.changes && viewItem =~ /^gitHistory\\.changed/",
+					"group": "3_reveal@2"
+				}
+			],
 			"view/title": [
 				{
 					"command": "git-history.history.refresh",

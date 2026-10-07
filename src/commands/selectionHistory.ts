@@ -2,6 +2,7 @@ import { commands, QuickPickItem, window } from "vscode";
 
 import { container } from "../container/inversify.config";
 import { CHANGES_VIEW_ID } from "../constants";
+import { resolveGitDocument } from "../git/gitDocument";
 import { getSelectedLineRange } from "../git/lineHistory";
 import { toRepoRelativePath } from "../git/repoPath";
 import { GitService } from "../git/service";
@@ -31,7 +32,10 @@ export function getSelectionHistoryCommandsDisposable() {
 				return;
 			}
 
-			const { fsPath } = editor.document.uri;
+			// a diff side opened from the Changes view is a `git:` document
+			// pinned to a revision, so both its path and its line numbers refer
+			// to that revision rather than to the working tree
+			const { fsPath, ref } = resolveGitDocument(editor.document.uri);
 			const repoPath = gitService.getRepoForPath(fsPath);
 			if (!repoPath) {
 				window.showWarningMessage(
@@ -46,12 +50,14 @@ export function getSelectionHistoryCommandsDisposable() {
 			);
 
 			// the history is traced against the committed file, so a pending edit
-			// can make the line numbers refer to different lines than selected
+			// can make the line numbers refer to different lines than selected;
+			// a document pinned to a revision is immune to that
 			if (
-				editor.document.isDirty ||
-				(await gitService
-					.hasUncommittedChanges(repoPath, filePath)
-					.catch(() => false))
+				!ref &&
+				(editor.document.isDirty ||
+					(await gitService
+						.hasUncommittedChanges(repoPath, filePath)
+						.catch(() => false)))
 			) {
 				window.showWarningMessage(
 					`Selection History: '${filePath}' has uncommitted changes, so the lines are traced against the committed file.`
@@ -64,7 +70,8 @@ export function getSelectionHistoryCommandsDisposable() {
 					repoPath,
 					filePath,
 					startLine,
-					endLine
+					endLine,
+					ref
 				);
 			} catch (error) {
 				// git reports e.g. a range that does not exist at that revision

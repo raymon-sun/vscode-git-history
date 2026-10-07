@@ -2,6 +2,7 @@ import { commands, Uri, window } from "vscode";
 
 import { container } from "../container/inversify.config";
 import { PathType } from "../git/changes/tree";
+import { resolveGitDocument } from "../git/gitDocument";
 import { toRepoRelativePath } from "../git/repoPath";
 import { GitService } from "../git/service";
 import type { Path } from "../views/changes/ChangeTreeDataProvider";
@@ -40,7 +41,9 @@ function resolveResource(
 	}
 
 	if (item instanceof Uri) {
-		return { fsPath: item.fsPath };
+		// a `git:` document (e.g. a diff side from the Changes view) only carries
+		// the real path in its query
+		return resolveGitDocument(item);
 	}
 
 	return undefined;

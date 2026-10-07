@@ -72,12 +72,18 @@ export function buildResetArgs(mode: ResetMode, hash: string) {
 /**
  * `-L` restricts the log to the given line range, which is how the history of a
  * selection is obtained. The cap keeps the (patch carrying) output bounded.
+ *
+ * `fromRef` is where the trace starts: the line range is interpreted at that
+ * revision, which is what makes the line numbers of a revision document (a
+ * `git:` side of a diff) meaningful. It has to be a positional argument;
+ * `-L` does not accept the `<rev>:<file>` form.
  */
 export function buildLineHistoryArgs(
 	filePath: string,
 	startLine: number,
 	endLine: number,
-	maxCount: number
+	maxCount: number,
+	fromRef?: string
 ) {
 	return [
 		"log",
@@ -86,6 +92,7 @@ export function buildLineHistoryArgs(
 		"-n",
 		String(maxCount),
 		`--format=${LINE_HISTORY_FORMAT}`,
+		...(fromRef ? [fromRef] : []),
 	];
 }
 
@@ -386,10 +393,19 @@ export class GitService {
 		filePath: string,
 		startLine: number,
 		endLine: number,
+		fromRef?: string,
 		maxCount = LINE_HISTORY_MAX_COUNT
 	): Promise<ILineHistoryCommit[]> {
 		return this.gitAt(repo)
-			.raw(buildLineHistoryArgs(filePath, startLine, endLine, maxCount))
+			.raw(
+				buildLineHistoryArgs(
+					filePath,
+					startLine,
+					endLine,
+					maxCount,
+					fromRef
+				)
+			)
 			.then(parseLineHistory);
 	}
 

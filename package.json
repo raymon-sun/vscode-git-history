@@ -174,31 +174,43 @@
 				"icon": "$(close)"
 			}
 		],
+		"submenus": [
+			{
+				"id": "gitHistory.fileHistory",
+				"label": "Git History"
+			}
+		],
 		"menus": {
 			"explorer/context": [
 				{
-					"command": "git-history.showFileHistory",
-					"when": "resourceScheme == file",
+					"submenu": "gitHistory.fileHistory",
+					"when": "resourceScheme =~ /^(file|git)$/",
 					"group": "navigation@30"
 				}
 			],
 			"editor/title/context": [
 				{
-					"command": "git-history.showFileHistory",
-					"when": "resourceScheme == file",
+					"submenu": "gitHistory.fileHistory",
+					"when": "resourceScheme =~ /^(file|git)$/",
 					"group": "navigation@30"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "git-history.showFileHistory",
-					"when": "resourceScheme == file",
+					"submenu": "gitHistory.fileHistory",
+					"when": "resourceScheme =~ /^(file|git)$/",
 					"group": "navigation@30"
+				}
+			],
+			"gitHistory.fileHistory": [
+				{
+					"command": "git-history.showFileHistory",
+					"group": "1_open@1"
 				},
 				{
 					"command": "git-history.selectionHistory",
 					"when": "editorHasSelection",
-					"group": "navigation@31"
+					"group": "1_open@2"
 				}
 			],
 			"view/item/context": [

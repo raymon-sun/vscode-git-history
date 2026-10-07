@@ -10,10 +10,17 @@ import {
 } from "./contextValues";
 
 interface IMenuContribution {
-	command: string;
+	command?: string;
+	submenu?: string;
 	when?: string;
 	group?: string;
 }
+
+const FILE_HISTORY_SUBMENU = "gitHistory.fileHistory";
+
+/** the menu entries of a menu section, as declared in package.json */
+const menuEntries = (menu: string) =>
+	(packageJson.contributes?.menus?.[menu] || []) as IMenuContribution[];
 
 const packageJson = JSON.parse(
 	readFileSync(path.resolve(__dirname, "../../../package.json"), "utf8")
@@ -31,6 +38,17 @@ const declaredViewIds: string[] = Object.values(
 )
 	.flat()
 	.map((view: any) => view.id);
+
+/** evaluate a `resourceScheme =~ /regex/` clause the way VS Code does */
+function matchesScheme(when: string, scheme: string) {
+	const regexMatch = when.match(/resourceScheme\s*=~\s*\/(.+)\//);
+	if (regexMatch) {
+		return new RegExp(regexMatch[1].replace(/\\\//g, "/")).test(scheme);
+	}
+
+	const equality = when.match(/resourceScheme\s*==\s*(\S+?)(?:\s|$)/);
+	return equality ? equality[1] === scheme : false;
+}
 
 /** evaluate a `viewItem =~ /regex/` clause the way VS Code does */
 function matchesViewItem(when: string, contextValue: string) {
@@ -53,7 +71,7 @@ const commandsFor = (contextValue: string) =>
 			entry.when?.includes(`view == ${CHANGES_VIEW_ID}`) &&
 			matchesViewItem(entry.when, contextValue)
 	)
-		.map((entry) => entry.command)
+		.map((entry) => entry.command!)
 		.sort();
 
 suite("Changes view context values", () => {
@@ -126,6 +144,8 @@ suite("Changes view context values", () => {
 				)
 					.flat()
 					.map(({ command }) => command)
+					// a submenu entry has no command of its own
+					.filter((command): command is string => !!command)
 			),
 		];
 
@@ -138,27 +158,77 @@ suite("Changes view context values", () => {
 		);
 	});
 
-	test("should expose file and selection history on the editor and explorer", () => {
-		const menuEntries = (menu: string) =>
-			(
-				(packageJson.contributes?.menus?.[menu] ||
-					[]) as IMenuContribution[]
-			).map(({ command }) => command);
+	test("should group file and selection history under a Git History submenu", () => {
+		["explorer/context", "editor/title/context", "editor/context"].forEach(
+			(menu) => {
+				const entry = menuEntries(menu).find(
+					({ submenu }) => submenu === FILE_HISTORY_SUBMENU
+				);
 
-		ok(
-			menuEntries("explorer/context").includes(
-				"git-history.showFileHistory"
-			)
+				ok(
+					entry,
+					`${menu} should offer the ${FILE_HISTORY_SUBMENU} submenu`
+				);
+				ok(
+					entry?.when &&
+						["file", "git"].every((scheme) =>
+							matchesScheme(entry.when!, scheme)
+						),
+					`${menu} should offer the submenu for working tree and revision documents`
+				);
+				ok(
+					entry?.when && !matchesScheme(entry.when, "untitled"),
+					`${menu} should not offer the submenu for unrelated schemes`
+				);
+			}
+		);
+
+		deepStrictEqual(
+			menuEntries(FILE_HISTORY_SUBMENU).map(({ command }) => command),
+			["git-history.showFileHistory", "git-history.selectionHistory"]
+		);
+
+		const selectionEntry = menuEntries(FILE_HISTORY_SUBMENU).find(
+			({ command }) => command === "git-history.selectionHistory"
 		);
 		ok(
-			menuEntries("editor/title/context").includes(
-				"git-history.showFileHistory"
+			selectionEntry?.when?.includes("editorHasSelection"),
+			"selection history should require a selection"
+		);
+	});
+
+	test("should declare every referenced submenu", () => {
+		const submenus = (packageJson.contributes?.submenus || []) as {
+			id: string;
+			label: string;
+		}[];
+
+		const referenced = [
+			...new Set(
+				Object.values(
+					(packageJson.contributes?.menus || {}) as Record<
+						string,
+						IMenuContribution[]
+					>
+				)
+					.flat()
+					.map(({ submenu }) => submenu)
+					.filter((id): id is string => !!id)
+			),
+		];
+
+		ok(referenced.length > 0);
+		referenced.forEach((id) =>
+			ok(
+				submenus.some((submenu) => submenu.id === id),
+				`submenu ${id} is referenced but not declared`
 			)
 		);
-		ok(
-			menuEntries("editor/context").includes(
-				"git-history.selectionHistory"
-			)
+
+		// the label is what tells the user the feature comes from this extension
+		const [submenu] = submenus.filter(
+			({ id }) => id === FILE_HISTORY_SUBMENU
 		);
+		deepStrictEqual(submenu?.label, "Git History");
 	});
 });

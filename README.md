@@ -42,6 +42,11 @@ Right click a commit to act on it, right click a tag to manage it:
 - Check out the commit in a detached HEAD
 - Reset the current branch to the commit (`soft` / `mixed` / `hard`)
 
+### File and Selection History
+
+- Right click a file — in the Explorer, on an editor tab, in the editor, or in the Changes view — and pick `Show File History` to narrow the History panel to that file. The filter is shown next to the view title and cleared with the button there
+- Select one or more lines and pick `Show Selection History` to list the commits that changed them (`git log -L`), then choose one to inspect the changes it made to the file
+
 ### Commit Chain Graph
 
 ![Usage](./assets/usage/graph.gif)

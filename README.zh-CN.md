@@ -45,6 +45,11 @@
 - 检出该 commit（分离 HEAD）
 - 将当前分支重置到该 commit（`soft` / `mixed` / `hard`）
 
+### 文件历史 / 选区历史
+
+- 在资源管理器、编辑器标签页、编辑器正文或变更栏中右键文件，选择 `Show File History` 即可把历史面板收窄到该文件；当前过滤条件会显示在视图标题旁，点击那里的按钮可清除
+- 选中一行或多行后选择 `Show Selection History`，会列出改动过这些行的 commit（`git log -L`），选择其中一个即可查看它对文件的改动
+
 ### 图形
 
 ![Usage](./assets/usage/graph.gif)

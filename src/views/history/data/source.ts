@@ -12,6 +12,7 @@ import {
 import { debounce } from "lodash";
 
 import { TYPES } from "../../../container/types";
+import { FILE_FILTER_CONTEXT, HISTORY_VIEW_ID } from "../../../constants";
 import { GitService } from "../../../git/service";
 import { GitGraph } from "../../../git/graph";
 import { getRepoDisplayNames } from "../../../git/repoName";
@@ -69,6 +70,7 @@ export class Source {
 	private commitsEventEmitter = new EventEmitter<{
 		totalCount: number;
 		repoName: string;
+		filePath?: string;
 	}>();
 	private columnsChangedEventEmitter = new EventEmitter<void>();
 
@@ -165,6 +167,29 @@ export class Source {
 			SELECTED_REPO_STATE_KEY,
 			repoPath
 		);
+	}
+
+	/**
+	 * Restrict the history to a path, which is how the history of a file is
+	 * shown, and reveal the panel.
+	 */
+	async showFileHistory(repo: string, filePath: string) {
+		state.logOptions = { ...state.logOptions, repo, filePath };
+		await commands.executeCommand<string>(REFRESH_COMMAND);
+		await commands.executeCommand(`${HISTORY_VIEW_ID}.focus`);
+	}
+
+	/** drop the file history filter and show the whole repository again */
+	async clearFileFilter() {
+		const options = { ...state.logOptions };
+		delete options.filePath;
+		state.logOptions = options;
+		await commands.executeCommand<string>(REFRESH_COMMAND);
+	}
+
+	/** show or hide the title bar action that clears the file filter */
+	private syncFileFilterContext(filePath?: string) {
+		commands.executeCommand("setContext", FILE_FILTER_CONTEXT, !!filePath);
 	}
 
 	/** short, unique name of the repository currently on screen */
@@ -269,6 +294,8 @@ export class Source {
 		handler: (batchedCommits: IBatchedCommits) => void,
 		options: LogOptions
 	) {
+		this.syncFileFilterContext(options.filePath);
+
 		const FIRST_BATCH_SIZE = 300;
 		const firstBatchCommits = await this.git.getCommits({
 			...options,
@@ -291,6 +318,7 @@ export class Source {
 			this.commitsEventEmitter.fire({
 				totalCount,
 				repoName: this.getCurrentRepoName(),
+				filePath: options.filePath,
 			});
 
 			this.graph.attachGraphAndPost({
@@ -323,6 +351,7 @@ export class Source {
 			this.commitsEventEmitter.fire({
 				totalCount,
 				repoName: this.getCurrentRepoName(),
+				filePath: options.filePath,
 			});
 			this.graph.attachGraphAndPost({
 				totalCount,

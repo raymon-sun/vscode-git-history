@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## Unreleased
 
+- Show File History: right click a file (Explorer, editor tab, editor, or the Changes view) to filter the History panel to that file, with the filter shown next to the view title and a button to clear it
+- Show Selection History: select one or more lines in the editor to list the commits that changed them (`git log -L`) and open the changes of the selected one
 - Show the current repository next to the view title, list repositories by name (disambiguating duplicate folder names) in the repository picker, and remember the selected repository across reloads
 - Right click a commit for Git actions: copy hash/message, create a branch at the commit, add a tag, cherry-pick, revert, checkout (detached HEAD) and reset the current branch to it
 - Right click a tag chip to copy its name or delete the tag

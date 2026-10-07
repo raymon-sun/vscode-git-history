@@ -8,6 +8,8 @@ export interface LogOptions extends GitOptions {
 	ref?: string;
 	authors?: string[];
 	keyword?: string;
+	/** repository-relative path to restrict the history to */
+	filePath?: string;
 	maxLength?: number;
 	count?: number;
 	skip?: number;

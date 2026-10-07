@@ -88,6 +88,7 @@ suite("Changes view context values", () => {
 			"git-history.changes.openFile",
 			"git-history.changes.openInTerminal",
 			"git-history.changes.revealInOS",
+			"git-history.showFileHistory",
 		]);
 	});
 
@@ -115,10 +116,48 @@ suite("Changes view context values", () => {
 			packageJson.contributes?.commands || []
 		).map(({ command }: { command: string }) => command);
 
-		ITEM_MENUS.forEach(({ command }) =>
+		const menuCommands = [
+			...new Set(
+				Object.values(
+					(packageJson.contributes?.menus || {}) as Record<
+						string,
+						IMenuContribution[]
+					>
+				)
+					.flat()
+					.map(({ command }) => command)
+			),
+		];
+
+		ok(menuCommands.length > 0);
+		menuCommands.forEach((command) =>
 			ok(
 				declared.includes(command),
 				`${command} is used by a menu but not declared`
+			)
+		);
+	});
+
+	test("should expose file and selection history on the editor and explorer", () => {
+		const menuEntries = (menu: string) =>
+			(
+				(packageJson.contributes?.menus?.[menu] ||
+					[]) as IMenuContribution[]
+			).map(({ command }) => command);
+
+		ok(
+			menuEntries("explorer/context").includes(
+				"git-history.showFileHistory"
+			)
+		);
+		ok(
+			menuEntries("editor/title/context").includes(
+				"git-history.showFileHistory"
+			)
+		);
+		ok(
+			menuEntries("editor/context").includes(
+				"git-history.selectionHistory"
 			)
 		);
 	});

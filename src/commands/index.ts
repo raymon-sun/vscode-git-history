@@ -1,6 +1,8 @@
 import { getChangesCommandsDisposable } from "./changes";
 import { getChangesFileCommandsDisposable } from "./changesFile";
 import { getCommitCommandsDisposable } from "./commit";
+import { getFileHistoryCommandsDisposable } from "./fileHistory";
+import { getSelectionHistoryCommandsDisposable } from "./selectionHistory";
 import { getFilterCommandsDisposable } from "./filter";
 import { getInputCommandsDisposable } from "./input";
 import { getSwitchCommandsDisposable } from "./switch";
@@ -15,5 +17,7 @@ export function getCommandDisposables() {
 		...getChangesCommandsDisposable(),
 		...getChangesFileCommandsDisposable(),
 		...getCommitCommandsDisposable(),
+		...getFileHistoryCommandsDisposable(),
+		...getSelectionHistoryCommandsDisposable(),
 	];
 }

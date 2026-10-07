@@ -11,12 +11,21 @@ import { getBuiltInGitApi, getGitBinPath } from "./api";
 
 import { GitOptions, LogOptions } from "./types";
 import { parseGitChanges } from "./changes/changes";
+import {
+	ILineHistoryCommit,
+	LINE_HISTORY_FORMAT,
+	parseLineHistory,
+} from "./lineHistory";
+import { findRepoForPath } from "./repoPath";
 import { parseGitAuthors, parseGitConfig } from "./utils";
 
 import type { GitWorker } from "./worker";
 import { IRoughCommit } from "./commit";
 
 const LOG_TYPE_ARGS = ["--branches", "--remotes", "--tags"];
+
+/** an upper bound for `git log -L`, whose output carries a patch per commit */
+export const LINE_HISTORY_MAX_COUNT = 100;
 
 /**
  * `-m` makes merge commits emit a diff (they are skipped by default), and
@@ -58,6 +67,26 @@ export function buildRevertArgs(hash: string) {
 
 export function buildResetArgs(mode: ResetMode, hash: string) {
 	return ["reset", `--${mode}`, hash];
+}
+
+/**
+ * `-L` restricts the log to the given line range, which is how the history of a
+ * selection is obtained. The cap keeps the (patch carrying) output bounded.
+ */
+export function buildLineHistoryArgs(
+	filePath: string,
+	startLine: number,
+	endLine: number,
+	maxCount: number
+) {
+	return [
+		"log",
+		"-L",
+		`${startLine},${endLine}:${filePath}`,
+		"-n",
+		String(maxCount),
+		`--format=${LINE_HISTORY_FORMAT}`,
+	];
 }
 
 @injectable()
@@ -199,8 +228,16 @@ export class GitService {
 
 	async getCommits(options?: LogOptions) {
 		const COMMIT_FORMAT = "%H%n%D%n%aN%n%aE%n%at%n%ct%n%P%n%B";
-		const { repo, authors, keyword, ref, maxLength, count, skip } =
-			options || {};
+		const {
+			repo,
+			authors,
+			keyword,
+			ref,
+			filePath,
+			maxLength,
+			count,
+			skip,
+		} = options || {};
 		const args = [
 			"log",
 			`--format=${COMMIT_FORMAT}`,
@@ -229,6 +266,11 @@ export class GitService {
 			args.push(`-${count}`);
 		}
 
+		if (filePath) {
+			// the pathspec has to come last
+			args.push("--", filePath);
+		}
+
 		return await this.git
 			?.cwd(repo || this.rootRepoPath)
 			.raw(args)
@@ -239,7 +281,7 @@ export class GitService {
 	}
 
 	async getCommitsTotalCount(options?: LogOptions) {
-		const { repo, ref, authors, keyword } = options || {};
+		const { repo, ref, authors, keyword, filePath } = options || {};
 
 		// TODO: reuse arguments assembly process in getCommits
 		const args = ["rev-list", ...(ref ? [ref] : LOG_TYPE_ARGS), "--count"];
@@ -250,6 +292,10 @@ export class GitService {
 
 		if (keyword) {
 			args.push(`--grep=${keyword}`, `-i`);
+		}
+
+		if (filePath) {
+			args.push("--", filePath);
 		}
 
 		return await this.git
@@ -312,6 +358,39 @@ export class GitService {
 		mode: ResetMode
 	) {
 		return this.gitAt(repo).raw(buildResetArgs(mode, hash));
+	}
+
+	/** the repository an absolute path belongs to */
+	getRepoForPath(fsPath: string) {
+		return findRepoForPath(this.getRepositories(), fsPath);
+	}
+
+	/**
+	 * Whether the path differs from HEAD in the working tree. `git log -L` traces
+	 * the line numbers of the committed file, so this is used to warn that a
+	 * pending edit can point the line history at different lines.
+	 */
+	async hasUncommittedChanges(repo: string | undefined, filePath: string) {
+		return this.gitAt(repo)
+			.raw(["status", "--porcelain", "--", filePath])
+			.then((result) => result.trim().length > 0);
+	}
+
+	/**
+	 * The commits that touched the given line range of a file, newest first;
+	 * the Selection History command. `git log -L` fails when the range does not
+	 * exist at that revision, so the caller surfaces the error to the user.
+	 */
+	async getLineHistory(
+		repo: string | undefined,
+		filePath: string,
+		startLine: number,
+		endLine: number,
+		maxCount = LINE_HISTORY_MAX_COUNT
+	): Promise<ILineHistoryCommit[]> {
+		return this.gitAt(repo)
+			.raw(buildLineHistoryArgs(filePath, startLine, endLine, maxCount))
+			.then(parseLineHistory);
 	}
 
 	onReposChange(handler: (repos: string[]) => void) {

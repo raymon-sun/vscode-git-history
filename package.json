@@ -154,10 +154,59 @@
 				"command": "git-history.changes.openInTerminal",
 				"title": "Open in Integrated Terminal",
 				"icon": "$(terminal)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.showFileHistory",
+				"title": "Show File History",
+				"icon": "$(history)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.selectionHistory",
+				"title": "Show Selection History",
+				"icon": "$(versions)"
+			},
+			{
+				"category": "Git History",
+				"command": "git-history.history.clearFileFilter",
+				"title": "Clear File History Filter",
+				"icon": "$(close)"
 			}
 		],
 		"menus": {
+			"explorer/context": [
+				{
+					"command": "git-history.showFileHistory",
+					"when": "resourceScheme == file",
+					"group": "navigation@30"
+				}
+			],
+			"editor/title/context": [
+				{
+					"command": "git-history.showFileHistory",
+					"when": "resourceScheme == file",
+					"group": "navigation@30"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "git-history.showFileHistory",
+					"when": "resourceScheme == file",
+					"group": "navigation@30"
+				},
+				{
+					"command": "git-history.selectionHistory",
+					"when": "editorHasSelection",
+					"group": "navigation@31"
+				}
+			],
 			"view/item/context": [
+				{
+					"command": "git-history.showFileHistory",
+					"when": "view == git-history.changes && viewItem =~ /^gitHistory\\.changedFile/",
+					"group": "1_open@3"
+				},
 				{
 					"command": "git-history.changes.openChanges",
 					"when": "view == git-history.changes && viewItem =~ /^gitHistory\\.changedFile/",
@@ -190,6 +239,11 @@
 				}
 			],
 			"view/title": [
+				{
+					"command": "git-history.history.clearFileFilter",
+					"when": "view =~ /git-history.history/ && gitHistory.hasFileFilter",
+					"group": "navigation@3"
+				},
 				{
 					"command": "git-history.history.refresh",
 					"when": "view =~ /git-history.history/",

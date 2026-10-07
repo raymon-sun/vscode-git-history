@@ -13,6 +13,7 @@ import {
 import { TYPES } from "../../container/types";
 
 import { IRequestMessage } from "./utils/message";
+import { formatHistoryDescription } from "./utils/description";
 import { Source } from "./data/source";
 import { linksMap } from "./data/link";
 import { COLUMNS_CHANGED_EVENT, EVENT_MESSAGE_TYPE } from "./data/events";
@@ -30,14 +31,13 @@ export class HistoryWebviewViewProvider implements WebviewViewProvider {
 		const disposables: Disposable[] = [
 			this.source
 				.getCommitsEventEmitter()
-				.event(({ totalCount, repoName }) => {
-					// show which repository is on screen next to the commit count
-					webviewView.description = [
+				.event(({ totalCount, repoName, filePath }) => {
+					// show the repository and any file filter next to the commit count
+					webviewView.description = formatHistoryDescription({
 						repoName,
-						`${totalCount} commits`,
-					]
-						.filter(Boolean)
-						.join(" · ");
+						filePath,
+						totalCount,
+					});
 				}),
 			this.source.getColumnsChangedEventEmitter().event(() => {
 				webviewView.webview.postMessage({

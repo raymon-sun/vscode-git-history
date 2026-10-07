@@ -39,9 +39,11 @@ export class GitGraph {
 			const { batchNumber, totalCount, options } =
 				this.currentBatchedCommits;
 
+			// a filtered history is sparse, so drawing a continuous chain would
+			// be misleading; fall back to a single line
 			const graphicCommits = this.setGraphToCommits(
 				this.currentBatchedCommits.commits,
-				!(options.authors || options.keyword)
+				!(options.authors || options.keyword || options.filePath)
 			);
 
 			this.postHandler?.([

@@ -16,6 +16,7 @@ import { FILE_FILTER_CONTEXT, HISTORY_VIEW_ID } from "../../../constants";
 import { COMPARE_STATE_KEY, ICompareState } from "../../changes/compareState";
 import { GitService } from "../../../git/service";
 import { GitGraph } from "../../../git/graph";
+import { pickPreferredRepo } from "../../../git/preferredRepo";
 import { getRepoDisplayNames } from "../../../git/repoName";
 import {
 	ChangesCollection,
@@ -68,6 +69,9 @@ const SELECTED_REPO_STATE_KEY = "selectedRepo";
 @injectable()
 export class Source {
 	private switchSubscriber?: (batchedCommits: IBatchedCommits) => void;
+
+	/** resolved once, see #getPreferredRepo */
+	private preferredRepo?: string;
 
 	private commitsEventEmitter = new EventEmitter<{
 		totalCount: number;
@@ -148,24 +152,32 @@ export class Source {
 
 	/**
 	 * The repository to display: the last one selected in this workspace, or the
-	 * default one. The stored path is validated against the open repositories so
-	 * a stale value can never be used.
+	 * default one. The stored path is validated against the repository on disk,
+	 * so a stale value can never be used.
 	 */
 	getPreferredRepo() {
-		const stored = this.context.globalState.get<string>(
-			SELECTED_REPO_STATE_KEY
-		);
-
-		if (stored && this.git.getRepositories().includes(stored)) {
-			return stored;
+		// resolve once per session: the repository list is discovered
+		// asynchronously, so resolving again would pick a different repository
+		// and switch the panel under the user
+		if (!this.preferredRepo) {
+			this.preferredRepo = pickPreferredRepo({
+				// workspace scoped: a repository picked in another workspace must
+				// not be picked up here
+				stored: this.context.workspaceState.get<string>(
+					SELECTED_REPO_STATE_KEY
+				),
+				repositories: this.git.getRepositories(),
+				workspacePath: workspace.workspaceFolders?.[0]?.uri.fsPath,
+			});
 		}
 
-		return this.git.getDefaultRepository();
+		return this.preferredRepo;
 	}
 
 	/** remember the repository the user picked, so it survives a reload */
 	async setSelectedRepo(repoPath: string) {
-		await this.context.globalState.update(
+		this.preferredRepo = repoPath;
+		await this.context.workspaceState.update(
 			SELECTED_REPO_STATE_KEY,
 			repoPath
 		);

@@ -36,7 +36,11 @@ export function getSwitchCommandsDisposable() {
 				return;
 			}
 
-			state.logOptions = { repo: source.getPreferredRepo() };
+			// resetting clears the filters; it must not switch the repository
+			// that is already on screen
+			state.logOptions = {
+				repo: state.logOptions.repo || source.getPreferredRepo(),
+			};
 			source.getCommits(switchSubscriber, state.logOptions);
 		}),
 		commands.registerCommand(REFRESH_COMMAND, async () => {

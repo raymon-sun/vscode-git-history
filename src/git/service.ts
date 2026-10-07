@@ -16,6 +16,7 @@ import {
 	LINE_HISTORY_FORMAT,
 	parseLineHistory,
 } from "./lineHistory";
+import { pickPreferredRepo } from "./preferredRepo";
 import { findRepoForPath } from "./repoPath";
 import { parseGitAuthors, parseGitConfig } from "./utils";
 
@@ -150,10 +151,10 @@ export class GitService {
 	}
 
 	getDefaultRepository() {
-		const workspacePath = workspace.workspaceFolders![0].uri.fsPath;
-		const repos = this.getRepositories();
-
-		return repos.find((fsPath) => fsPath === workspacePath) || repos[0];
+		return pickPreferredRepo({
+			repositories: this.getRepositories(),
+			workspacePath: workspace.workspaceFolders?.[0]?.uri.fsPath,
+		});
 	}
 
 	getRepositories() {

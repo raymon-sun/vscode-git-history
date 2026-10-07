@@ -60,7 +60,7 @@ These actions live under `Git History` in the Explorer, editor tab and editor co
 
 - Search for hash in all commits and navigate to the location
 - Filter the commits by authors/message
-- Switch to another branch or repo in your workspace; the current repository is shown next to the view title and your choice is remembered the next time you open the view
+- Switch to another branch or repo in your workspace; the current repository is shown next to the view title, your choice is remembered the next time you open the view, and resetting the filters keeps the repository on screen
 - Drag the header to set a comfortable size for columns
 - And more,coming soon..
 

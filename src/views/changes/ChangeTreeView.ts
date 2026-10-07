@@ -6,6 +6,11 @@ import { TYPES } from "../../container/types";
 import { CHANGES_VIEW_MODE_CONTEXT, EXTENSION_SCHEME } from "../../constants";
 
 import { ChangeTreeDataProvider } from "./ChangeTreeDataProvider";
+import {
+	COMPARE_STATE_KEY,
+	formatCompareDescription,
+	ICompareState,
+} from "./compareState";
 
 @injectable()
 export class ChangeTreeView {
@@ -40,5 +45,10 @@ export class ChangeTreeView {
 
 		const filter = this.changeTreeDataProvider.getFilter();
 		this.changesViewer.message = filter ? `Filter: ${filter}` : undefined;
+
+		// tell a comparison apart from the changes of the selected commits
+		this.changesViewer.description = formatCompareDescription(
+			this.context.globalState.get<ICompareState>(COMPARE_STATE_KEY)
+		);
 	}
 }

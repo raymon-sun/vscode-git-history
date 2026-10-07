@@ -45,6 +45,15 @@ export function buildChangesByRefArgs(ref: string) {
 	];
 }
 
+/**
+ * The changes between two revisions. `--name-status -z` emits the same records
+ * as `log --name-status -z`, so the change parser and the change tree can be
+ * reused as they are.
+ */
+export function buildChangesBetweenArgs(fromRef: string, toRef: string) {
+	return ["diff", "--name-status", "-z", fromRef, toRef];
+}
+
 export type ResetMode = "soft" | "mixed" | "hard";
 
 /** `checkout -b` creates the branch and switches to it in one step */
@@ -326,6 +335,13 @@ export class GitService {
 	async getChangesByRef(repoPath: string, ref: string) {
 		return await this.git!.cwd(repoPath || this.rootRepoPath)
 			.raw(buildChangesByRefArgs(ref))
+			.then((res) => parseGitChanges(repoPath, res));
+	}
+
+	/** the changes between two revisions, to compare arbitrary commits */
+	async getChangesBetween(repoPath: string, fromRef: string, toRef: string) {
+		return await this.git!.cwd(repoPath || this.rootRepoPath)
+			.raw(buildChangesBetweenArgs(fromRef, toRef))
 			.then((res) => parseGitChanges(repoPath, res));
 	}
 

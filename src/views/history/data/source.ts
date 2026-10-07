@@ -13,10 +13,12 @@ import { debounce } from "lodash";
 
 import { TYPES } from "../../../container/types";
 import { FILE_FILTER_CONTEXT, HISTORY_VIEW_ID } from "../../../constants";
+import { COMPARE_STATE_KEY, ICompareState } from "../../changes/compareState";
 import { GitService } from "../../../git/service";
 import { GitGraph } from "../../../git/graph";
 import { getRepoDisplayNames } from "../../../git/repoName";
 import {
+	ChangesCollection,
 	PathCollection,
 	resolveChangesCollection,
 } from "../../../git/changes/tree";
@@ -368,11 +370,38 @@ export class Source {
 			state.logOptions.repo || "",
 			refs
 		);
+		this.showChangesTree(changesCollection);
+	}
+
+	/**
+	 * Show the difference between two commits, rather than the changes they
+	 * introduced. `fromRef` is the older side, so the diff reads the way the
+	 * commit list is read (and works for unrelated commits too).
+	 */
+	@link("promise")
+	async compareCommits(fromRef: string, toRef: string) {
+		const repoPath = state.logOptions.repo || "";
+		const changes = await this.git.getChangesBetween(
+			repoPath,
+			fromRef,
+			toRef
+		);
+
+		this.showChangesTree(
+			[{ ref: toRef, baseRef: fromRef, repoPath, changes }],
+			{ fromRef, toRef }
+		);
+	}
+
+	private showChangesTree(
+		changesCollection: ChangesCollection,
+		compare?: ICompareState
+	) {
 		const newFileTree = resolveChangesCollection(
 			changesCollection,
 			workspace.workspaceFolders![0].uri.path
 		);
-		this.updateTreeView(newFileTree);
+		this.updateTreeView(newFileTree, compare);
 	}
 
 	@link("promise")
@@ -413,8 +442,10 @@ export class Source {
 		});
 	}
 
-	private updateTreeView(fileTree: PathCollection) {
+	private updateTreeView(fileTree: PathCollection, compare?: ICompareState) {
 		this.context.globalState.update("changedFileTree", fileTree);
+		// let the Changes view label a comparison; any other source clears it
+		this.context.globalState.update(COMPARE_STATE_KEY, compare);
 		this.ChangeTreeDataProvider.refresh();
 	}
 }

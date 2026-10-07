@@ -60,21 +60,23 @@ export function getDiffUriPair(node: FileNode) {
 	const gitService = container.get(GitService);
 
 	const { uri, originalChangeStack, changeStack, status } = node;
-	const [{ change: preChange, ref: preRef }, { ref: curRef }] = getChangePair(
-		originalChangeStack,
-		changeStack
-	);
+	const [{ change: preChange, ref: preRef, baseRef }, { ref: curRef }] =
+		getChangePair(originalChangeStack, changeStack);
+
+	// the before side is the parent of the commit that introduced the change,
+	// unless the tree comes from a diff between two revisions
+	const beforeRef = baseRef ?? `${preRef}~`;
 
 	if (status === Status.INDEX_ADDED) {
 		return [gitService.toGitUri(uri, curRef)];
 	}
 
 	if (status === Status.DELETED) {
-		return [gitService.toGitUri(uri, `${preRef}~`)];
+		return [gitService.toGitUri(uri, beforeRef)];
 	}
 
 	return [
-		gitService.toGitUri(preChange.originalUri, `${preRef}~`),
+		gitService.toGitUri(preChange.originalUri, beforeRef),
 		gitService.toGitUri(uri, curRef),
 	];
 }

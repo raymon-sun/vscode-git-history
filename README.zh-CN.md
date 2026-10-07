@@ -32,6 +32,7 @@
 - 点击commit可在变更栏查看变更
 - 按住 `Ctrl`/`⌘` 可选中多个commit,你可以查看这多个commit合并后的变更
 - 通过拖动来快速选择多个连续的commit
+- 恰好选中两个commit（任意两个，不要求有祖先关系）后，在右键菜单中选择 `Compare Commits`，即可查看这两个commit之间的差异，适合对比两次上线的节点；此时变更栏标题旁会显示 `Comparing abc1234 ↔ def5678`，以免把对比结果误当成某个commit的变更
 - 右键点击变更文件可以使用 `Open Changes`、`Open File at Commit`、`Copy Path`、`Copy Relative Path`、`Open Containing Folder`、`Open in Integrated Terminal`（按住 `Ctrl`/`⌘` 多选后可一次复制多个路径）
 
 ### Commit 操作

@@ -7,7 +7,14 @@ import { Change, getChangePair } from "./changes";
 import { mergeStatus, Status } from "./status";
 
 export type ChangesCollection = {
+	/** the revision the changes are recorded at, i.e. the "after" side */
 	ref: string;
+	/**
+	 * the revision the "before" side should be read from. Only needed when the
+	 * changes are not the ones a commit introduced (a diff between two commits),
+	 * because the before side would otherwise be assumed to be `ref~`.
+	 */
+	baseRef?: string;
 	repoPath: string;
 	changes: Change[];
 }[];
@@ -33,6 +40,8 @@ export interface FileNode {
 
 export interface ChangeItem {
 	ref: string;
+	/** see {@link ChangesCollection.baseRef} */
+	baseRef?: string;
 	change: Change;
 	isDeletedByRename?: boolean;
 	hidden?: boolean;
@@ -71,59 +80,63 @@ export function resolveChangesCollection(
 export function getPathMap(changesCollection: ChangesCollection) {
 	const pathMap: Record<string, FileNode> = {};
 	const renamedPaths: string[] = [];
-	changesCollection.reverse().forEach(({ ref, repoPath, changes }) => {
-		changes.forEach((change) => {
-			const { status, uri, originalUri } = change;
-			const { path } = uri;
-			const { path: originalPath } = originalUri;
-			if (status === Status.INDEX_RENAMED) {
-				if (!pathMap[path]) {
-					renamedPaths.push(path);
-				}
+	changesCollection
+		.reverse()
+		.forEach(({ ref, baseRef, repoPath, changes }) => {
+			changes.forEach((change) => {
+				const { status, uri, originalUri } = change;
+				const { path } = uri;
+				const { path: originalPath } = originalUri;
+				if (status === Status.INDEX_RENAMED) {
+					if (!pathMap[path]) {
+						renamedPaths.push(path);
+					}
 
-				const deleteChange = {
-					status: Status.DELETED,
-					uri: originalUri,
-					originalUri,
-					renameUri: originalUri,
-				};
-				if (pathMap[originalPath]) {
-					pathMap[originalPath].changeStack.push({
-						ref,
-						change: deleteChange,
-						isDeletedByRename: true,
-						hidden: true,
-					});
-				} else {
-					pathMap[originalPath] = {
-						type: PathType.FILE,
-						repoPath,
+					const deleteChange = {
+						status: Status.DELETED,
 						uri: originalUri,
-						changeStack: [
-							{
-								ref,
-								change: deleteChange,
-								isDeletedByRename: true,
-								hidden: true,
-							},
-						],
+						originalUri,
+						renameUri: originalUri,
 					};
+					if (pathMap[originalPath]) {
+						pathMap[originalPath].changeStack.push({
+							ref,
+							baseRef,
+							change: deleteChange,
+							isDeletedByRename: true,
+							hidden: true,
+						});
+					} else {
+						pathMap[originalPath] = {
+							type: PathType.FILE,
+							repoPath,
+							uri: originalUri,
+							changeStack: [
+								{
+									ref,
+									baseRef,
+									change: deleteChange,
+									isDeletedByRename: true,
+									hidden: true,
+								},
+							],
+						};
+					}
 				}
-			}
 
-			if (pathMap[path]) {
-				pathMap[path].changeStack.push({ ref, change });
-				return;
-			}
+				if (pathMap[path]) {
+					pathMap[path].changeStack.push({ ref, baseRef, change });
+					return;
+				}
 
-			pathMap[path] = {
-				type: PathType.FILE,
-				repoPath,
-				uri,
-				changeStack: [{ ref, change }],
-			};
+				pathMap[path] = {
+					type: PathType.FILE,
+					repoPath,
+					uri,
+					changeStack: [{ ref, baseRef, change }],
+				};
+			});
 		});
-	});
 
 	renamedPaths.reverse().forEach((renamedPath) => {
 		const renamedChangeStack = pathMap[renamedPath].changeStack;

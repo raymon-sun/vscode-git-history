@@ -29,6 +29,7 @@ It brings the following main features
 - Click a commit to check the changes
 - Select multiple commits with `Ctrl`/`⌘` pressed,and then you will see the merged changes from the selected commits
 - Drag through the commits to quickly select them
+- Select exactly two commits (any two, they need not be related) and pick `Compare Commits` from the commit menu to see the difference between them, which is handy for comparing two release points. The Changes view then shows `Comparing abc1234 ↔ def5678` next to its title so a comparison is not mistaken for the changes of a commit
 - Right click a changed file for `Open Changes`, `Open File at Commit`, `Copy Path`, `Copy Relative Path`, `Open Containing Folder` and `Open in Integrated Terminal` (`Ctrl`/`⌘`-click to select several files and copy their paths at once)
 
 ### Commit Actions

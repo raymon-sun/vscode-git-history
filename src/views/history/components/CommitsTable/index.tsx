@@ -26,6 +26,7 @@ import {
 } from "../../data/dateFormat";
 import { COLUMNS_CHANGED_EVENT } from "../../data/events";
 import { LatestCommitContext } from "../../data/latestCommit";
+import { getComparePair } from "../../utils/commitPair";
 import { onEvent } from "../../utils/message";
 
 import { ICommit, CommitIndex, parseCommit } from "../../../../git/commit";
@@ -41,6 +42,12 @@ const COMMIT_HASH_LENGTH = 40;
 
 /** relative commit times are refreshed once a minute */
 const RELATIVE_TIME_REFRESH_INTERVAL = 60 * 1000;
+
+const COMPARE_MENU_ITEM: IContextMenuItem = {
+	id: "compareCommits",
+	label: "Compare Commits",
+	icon: "diff",
+};
 
 const COMMIT_MENU_ITEMS: IContextMenuItem[] = [
 	{ id: "copyHash", label: "Copy Commit Hash", icon: "copy" },
@@ -67,6 +74,19 @@ const COMMIT_MENU_ITEMS: IContextMenuItem[] = [
 	},
 	{ id: "reset", label: "Reset Current Branch to Commit…", icon: "history" },
 ];
+
+/** comparing is only offered for two selected commits, one of them being clicked */
+function getCommitMenuItems(canCompare: boolean): IContextMenuItem[] {
+	if (!canCompare) {
+		return COMMIT_MENU_ITEMS;
+	}
+
+	return [
+		COMPARE_MENU_ITEM,
+		{ ...COMMIT_MENU_ITEMS[0], separatorBefore: true },
+		...COMMIT_MENU_ITEMS.slice(1),
+	];
+}
 
 const TAG_MENU_ITEMS: IContextMenuItem[] = [
 	{ id: "copyTag", label: "Copy Tag Name", icon: "copy" },
@@ -217,6 +237,18 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		{ x: number; y: number; commit: ICommit; tagName?: string } | undefined
 	>();
 
+	// the commits picked in the table; two of them can be compared
+	const [selectedCommits, setSelectedCommits] = useState<string[]>([]);
+
+	const comparePair =
+		menu && !menu.tagName
+			? getComparePair(selectedCommits, commits)
+			: undefined;
+	const canCompare =
+		!!menu &&
+		!!comparePair &&
+		selectedCommits.includes(menu.commit[CommitIndex.HASH]);
+
 	const openContextMenu = useCallback(
 		(event: ReactMouseEvent, commit: ICommit) => {
 			event.preventDefault();
@@ -250,6 +282,14 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 			const tagName = target.tagName;
 
 			switch (id) {
+				case "compareCommits":
+					if (comparePair) {
+						await channel.compareCommits(
+							comparePair.from,
+							comparePair.to
+						);
+					}
+					break;
 				case "copyHash":
 					await navigator.clipboard.writeText(hash);
 					break;
@@ -288,7 +328,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 					break;
 			}
 		},
-		[channel, menu]
+		[channel, comparePair, menu]
 	);
 
 	useEffect(() => {
@@ -420,7 +460,10 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 							</div>
 						)}
 						size={commitsCount}
-						onPick={(ids) => diff(ids)}
+						onPick={(ids) => {
+							setSelectedCommits(ids);
+							diff(ids);
+						}}
 					/>
 				</DateFormatContext.Provider>
 			</div>
@@ -428,7 +471,11 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 				<ContextMenu
 					x={menu.x}
 					y={menu.y}
-					items={menu.tagName ? TAG_MENU_ITEMS : COMMIT_MENU_ITEMS}
+					items={
+						menu.tagName
+							? TAG_MENU_ITEMS
+							: getCommitMenuItems(canCompare)
+					}
 					onSelect={handleMenuSelect}
 					onClose={closeMenu}
 				/>

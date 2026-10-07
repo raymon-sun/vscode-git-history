@@ -6,6 +6,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## Unreleased
 
+- Show the current repository next to the view title, list repositories by name (disambiguating duplicate folder names) in the repository picker, and remember the selected repository across reloads
 - Right click a commit for Git actions: copy hash/message, create a branch at the commit, add a tag, cherry-pick, revert, checkout (detached HEAD) and reset the current branch to it
 - Right click a tag chip to copy its name or delete the tag
 - Right click a changed file in the Changes view for Open Changes, Open File at Commit, Copy Path, Copy Relative Path, Open Containing Folder and Open in Integrated Terminal

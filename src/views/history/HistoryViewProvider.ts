@@ -28,9 +28,17 @@ export class HistoryWebviewViewProvider implements WebviewViewProvider {
 		const { extensionUri } = this.context;
 
 		const disposables: Disposable[] = [
-			this.source.getCommitsEventEmitter().event(({ totalCount }) => {
-				webviewView.description = `${totalCount} commits in total`;
-			}),
+			this.source
+				.getCommitsEventEmitter()
+				.event(({ totalCount, repoName }) => {
+					// show which repository is on screen next to the commit count
+					webviewView.description = [
+						repoName,
+						`${totalCount} commits`,
+					]
+						.filter(Boolean)
+						.join(" · ");
+				}),
 			this.source.getColumnsChangedEventEmitter().event(() => {
 				webviewView.webview.postMessage({
 					type: EVENT_MESSAGE_TYPE,

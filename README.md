@@ -52,7 +52,7 @@ Right click a commit to act on it, right click a tag to manage it:
 
 - Search for hash in all commits and navigate to the location
 - Filter the commits by authors/message
-- Switch to another branch or repo in your workspace
+- Switch to another branch or repo in your workspace; the current repository is shown next to the view title and your choice is remembered the next time you open the view
 - Drag the header to set a comfortable size for columns
 - And more,coming soon..
 

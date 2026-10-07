@@ -14,6 +14,7 @@ import { debounce } from "lodash";
 import { TYPES } from "../../../container/types";
 import { GitService } from "../../../git/service";
 import { GitGraph } from "../../../git/graph";
+import { getRepoDisplayNames } from "../../../git/repoName";
 import {
 	PathCollection,
 	resolveChangesCollection,
@@ -59,11 +60,16 @@ import {
 import { link } from "./link";
 import state from "./state";
 
+const SELECTED_REPO_STATE_KEY = "selectedRepo";
+
 @injectable()
 export class Source {
 	private switchSubscriber?: (batchedCommits: IBatchedCommits) => void;
 
-	private commitsEventEmitter = new EventEmitter<{ totalCount: number }>();
+	private commitsEventEmitter = new EventEmitter<{
+		totalCount: number;
+		repoName: string;
+	}>();
 	private columnsChangedEventEmitter = new EventEmitter<void>();
 
 	constructor(
@@ -134,6 +140,45 @@ export class Source {
 			name: parse(repoPath).base,
 			path: repoPath,
 		});
+	}
+
+	/**
+	 * The repository to display: the last one selected in this workspace, or the
+	 * default one. The stored path is validated against the open repositories so
+	 * a stale value can never be used.
+	 */
+	getPreferredRepo() {
+		const stored = this.context.globalState.get<string>(
+			SELECTED_REPO_STATE_KEY
+		);
+
+		if (stored && this.git.getRepositories().includes(stored)) {
+			return stored;
+		}
+
+		return this.git.getDefaultRepository();
+	}
+
+	/** remember the repository the user picked, so it survives a reload */
+	async setSelectedRepo(repoPath: string) {
+		await this.context.globalState.update(
+			SELECTED_REPO_STATE_KEY,
+			repoPath
+		);
+	}
+
+	/** short, unique name of the repository currently on screen */
+	private getCurrentRepoName() {
+		const repoPath = state.logOptions.repo;
+		if (!repoPath) {
+			return "";
+		}
+
+		const match = getRepoDisplayNames(this.git.getRepositories()).find(
+			(repo) => repo.path === repoPath
+		);
+
+		return match?.name || parse(repoPath).base;
 	}
 
 	@link("subscription")
@@ -243,7 +288,10 @@ export class Source {
 				await this.git.getCommitsTotalCount(options)
 			);
 
-			this.commitsEventEmitter.fire({ totalCount });
+			this.commitsEventEmitter.fire({
+				totalCount,
+				repoName: this.getCurrentRepoName(),
+			});
 
 			this.graph.attachGraphAndPost({
 				totalCount,
@@ -272,7 +320,10 @@ export class Source {
 			}
 		} else {
 			const totalCount = firstBatchCommits?.length || 0;
-			this.commitsEventEmitter.fire({ totalCount });
+			this.commitsEventEmitter.fire({
+				totalCount,
+				repoName: this.getCurrentRepoName(),
+			});
 			this.graph.attachGraphAndPost({
 				totalCount,
 				batchNumber: _batchNumber,
@@ -305,9 +356,7 @@ export class Source {
 		);
 
 		if (!state.logOptions.repo) {
-			state.logOptions = {
-				repo: await this.git.getDefaultRepository(),
-			};
+			state.logOptions = { repo: this.getPreferredRepo() };
 		}
 		debouncedRefresh();
 

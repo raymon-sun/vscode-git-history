@@ -1,6 +1,7 @@
 import { commands, QuickPickItem, window } from "vscode";
 
 import { container } from "../container/inversify.config";
+import { getRepoDisplayNames } from "../git/repoName";
 import { GitService } from "../git/service";
 import { Source } from "../views/history/data/source";
 import state from "../views/history/data/state";
@@ -35,9 +36,7 @@ export function getSwitchCommandsDisposable() {
 				return;
 			}
 
-			state.logOptions = {
-				repo: await gitService.getDefaultRepository(),
-			};
+			state.logOptions = { repo: source.getPreferredRepo() };
 			source.getCommits(switchSubscriber, state.logOptions);
 		}),
 		commands.registerCommand(REFRESH_COMMAND, async () => {
@@ -49,31 +48,43 @@ export function getSwitchCommandsDisposable() {
 			source.getCommits(switchSubscriber, state.logOptions);
 		}),
 		commands.registerCommand(SWITCH_REPO_COMMAND, async () => {
-			const quickPick = window.createQuickPick();
+			type RepoQuickPickItem = QuickPickItem & { repo: string };
 
-			const items =
-				gitService
-					.getRepositories()
-					.sort()
-					.map((repo) => ({
-						label: repo,
-					})) || [];
-			quickPick.title = "Switch Repository";
-			quickPick.placeholder = "Search repo by path";
-			quickPick.items = items;
-			quickPick.activeItems = items.filter(
-				({ label }) => label === state.logOptions.repo
+			const quickPick = window.createQuickPick<RepoQuickPickItem>();
+
+			const repos = gitService.getRepositories().sort();
+			const currentRepo = state.logOptions.repo;
+			const items: RepoQuickPickItem[] = getRepoDisplayNames(repos).map(
+				({ path: repoPath, name }) => ({
+					// mark the repository being displayed with a check
+					label: `$(${
+						repoPath === currentRepo ? "check" : "repo"
+					}) ${name}`,
+					description: repoPath,
+					repo: repoPath,
+				})
 			);
 
-			quickPick.onDidChangeSelection((selection) => {
-				const [item] = selection;
-				const { label: repo } = item;
+			quickPick.title = "Switch Repository";
+			quickPick.placeholder = "Search repository by name or path";
+			quickPick.items = items;
+			quickPick.activeItems = items.filter(
+				({ repo }) => repo === currentRepo
+			);
+
+			quickPick.onDidChangeSelection(([item]) => {
+				if (!item) {
+					return;
+				}
+
 				const switchSubscriber = source.getSwitchSubscriber();
 				if (!switchSubscriber) {
 					return;
 				}
 
-				state.logOptions = { repo };
+				state.logOptions = { repo: item.repo };
+				// remember the choice so it survives a reload
+				source.setSelectedRepo(item.repo);
 				source.getCommits(switchSubscriber, state.logOptions);
 				quickPick.dispose();
 			});

@@ -10,3 +10,14 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+
+# the demo gifs are only shown by the README on GitHub, while the logo is the extension icon
+assets/usage/**
+
+# the wasm graph was replaced by the TypeScript one (see src/git/graph.ts); webpack
+# still copies the module into dist, but no bundle loads it any more
+dist/git_graph_bg.wasm
+
+# dev-only: the git hooks and the Prettier config are not needed at runtime
+.husky/**
+.prettierignore

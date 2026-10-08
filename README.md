@@ -18,7 +18,7 @@ It brings the following main features
 
 ### Git History
 
-![Usage](./assets/usage/full-history.gif)
+![Usage](./assets/usage/scroll.gif)
 
 - Scroll once to see all commits in git history even if the amount of commits is huge
 
@@ -55,8 +55,6 @@ These actions live under `Git History` in the Explorer, editor tab and editor co
 ![Usage](./assets/usage/graph.gif)
 
 ### Others
-
-![Usage](./assets/usage/search.gif)
 
 - Search for hash in all commits and navigate to the location
 - Filter the commits by authors/message

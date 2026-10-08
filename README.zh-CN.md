@@ -21,7 +21,7 @@
 
 ### Git 历史
 
-![Usage](./assets/usage/full-history.gif)
+![Usage](./assets/usage/scroll.gif)
 
 - 一次滚动查看所有git历史
 
@@ -58,8 +58,6 @@
 ![Usage](./assets/usage/graph.gif)
 
 ### 其他
-
-![Usage](./assets/usage/search.gif)
 
 - 可以通过搜索hash来快速定位到对应的commit
 - 通过作者或者信息来过滤历史

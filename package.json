@@ -14,7 +14,7 @@
 		"flow",
 		"tag"
 	],
-	"version": "0.3.1",
+	"version": "1.0.0",
 	"license": "MIT",
 	"icon": "assets/logo/1x.png",
 	"repository": "https://github.com/raymon-sun/vscode-git-history",

@@ -4,7 +4,7 @@ All notable changes to the "git-history" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## Unreleased
+## 1.0.0
 
 - Compare Commits: with exactly two commits selected, the commit menu offers to diff them against each other (works for unrelated commits and branch tips)
 - Label the Changes view with `Comparing abc1234 ↔ def5678` while it shows a comparison, so it is not mistaken for the changes of a commit

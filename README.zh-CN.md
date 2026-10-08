@@ -42,7 +42,7 @@
 - 复制 commit hash 或信息
 - 基于该 commit 创建分支并切换过去
 - 在该 commit 上创建 tag
-- Cherry-pick / revert 该 commit
+- Cherry-pick / revert 该 commit（revert 前会先弹出确认框）
 - 检出该 commit（分离 HEAD）
 - 将当前分支重置到该 commit（`soft` / `mixed` / `hard`）
 

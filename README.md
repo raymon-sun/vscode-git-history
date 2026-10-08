@@ -39,7 +39,7 @@ Right click a commit to act on it, right click a tag to manage it:
 - Copy the commit hash or message
 - Create a branch at the commit and switch to it
 - Add a tag at the commit
-- Cherry-pick / revert the commit
+- Cherry-pick / revert the commit (reverting asks for confirmation first)
 - Check out the commit in a detached HEAD
 - Reset the current branch to the commit (`soft` / `mixed` / `hard`)
 

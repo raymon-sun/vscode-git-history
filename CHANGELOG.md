@@ -4,6 +4,11 @@ All notable changes to the "git-history" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.0.1
+
+- Require VS Code 1.105 or newer instead of 1.140; no API the extension uses is newer than 1.105, so the higher requirement only kept it out of reach
+- Ask for confirmation before reverting a commit, a hard reset and deleting a tag, so they cannot happen by a stray click
+
 ## 1.0.0
 
 - Compare Commits: with exactly two commits selected, the commit menu offers to diff them against each other (works for unrelated commits and branch tips)

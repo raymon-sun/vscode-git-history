@@ -116,6 +116,17 @@ export function getCommitCommandsDisposable() {
 		),
 		commands.registerCommand(REVERT_COMMAND, (hash: string) =>
 			run("Revert", async (repo) => {
+				const confirmation = await window.showWarningMessage(
+					`Revert ${shortenHash(
+						hash
+					)}? A new commit undoing it is created on the current branch.`,
+					{ modal: true },
+					"Revert"
+				);
+				if (confirmation !== "Revert") {
+					return false;
+				}
+
 				await gitService.revertCommit(repo, hash);
 				window.showInformationMessage(`Reverted ${shortenHash(hash)}.`);
 				return true;

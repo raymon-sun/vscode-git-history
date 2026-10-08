@@ -31,11 +31,12 @@ export class HistoryWebviewViewProvider implements WebviewViewProvider {
 		const disposables: Disposable[] = [
 			this.source
 				.getCommitsEventEmitter()
-				.event(({ totalCount, repoName, filePath }) => {
-					// show the repository and any file filter next to the commit count
+				.event(({ totalCount, repoName, filePath, lineRange }) => {
+					// show the repository and any file/line filter next to the commit count
 					webviewView.description = formatHistoryDescription({
 						repoName,
 						filePath,
+						lineRange,
 						totalCount,
 					});
 				}),

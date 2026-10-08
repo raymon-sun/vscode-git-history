@@ -9,7 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Compare Commits: with exactly two commits selected, the commit menu offers to diff them against each other (works for unrelated commits and branch tips)
 - Label the Changes view with `Comparing abc1234 ↔ def5678` while it shows a comparison, so it is not mistaken for the changes of a commit
 - Show File History: right click a file (Explorer, editor tab, editor, or the Changes view) to filter the History panel to that file, with the filter shown next to the view title and a button to clear it
-- Show Selection History: select one or more lines in the editor to list the commits that changed them (`git log -L`) and open the changes of the selected one
+- Show Selection History: select one or more lines in the editor to narrow the History panel to the commits that changed them (`git log -L`), with the range shown next to the view title as `src/a.ts:20-24` and cleared with the button there
 - Group both actions under a `Git History` submenu in the Explorer and editor context menus, so their origin is obvious
 - Offer both actions in the file-changes (diff) editor opened from the Changes view too, and trace the selected lines from the revision that side shows
 - Show the current repository next to the view title, list repositories by name (disambiguating duplicate folder names) in the repository picker, and remember the selected repository across reloads

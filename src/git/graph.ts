@@ -43,7 +43,12 @@ export class GitGraph {
 			// be misleading; fall back to a single line
 			const graphicCommits = this.setGraphToCommits(
 				this.currentBatchedCommits.commits,
-				!(options.authors || options.keyword || options.filePath)
+				!(
+					options.authors ||
+					options.keyword ||
+					options.filePath ||
+					(options.hashes && options.hashes.length)
+				)
 			);
 
 			this.postHandler?.([

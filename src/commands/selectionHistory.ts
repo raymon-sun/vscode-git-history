@@ -1,26 +1,17 @@
-import { commands, QuickPickItem, window } from "vscode";
+import { commands, window } from "vscode";
 
 import { container } from "../container/inversify.config";
-import { CHANGES_VIEW_ID } from "../constants";
 import { resolveGitDocument } from "../git/gitDocument";
 import { getSelectedLineRange } from "../git/lineHistory";
 import { toRepoRelativePath } from "../git/repoPath";
 import { GitService } from "../git/service";
-import { ChangeTreeDataProvider } from "../views/changes/ChangeTreeDataProvider";
 import { Source } from "../views/history/data/source";
 
 export const SELECTION_HISTORY_COMMAND = "git-history.selectionHistory";
 
-const SHORT_HASH_LENGTH = 7;
-
-const shortenHash = (hash: string) => hash.slice(0, SHORT_HASH_LENGTH);
-
-type SelectionHistoryItem = QuickPickItem & { hash: string };
-
 export function getSelectionHistoryCommandsDisposable() {
 	const gitService = container.get(GitService);
 	const source = container.get(Source);
-	const changesProvider = container.get(ChangeTreeDataProvider);
 
 	return [
 		commands.registerCommand(SELECTION_HISTORY_COMMAND, async () => {
@@ -45,9 +36,7 @@ export function getSelectionHistoryCommandsDisposable() {
 			}
 
 			const filePath = toRepoRelativePath(repoPath, fsPath);
-			const { startLine, endLine } = getSelectedLineRange(
-				editor.selection
-			);
+			const lineRange = getSelectedLineRange(editor.selection);
 
 			// the history is traced against the committed file, so a pending edit
 			// can make the line numbers refer to different lines than selected;
@@ -69,8 +58,8 @@ export function getSelectionHistoryCommandsDisposable() {
 				commits = await gitService.getLineHistory(
 					repoPath,
 					filePath,
-					startLine,
-					endLine,
+					lineRange.startLine,
+					lineRange.endLine,
 					ref
 				);
 			} catch (error) {
@@ -83,35 +72,19 @@ export function getSelectionHistoryCommandsDisposable() {
 
 			if (!commits.length) {
 				window.showInformationMessage(
-					`No commit changed ${filePath}:${startLine}-${endLine}.`
+					`No commit changed ${filePath}:${lineRange.startLine}-${lineRange.endLine}.`
 				);
 				return;
 			}
 
-			const range = `${filePath}:${startLine}-${endLine}`;
-			const picked = await window.showQuickPick<SelectionHistoryItem>(
-				commits.map(({ hash, author, timestamp, subject }) => ({
-					label: `$(git-commit) ${shortenHash(hash)} ${subject}`,
-					description: `${author} · ${new Date(
-						timestamp * 1000
-					).toLocaleDateString()}`,
-					hash,
-				})),
-				{
-					title: `Selection History · ${range}`,
-					placeHolder:
-						"Select a commit to see the changes it made to this file",
-				}
+			// list exactly those commits in the History panel, where picking one
+			// shows the changes it made to the file
+			await source.showSelectionHistory(
+				repoPath,
+				filePath,
+				lineRange,
+				commits.map(({ hash }) => hash)
 			);
-
-			if (!picked) {
-				return;
-			}
-
-			// focus the Changes view on that commit, narrowed to this file
-			changesProvider.setFilter(filePath);
-			await source.viewChanges([picked.hash]);
-			await commands.executeCommand(`${CHANGES_VIEW_ID}.focus`);
 		}),
 	];
 }

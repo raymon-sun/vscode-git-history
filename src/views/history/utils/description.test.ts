@@ -31,4 +31,37 @@ suite("History view description", () => {
 			"src/a.ts · 7 commits"
 		);
 	});
+
+	test("should show a line range of a selection history", () => {
+		strictEqual(
+			formatHistoryDescription({
+				repoName: "api",
+				filePath: "src/a.ts",
+				lineRange: { startLine: 20, endLine: 24 },
+				totalCount: 2,
+			}),
+			"api · src/a.ts:20-24 · 2 commits"
+		);
+	});
+
+	test("should show a single selected line as a range too", () => {
+		strictEqual(
+			formatHistoryDescription({
+				filePath: "src/a.ts",
+				lineRange: { startLine: 7, endLine: 7 },
+				totalCount: 1,
+			}),
+			"src/a.ts:7-7 · 1 commits"
+		);
+	});
+
+	test("should ignore a line range that has no path", () => {
+		strictEqual(
+			formatHistoryDescription({
+				lineRange: { startLine: 1, endLine: 2 },
+				totalCount: 3,
+			}),
+			"3 commits"
+		);
+	});
 });

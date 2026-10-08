@@ -10,6 +10,7 @@ import { API, Repository } from "../typings/scmExtension";
 import { getBuiltInGitApi, getGitBinPath } from "./api";
 
 import { GitOptions, LogOptions } from "./types";
+import { LOG_TYPE_ARGS, buildLogArgs } from "./logArgs";
 import { parseGitChanges } from "./changes/changes";
 import {
 	ILineHistoryCommit,
@@ -22,8 +23,6 @@ import { parseGitAuthors, parseGitConfig } from "./utils";
 
 import type { GitWorker } from "./worker";
 import { IRoughCommit } from "./commit";
-
-const LOG_TYPE_ARGS = ["--branches", "--remotes", "--tags"];
 
 /** an upper bound for `git log -L`, whose output carries a patch per commit */
 export const LINE_HISTORY_MAX_COUNT = 100;
@@ -244,49 +243,8 @@ export class GitService {
 	}
 
 	async getCommits(options?: LogOptions) {
-		const COMMIT_FORMAT = "%H%n%D%n%aN%n%aE%n%at%n%ct%n%P%n%B";
-		const {
-			repo,
-			authors,
-			keyword,
-			ref,
-			filePath,
-			maxLength,
-			count,
-			skip,
-		} = options || {};
-		const args = [
-			"log",
-			`--format=${COMMIT_FORMAT}`,
-			"-z",
-			...(ref ? [ref] : LOG_TYPE_ARGS),
-			"--author-date-order",
-		];
-
-		if (authors && authors.length) {
-			args.push(...authors.map((author) => `--author=${author}`));
-		}
-
-		if (keyword) {
-			args.push(`--grep=${keyword}`, `-i`);
-		}
-
-		if (maxLength) {
-			args.push(`-n${maxLength}`);
-		}
-
-		if (skip) {
-			args.push(`--skip=${skip}`);
-		}
-
-		if (count) {
-			args.push(`-${count}`);
-		}
-
-		if (filePath) {
-			// the pathspec has to come last
-			args.push("--", filePath);
-		}
+		const { repo } = options || {};
+		const args = buildLogArgs(options);
 
 		return await this.git
 			?.cwd(repo || this.rootRepoPath)
@@ -298,7 +256,12 @@ export class GitService {
 	}
 
 	async getCommitsTotalCount(options?: LogOptions) {
-		const { repo, ref, authors, keyword, filePath } = options || {};
+		const { repo, ref, authors, keyword, filePath, hashes } = options || {};
+
+		// an explicit commit set is fully known, so there is nothing to count
+		if (hashes && hashes.length) {
+			return hashes.length;
+		}
 
 		// TODO: reuse arguments assembly process in getCommits
 		const args = ["rev-list", ...(ref ? [ref] : LOG_TYPE_ARGS), "--count"];

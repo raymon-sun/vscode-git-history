@@ -17,6 +17,7 @@ import { COMPARE_STATE_KEY, ICompareState } from "../../changes/compareState";
 import { GitService } from "../../../git/service";
 import { GitGraph } from "../../../git/graph";
 import { pickPreferredRepo } from "../../../git/preferredRepo";
+import { ILineRange } from "../../../git/lineHistory";
 import { getRepoDisplayNames } from "../../../git/repoName";
 import {
 	ChangesCollection,
@@ -26,6 +27,7 @@ import {
 import { ChangeTreeDataProvider } from "../../changes/ChangeTreeDataProvider";
 
 import type { IBatchedCommits, LogOptions } from "../../../git/types";
+import type { IRoughCommit } from "../../../git/commit";
 
 import {
 	REFRESH_COMMAND,
@@ -77,6 +79,7 @@ export class Source {
 		totalCount: number;
 		repoName: string;
 		filePath?: string;
+		lineRange?: ILineRange;
 	}>();
 	private columnsChangedEventEmitter = new EventEmitter<void>();
 
@@ -188,7 +191,33 @@ export class Source {
 	 * shown, and reveal the panel.
 	 */
 	async showFileHistory(repo: string, filePath: string) {
-		state.logOptions = { ...state.logOptions, repo, filePath };
+		const options = { ...state.logOptions, repo, filePath };
+		// the file filter covers the whole file, so any line range is dropped
+		delete options.lineRange;
+		delete options.hashes;
+		state.logOptions = options;
+		await commands.executeCommand<string>(REFRESH_COMMAND);
+		await commands.executeCommand(`${HISTORY_VIEW_ID}.focus`);
+	}
+
+	/**
+	 * Restrict the history to the commits that touched a line range, which is
+	 * how the history of a selection is shown, and reveal the panel. The commits
+	 * are resolved by the caller (`git log -L`) and listed as given.
+	 */
+	async showSelectionHistory(
+		repo: string,
+		filePath: string,
+		lineRange: ILineRange,
+		hashes: string[]
+	) {
+		state.logOptions = {
+			...state.logOptions,
+			repo,
+			filePath,
+			lineRange,
+			hashes,
+		};
 		await commands.executeCommand<string>(REFRESH_COMMAND);
 		await commands.executeCommand(`${HISTORY_VIEW_ID}.focus`);
 	}
@@ -197,13 +226,19 @@ export class Source {
 	async clearFileFilter() {
 		const options = { ...state.logOptions };
 		delete options.filePath;
+		delete options.lineRange;
+		delete options.hashes;
 		state.logOptions = options;
 		await commands.executeCommand<string>(REFRESH_COMMAND);
 	}
 
-	/** show or hide the title bar action that clears the file filter */
-	private syncFileFilterContext(filePath?: string) {
-		commands.executeCommand("setContext", FILE_FILTER_CONTEXT, !!filePath);
+	/** show or hide the title bar action that clears the history filter */
+	private syncFileFilterContext({ filePath, lineRange }: LogOptions) {
+		commands.executeCommand(
+			"setContext",
+			FILE_FILTER_CONTEXT,
+			!!(filePath || lineRange)
+		);
 	}
 
 	/** short, unique name of the repository currently on screen */
@@ -308,9 +343,21 @@ export class Source {
 		handler: (batchedCommits: IBatchedCommits) => void,
 		options: LogOptions
 	) {
-		this.syncFileFilterContext(options.filePath);
+		this.syncFileFilterContext(options);
 
 		const FIRST_BATCH_SIZE = 300;
+
+		// an explicit commit set is small and fully known, so it is posted in a
+		// single batch instead of the paged traversal below
+		if (options.hashes && options.hashes.length) {
+			const commits = (await this.git.getCommits(options)) || [];
+
+			this.graph.registerHandler(handler);
+			this.postSingleBatch(commits, options);
+
+			return;
+		}
+
 		const firstBatchCommits = await this.git.getCommits({
 			...options,
 			count: FIRST_BATCH_SIZE,
@@ -333,6 +380,7 @@ export class Source {
 				totalCount,
 				repoName: this.getCurrentRepoName(),
 				filePath: options.filePath,
+				lineRange: options.lineRange,
 			});
 
 			this.graph.attachGraphAndPost({
@@ -361,19 +409,27 @@ export class Source {
 					);
 			}
 		} else {
-			const totalCount = firstBatchCommits?.length || 0;
-			this.commitsEventEmitter.fire({
-				totalCount,
-				repoName: this.getCurrentRepoName(),
-				filePath: options.filePath,
-			});
-			this.graph.attachGraphAndPost({
-				totalCount,
-				batchNumber: _batchNumber,
-				commits: firstBatchCommits || [],
-				options,
-			});
+			this.postSingleBatch(firstBatchCommits || [], options);
 		}
+	}
+
+	/** post a commit list that is complete, so the panel can render it at once */
+	private postSingleBatch(commits: IRoughCommit[], options: LogOptions) {
+		const totalCount = commits.length;
+
+		this.commitsEventEmitter.fire({
+			totalCount,
+			repoName: this.getCurrentRepoName(),
+			filePath: options.filePath,
+			lineRange: options.lineRange,
+		});
+
+		this.graph.attachGraphAndPost({
+			totalCount,
+			batchNumber: 0,
+			commits,
+			options,
+		});
 	}
 
 	@link("promise")

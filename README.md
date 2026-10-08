@@ -48,7 +48,7 @@ Right click a commit to act on it, right click a tag to manage it:
 These actions live under `Git History` in the Explorer, editor tab and editor context menus, so it is clear which extension they come from (in the Changes view they are offered directly).
 
 - `Show File History` narrows the History panel to the file you right clicked. The filter is shown next to the view title and cleared with the button there
-- `Show Selection History` lists the commits that changed the lines you selected (`git log -L`), then lets you pick one to inspect the changes it made to the file. It also works inside the file-changes (diff) editor opened from the Changes view, tracing the lines from the revision that side shows
+- `Show Selection History` narrows the History panel to the commits that changed the lines you selected (`git log -L`), so you can pick one there to see the changes it made. The filter is shown as `src/a.ts:20-24` next to the view title and cleared with the button there. It also works inside the file-changes (diff) editor opened from the Changes view, tracing the lines from the revision that side shows
 
 ### Commit Chain Graph
 

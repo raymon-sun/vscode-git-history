@@ -4,6 +4,10 @@ All notable changes to the "git-history" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.0.2
+
+- Keep the graph line of the newest commit visible when the theme's accent color is too close to the row background: the head chain now falls back to a high contrast color
+
 ## 1.0.1
 
 - Require VS Code 1.105 or newer instead of 1.140; no API the extension uses is newer than 1.105, so the higher requirement only kept it out of reach

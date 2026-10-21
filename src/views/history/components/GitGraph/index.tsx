@@ -38,10 +38,19 @@ const GitGraph: FC<Props> = ({ data, kind = "node", hash }) => {
 
 	// the newest commit is highlighted, like the current item in VS Code's graph
 	const nodeKind: GitGraphNodeKind =
-		hash && hash === latestCommit ? "head" : kind;
+		hash && hash === latestCommit?.hash ? "head" : kind;
 
 	const [commitPosition, commitColor, lines] = data;
 	const commitX = (commitPosition + 1) * UNIT;
+
+	// the head chain uses the accent color, which can be close to the row
+	// background; `lineColor` is the same color or a high contrast fallback
+	const headColor = latestCommit?.color;
+	const headLineColor = latestCommit?.lineColor;
+	const displayColor = (color: string) =>
+		headColor && headLineColor && color === headColor
+			? headLineColor
+			: color;
 
 	const width =
 		(Math.max(
@@ -79,14 +88,14 @@ const GitGraph: FC<Props> = ({ data, kind = "node", hash }) => {
 						points={points}
 						style={{
 							fill: "none",
-							stroke: color,
+							stroke: displayColor(color),
 							strokeWidth: LINE_WIDTH,
 							strokeLinecap: "round",
 						}}
 					/>
 				);
 			})}
-			{renderNode(nodeKind, commitX, commitColor)}
+			{renderNode(nodeKind, commitX, displayColor(commitColor))}
 		</svg>
 	);
 };

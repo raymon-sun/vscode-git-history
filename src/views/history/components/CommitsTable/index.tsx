@@ -25,7 +25,7 @@ import {
 	DateFormat,
 } from "../../data/dateFormat";
 import { COLUMNS_CHANGED_EVENT } from "../../data/events";
-import { LatestCommitContext } from "../../data/latestCommit";
+import { LatestCommitContext, useLatestCommit } from "../../data/latestCommit";
 import { getComparePair } from "../../utils/commitPair";
 import { onEvent } from "../../utils/message";
 
@@ -37,8 +37,6 @@ import { useColumnResize } from "./useColumnResize";
 import { HEADERS, applyDateFormatWidth } from "./constants";
 
 import style from "./index.module.scss";
-
-const COMMIT_HASH_LENGTH = 40;
 
 /** relative commit times are refreshed once a minute */
 const RELATIVE_TIME_REFRESH_INTERVAL = 60 * 1000;
@@ -105,7 +103,7 @@ const CommitsTableInner: FC<{ totalWidth: number }> = ({ totalWidth }) => {
 		useBatchCommits();
 
 	// commits are ordered newest first
-	const latestCommit = commits[0]?.slice(0, COMMIT_HASH_LENGTH);
+	const latestCommit = useLatestCommit(commits);
 
 	function diff(sortedRefs: string[]) {
 		channel.viewChanges(sortedRefs);
